@@ -27,8 +27,11 @@ if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
        patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer, car)
 
-hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
+library(conflicted)
+conflicts_prefer(dplyr::select)
+conflicts_prefer(dplyr::filter)
 
+hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 ```
 
 # Introduction
@@ -42,6 +45,23 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 
 # Exploratory Data Analysis
+
+```{r house_location}
+# Quick check of house data
+str(hh)
+anyNA(hh$lat)
+anyNA(hh$long)
+
+# Create house location
+house <- hh %>%
+  st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # Convert to sf object with specified CRS
+  st_transform('ESRI:102271') %>%  # Transform coordinate reference system to "Washington State Plane North"
+  distinct()  # Keep only distinct geometries
+```
+
+```{r King_boundary}
+
+```
 
 
 # Modeling
