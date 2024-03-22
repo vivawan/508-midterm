@@ -31,7 +31,7 @@ library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
-hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
+hh<- read_csv(here::here("data/raw/kc_house_data.csv")) # Read house data
 ```
 
 # Introduction
@@ -46,6 +46,18 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 # Exploratory Data Analysis
 
+```{r Seattle_boundary}
+seattle <- st_read(here::here("data/raw/Seattle_City.geojson")) %>% # Read Seattle boundary
+  st_union() %>%
+  st_as_sf()
+
+ggplot() + 
+    geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # Add Seattle boundary
+    labs(title = "Seattle, King County") +  # Set plot title
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
 ```{r house_location}
 # Quick check of house data
 str(hh)
@@ -55,13 +67,22 @@ anyNA(hh$long)
 # Create house location
 house <- hh %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # Convert to sf object with specified CRS
-  st_transform('ESRI:102271') %>%  # Transform coordinate reference system to "Washington State Plane North"
+  st_transform(st_crs(seattle)) %>%  # Transform coordinate reference system to "Washington State Plane North"
   distinct()  # Keep only distinct geometries
+
+seattle_house <- house %>%
+  st_intersection(seattle)
+
+# Plot Seattle house location
+ggplot() + 
+    geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # Add Seattle boundary
+    geom_sf(data = seattle_house, color = "#2166ac", size = 0.5, pch = 16) +  # Add house location
+    labs(title = "Seattle House Location") +  # Set plot title
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-```{r King_boundary}
 
-```
 
 
 # Modeling
