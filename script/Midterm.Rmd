@@ -31,6 +31,8 @@ library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
+source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
+
 hh<- read_csv(here::here("data/raw/kc_house_data.csv")) # Read house data
 ```
 
