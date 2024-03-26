@@ -41,10 +41,16 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 ???by integrating both structural and locational attributes. The model aims to discern how various housing characteristics, such as size, age, and amenities, along with locational factors, including proximity to services, neighborhood quality, and accessibility, collectively impact property values.
 
+# Main Steps
 
-# Data Description 
+# Data Gathering
+**1. Internal Characteristics**
 
+**2. Amenities/Public Services**
 
+**3. Spatial Structure**
+
+**4. **
 
 # Exploratory Data Analysis
 
