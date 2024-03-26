@@ -33,7 +33,6 @@ conflicts_prefer(dplyr::filter)
 
 source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
 
-hh<- read_csv(here::here("data/raw/kc_house_data.csv")) # Read house data
 ```
 
 # Introduction
@@ -43,7 +42,10 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 # Main Steps
 
-# Data Gathering
+
+
+# Data Selection
+
 **1. Internal Characteristics**
 
 **2. Amenities/Public Services**
@@ -52,10 +54,12 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 **4. **
 
-# Exploratory Data Analysis
+# Data Wrangling
+
+## Boundary and House Location
 
 ```{r Seattle_boundary}
-seattle <- st_read(here::here("data/raw/Seattle_City.geojson")) %>% # Read Seattle boundary
+seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>% # Read Seattle boundary
   st_union() %>%
   st_as_sf()
 
@@ -67,6 +71,9 @@ ggplot() +
 ```
 
 ```{r house_location}
+# Import house data
+hh<- read_csv(here::here("data/raw/kc_house_data.csv")) # Read house data
+
 # Quick check of house data
 str(hh)
 anyNA(hh$lat)
@@ -89,6 +96,32 @@ ggplot() +
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
+
+## Internal Characteristics
+
+```{r}
+
+```
+
+## Internal Characteristics
+
+```{r}
+
+```
+
+## Internal Characteristics
+
+```{r}
+
+```
+
+## Internal Characteristics
+
+```{r}
+
+```
+
+
 
 
 
