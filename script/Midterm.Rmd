@@ -47,12 +47,37 @@ This report elaborate on the process of developing and refining a comprehensive 
 # Data Selection
 
 **1. Internal Characteristics**
+- Year built
 
-**2. Amenities/Public Services**
+- Structure(row, apartment)
+- Bedroom
+- 
 
-**3. Spatial Structure**
+**2. Socio-economic Characteristics**
+- Population density
+- White population share
+- Median age
+- Education level
+- Median household income
+- Employment rate
+- Poverty rate
+- Crime rate
 
-**4. **
+**3. Amenities Services**
+- Transit stop
+- Bus stop
+- Water body
+- Park
+- Green space rate
+- School
+- Hospital
+- Commercial center
+- Police station
+
+**5. Spatial Structure**
+- Large district
+- Small district
+
 
 # Data Wrangling
 
@@ -99,20 +124,24 @@ ggplot() +
 
 ## Internal Characteristics
 
+### 
 ```{r}
 
+house <- 
 ```
 
 ## Internal Characteristics
 
 ```{r}
 
+house <- 
 ```
 
 ## Internal Characteristics
 
 ```{r}
 
+house <- 
 ```
 
 ## Internal Characteristics
