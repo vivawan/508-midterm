@@ -25,7 +25,8 @@ knitr::opts_chunk$set(
 
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
-       patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer, car)
+       patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer, car,
+       FNN)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -48,10 +49,16 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 **1. Internal Characteristics**
 - Year built
-
-- Structure(row, apartment)
+- Year renovated
 - Bedroom
-- 
+- Bathroom
+- Living area
+- Lot area
+- waterfront
+- view
+- condition
+- grade
+
 
 **2. Socio-economic Characteristics**
 - Population density
@@ -61,20 +68,19 @@ This report elaborate on the process of developing and refining a comprehensive 
 - Median household income
 - Employment rate
 - Poverty rate
-- Crime rate
+
 
 **3. Amenities Services**
-- Transit stop
-- Bus stop
-- Water body
-- Park
-- Green space rate
-- School
-- Hospital
-- Commercial center
-- Police station
+- Subway Station (count + distance)
+- School District (category)
+- Park (area)
+- Medical Facilities (distance)
+- Commercial center (count + distance)
+- Crime rate
 
-**5. Spatial Structure**
+reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-investors-find-good-properties
+
+**4. Spatial Structure**
 - Large district
 - Small district
 
@@ -105,18 +111,18 @@ anyNA(hh$lat)
 anyNA(hh$long)
 
 # Create house location
-house <- hh %>%
+hh <- hh %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # Convert to sf object with specified CRS
   st_transform(st_crs(seattle)) %>%  # Transform coordinate reference system to "Washington State Plane North"
   distinct()  # Keep only distinct geometries
 
-seattle_house <- house %>%
+house <- hh %>%
   st_intersection(seattle)
 
 # Plot Seattle house location
 ggplot() + 
     geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # Add Seattle boundary
-    geom_sf(data = seattle_house, color = "#2166ac", size = 0.5, pch = 16) +  # Add house location
+    geom_sf(data = house, color = "#2166ac", size = 0.5, pch = 16) +  # Add house location
     labs(title = "Seattle House Location") +  # Set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
@@ -127,30 +133,139 @@ ggplot() +
 ### 
 ```{r}
 
-house <- 
+
 ```
 
-## Internal Characteristics
+## Socio-economic Characteristics
 
+###
 ```{r}
 
-house <- 
+
 ```
 
-## Internal Characteristics
+## Amenities Characteristics
 
+### subway station
+- variable  
+1) number of station within half a mile radius (2640ft)  
+2) distance to the nearest station  
+- reference: https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.  
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
+```{r subway}
+#read station point data
+sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))%>%
+  st_transform(st_crs(house))
+
+# counts of station within half a mile
+house$sub_c <- house %>% 
+    st_buffer(2640) %>% 
+    aggregate(mutate(sub%>%select(geometry), counter = 1),., sum) %>%
+    pull(counter)
+
+# calculate the distance to the nearest station 
+house <-  house %>%
+      mutate(sub_dis = nn_function(st_coordinates(house),
+                                      st_coordinates(sub), k = 1))
+
+```
+
+### school district
+- variable: the name of the school district
+- reference: https://www.seattletimes.com/business/how-much-do-good-schools-boost-home-prices/  
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
+```{r school}
+sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))%>%
+  st_transform(st_crs(house))
+
+# add the school district variable
+house <- house %>% 
+  st_join(sch%>%select(DIRDST), join = st_within)%>%
+  rename(sch = "DIRDST")
+```
+
+
+### parks
+- area of park within 500 feet radius
+- reference: https://www.naturequant.com/blog/Impact-of-Parks-on-Property-Value/  
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
+```{r park}
+park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))%>%
+  st_transform(st_crs(house))%>%
+  st_intersection(seattle)
+
+#make a buffer around each house
+house_buff <- st_buffer(x = house, dist = 500)
+
+# clip park within buffers and calculate area
+park_500ft <- st_intersection(park, house_buff)%>%
+  mutate(park_area = st_area(.)) 
+
+# add area column
+house <- house %>% 
+    left_join(park_500ft %>% st_drop_geometry() %>% select(id, park_area), by = "id")
+
+```
+
+### Medical Facilities
+- variable: category based on distance
+- reference: "hospitals would only be highly evaluated in a ‘close-but-not-too-close’ geographic location" https://www.researchgate.net/publication/282942128_The_non-linearity_of_hospitals'_proximity_on_property_prices_experiences_from_Taipei_Taiwan
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
+
+```{r medical}
+med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospitals___medical_facilities_point.geojson"))%>%
+  st_transform(st_crs(house))%>%
+  st_intersection(seattle)
+
+# calculate the distance to the nearest medical facilities 
+house <-  house %>%
+      mutate(med_dis = nn_function(st_coordinates(house),
+                                      st_coordinates(med), k = 1))
+
+```
+
+### commercial
+- variable:  
+1) distance to the nearest shopping center
+2) number of shopping center within half a mile
+- reference: 
+1) "an inverse relationship between the housing price and its distance from the shopping mall" https://www.diva-portal.org/smash/get/diva2:1450713/FULLTEXT01.pdf  
+2) "Notwithstanding the negative externalities of shopping centres, residential
+properties within 100-metre radius of shopping centres command a higher premium
+than those farther away although the price-distance relationship is not monotonic
+while the proximity factor varies from housing estate to housing estate." https://www.prres.org/uploads/746/1752/Addae-Dapaah_Shopping_Centres_Proximate_Residential_Properties.pdf
+- source:https://gis-kingcounty.opendata.arcgis.com/datasets/4fdb4709874b46cf8dbb284182ca0094_383/explore?showTable=true  
+Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb4709874b46cf8dbb284182ca0094/info/metadata/metadata.xml?format=default&output=html
+- 690 Shopping Centers
+
+```{r commercial}
+mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))%>%
+  st_transform(st_crs(house))%>%
+  st_intersection(seattle)
+
+#select shopping center
+mark_shop <- mark%>%
+  filter(CODE == 690)
+
+# counts of shopping center within half a mile
+house$shop_c <- house %>% 
+    st_buffer(2640) %>% 
+    aggregate(mutate(mark_shop%>%select(geometry), counter = 1),., sum) %>%
+    pull(counter)
+
+# calculate the distance to the nearest shopping center 
+house <-  house %>%
+      mutate(shop_dis = nn_function(st_coordinates(house),
+                                      st_coordinates(mark_shop), k = 1))
+```
+
+
+## Spatial Structure
+
+###
 ```{r}
 
-house <- 
 ```
-
-## Internal Characteristics
-
-```{r}
-
-```
-
-
 
 
 
@@ -161,6 +276,25 @@ house <-
 # Conclusion
 
 
-#
+
+#plot reference
+```{r}
+# Plot Seattle house location
+ggplot() + 
+    geom_sf(data = seattle, color = "grey90", linewidth = 0.5) +  # Add Seattle boundary
+    geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
+  geom_sf(data = park, fill = "green4")+
+  geom_sf(data = park_500ft, fill = "green")
+    #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
+    #geom_sf(data = poi_commer, color = "red", size = 0.3, pch = 16) + 
+    labs(title = "Seattle House Location") +  # Set plot title
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+
+
+```
+
 
 
