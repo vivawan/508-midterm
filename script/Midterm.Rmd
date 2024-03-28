@@ -71,12 +71,12 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 
 **3. Amenities Services**
-- Subway Station (count + distance)
+- Subway Station (distance + category)
 - School District (category)
-- Park (area)
-- Medical Facilities (distance)
-- Commercial center (count + distance)
-- Crime rate
+- Park (area + count)
+- Medical Facilities (distance + category)
+- Commercial center (distance + count)
+- Crime rate (distance + )
 
 reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-investors-find-good-properties
 
@@ -265,6 +265,16 @@ house <-  house %>%
       mutate(shop_dis = nn_function(st_coordinates(house),
                                       st_coordinates(mark_shop), k = 1))
 ```
+
+### crime
+- variable:
+1) average distance to the nearest 1/2/3/4/5 crimes
+- reference:
+- source:
+```{r crime}
+
+```
+
 
 
 ## Spatial Structure
