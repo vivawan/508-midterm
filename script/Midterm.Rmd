@@ -149,8 +149,8 @@ ggplot() +
 ### subway station
 
 - variable  
-1) number of station within half a mile radius (2640ft)  
-2) distance to the nearest station
+1) distance to the nearest station
+2) categories based on distance (0-0.5/0.5-1/1+ mile) (0.5mile = 2640ft)  
 
 - reference: "houses within a quarter mile to a half mile of a Metro station sold for 7.5% more, and houses within a half mile to a mile sold for 3.9% more." https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
@@ -189,7 +189,9 @@ house <- house %>%
 
 
 ### parks
-- area of park within 500 feet radius
+???- variable: 
+1) area of parks within 500 feet radius
+2) count of parks within 500 feet radius
 - reference: "Most community-sized parks (~40 acres) had a substantial impact on home prices up to a distance of 500 to 600 feet. While the influence of larger parks extended out to 2,000 feet, beyond 500 feet the influence was relatively small." https://www.naturequant.com/blog/Impact-of-Parks-on-Property-Value/  
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
 ```{r park}
@@ -211,7 +213,9 @@ house <- house %>%
 ```
 
 ### Medical Facilities
-- variable: category based on distance
+- variable: 
+1) average distance to the nearest 1/2/3 medical facilities
+2) categories based on distance (0-0.5/0.5-1/1+ mile)
 - reference: "hospitals would only be highly evaluated in a ‘close-but-not-too-close’ geographic location" https://www.researchgate.net/publication/282942128_The_non-linearity_of_hospitals'_proximity_on_property_prices_experiences_from_Taipei_Taiwan
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
 
@@ -229,8 +233,8 @@ house <-  house %>%
 
 ### commercial
 - variable:  
-1) distance to the nearest shopping center
-2) number of shopping center within half a mile
+1) average distance to the nearest 1/2/3 medical facilities
+2) categories based on distance (0-0.5/0.5-1/1+ mile)
 - reference: 
 1) "an inverse relationship between the housing price and its distance from the shopping mall" https://www.diva-portal.org/smash/get/diva2:1450713/FULLTEXT01.pdf  
 2) "Notwithstanding the negative externalities of shopping centres, residential
