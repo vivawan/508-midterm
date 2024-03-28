@@ -147,11 +147,14 @@ ggplot() +
 ## Amenities Characteristics
 
 ### subway station
+
 - variable  
 1) number of station within half a mile radius (2640ft)  
-2) distance to the nearest station  
-- reference: https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.  
+2) distance to the nearest station
+
+- reference: https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
+
 ```{r subway}
 #read station point data
 sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))%>%
