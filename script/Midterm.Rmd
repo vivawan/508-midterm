@@ -54,20 +54,20 @@ This report elaborate on the process of developing and refining a comprehensive 
 - Bathroom
 - Living area
 - Lot area
-- waterfront
-- view
-- condition
-- grade
+- Waterfront
+- View
+- Condition
+- Grade
 
 
 **2. Socio-economic Characteristics**
-- Population density
-- White population share
-- Median age
-- Education level
-- Median household income
-- Employment rate
-- Poverty rate
+- Population density (continuous)
+- White population share (continuous)
+- Age structure (continuous + category)
+- Education level (continuous + category)
+- Median household income (continuous + dummy)
+- Employment rate (continuous)
+- Poverty rate (continuous + dummy)
 
 
 **3. Amenities Services**
