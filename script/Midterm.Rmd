@@ -27,7 +27,7 @@ options(scipen = 999)
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
        patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer, car,
-       FNN)
+       FNN, GGally, MASS, ISLR2)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -50,7 +50,7 @@ This report elaborate on the process of developing and refining a comprehensive 
 
 **1. Internal Characteristics**
 - Year built
-- Year renovated
+- Year renovated (cat)
 - Bedroom
 - Bathroom
 - Living area
@@ -105,41 +105,130 @@ ggplot() +
 
 ```{r house_location}
 # import house data
-hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
+kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
 # quick check of house data
-str(hh)
-anyNA(hh$lat)
-anyNA(hh$long)
+str(kc_hh)
+anyNA(kc_hh$lat)
+anyNA(kc_hh$long)
 
 # create house location
-hh <- hh %>%
+kc_hh <- kc_hh %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # convert to sf object with specified CRS
   st_transform(st_crs(seattle)) %>%  # transform coordinate reference system to "Washington State Plane North"
   distinct()  # keep only distinct geometries
 
-house <- hh %>%
+hh <- kc_hh %>%
   st_intersection(seattle)
-
-#examine house id
-length(unique(house$id)) #6691 < 6740
-#add an unique key
-house$key <- 1:nrow(house)
 
 # plot Seattle house location
 ggplot() + 
     geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # add Seattle boundary
-    geom_sf(data = house, color = "#2166ac", size = 0.5, pch = 16) +  # add house location
+    geom_sf(data = hh, color = "#2166ac", size = 0.5, pch = 16) +  # add house location
     labs(title = "Seattle House Location") +  # set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
+## dependent variable
+```{r dependent}
+#examine house id
+length(unique(hh$id))#6691 < 6740
+#add an unique key
+hh$key <- 1:nrow(hh)
+
+#exclude outliers with extremely high price
+hist(hh$price)
+hh[hh$price > 3000000,]
+hh <- hh %>%
+  filter(!price > 5000000)
+```
+
+
+**1. Internal Characteristics**
+- Year used (continuous)
+- Renovation (dummy)
+- Bedroom (continuous + category)
+- Bathroom (continuous + category)
+- Floors (continuous + category)
+- Living area (continuous)
+- Lot area (continuous)
+- Waterfront (dummy)
+- View (category)
+- Condition (category)
+- Grade (category)
+
+
 ## Internal Characteristics
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
+summary(hh)
 
+#add year_used and renovation and ensure categorical data are factor
+house <- hh %>% 
+  mutate(year_used = 2015 - yr_built, # used year
+         reno_dum = if_else(yr_renovated>0, 1, 0),#renovation yes or no
+         water_dum = as.factor(waterfront),
+         view_cat = as.factor(view),
+         condition_cat = as.factor(condition),
+         grade_cat = as.factor(grade))
 
+#bed categories
+house$bed.factor <- factor(house$bedrooms, levels =sort(unique(house$bedrooms)))
+house %>%
+  st_drop_geometry() %>%
+  group_by(bed.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = bed.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-9,11+
+house <- house %>%
+  mutate(bed_cat = factor(case_when(
+    bedrooms <=3 ~ "few",
+    bedrooms >3 | bedrooms <= 9 ~ "medium",
+    bedrooms >9 ~ "many"
+  )))%>%
+  select(-bed.factor)
+
+# bathroom category
+house$bath.factor <- factor(house$bathrooms, levels =sort(unique(house$bathrooms)))
+house %>%
+  st_drop_geometry() %>%
+  group_by(bath.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = bath.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0, 0.5-4, 4+
+house <- house %>%
+  mutate(bath_cat = factor(case_when(
+    bathrooms == 0 ~ "no",
+    bathrooms >0 | bedrooms <= 4 ~ "few",
+    bathrooms > 4 ~ "many"
+  )))%>%
+  select(-bath.factor)
+
+# floor category
+house$floor.factor <- factor(house$floors, levels =sort(unique(house$floors)))
+house %>%
+  st_drop_geometry() %>%
+  group_by(floor.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = floor.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
+house <- house %>%
+  mutate(floor_cat = factor(case_when(
+    floors <= 2 | floors == 3 ~ "regular",
+    floors %in% c(2.5, 3.5) ~ "irregular"
+  )))%>%
+  select(-floor.factor)
+
+#select variables
+house <- house %>%
+  select("key", "price","year_used","reno_dum",
+         "bedrooms", "bed_cat", "bathrooms", "bath_cat",
+         "sqft_living", "sqft_lot", "floors", "floor_cat",
+         "water_dum", "view_cat", "condition_cat", "grade_cat")
 ```
 
 ## Socio-economic Characteristics
@@ -486,6 +575,20 @@ house <-  house %>%
 
 
 # Data Description
+```{r first plot}
+house.numeric <- house %>%
+          st_drop_geometry() %>% 
+          select_if(is.numeric) %>%
+          na.omit()
+
+ggpairs()
+
+
+
+```
+
+
+
 
 # Modeling
 
