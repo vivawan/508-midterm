@@ -431,7 +431,7 @@ crime <- read.csv(here::here("data/processed/crime_clean.csv"))
 # Plot Reference
 
 ```{r}
-# Plot Seattle house location
+# plot Seattle house location
 ggplot() + 
     geom_sf(data = seattle, color = "grey90", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
