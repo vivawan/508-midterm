@@ -273,7 +273,7 @@ house <- house %>%
 
 - variable:
 
-- refernce:
+- reference:
 
 - source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
 
@@ -451,7 +451,7 @@ house <-  house %>%
 # Plot Reference
 
 ```{r}
-# Plot Seattle house location
+# plot Seattle house location
 ggplot() + 
     geom_sf(data = seattle, color = "grey90", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
