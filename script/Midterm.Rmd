@@ -94,7 +94,7 @@ reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-inv
 # read Seattle boundary
 seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
   st_union() %>%
-  st_as_sf()
+  st_as_sf() 
 
 ggplot() + 
     geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # add Seattle boundary
@@ -120,6 +120,11 @@ hh <- hh %>%
 
 house <- hh %>%
   st_intersection(seattle)
+
+#examine house id
+length(unique(house$id))#6691 < 6740
+#add an unique key
+house$key <- 1:nrow(house)
 
 # plot Seattle house location
 ggplot() + 
@@ -253,17 +258,16 @@ park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.ge
   mutate(park_area = st_area(.))
   
 # area and count of parks within 500 feet
-
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
-  group_by(id) %>% 
+  group_by(key) %>% 
   summarise(park_c = n_distinct(SITENAME, na.rm = TRUE),
             sum_park_area = sum(park_area, na.rm = TRUE))
 
 house <- house %>% 
     left_join(house_parks%>%
                 st_drop_geometry()%>%
-                select(id,park_c, sum_park_area), by = "id")%>%
-  rename(park_area = "sum_park_area")
+                select(key,park_c, sum_park_area), by = "key")%>%
+  rename(parks_area = "sum_park_area")
 
 ```
 
@@ -411,10 +415,16 @@ crime <- read.csv(here::here("data/processed/crime_clean.csv")) %>%
   st_transform(st_crs(house))
 
 # count of crime within 1/8 mi
-house$crime_c =
-    st_buffer(house, 660) %>%
-    aggregate(mutate(crime, counter = 1),., sum) %>%
-    pull(counter)
+house_crime <- st_join(st_buffer(house, dist = 660), crime, join = st_intersects)%>%
+  group_by(key) %>% 
+  filter(!is.na(Offense.ID)) %>%
+  summarise(crime_c = n())
+
+# house$crime_c <- house %>%
+#     st_buffer(660) %>%
+#     aggregate(mutate(crime, counter = 1),., sum) %>%
+#     pull(counter)
+
 
 # calculate the distance to the nearest 1/2/3/4/5 shopping center(s)
 house <-  house %>%
@@ -431,15 +441,7 @@ house <-  house %>%
 ```
 
 
-
-## Spatial Structure
-
-```{r}
-
-```
-
-
-
+# Data Description
 
 # Modeling
 
