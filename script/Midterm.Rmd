@@ -415,15 +415,10 @@ crime <- read.csv(here::here("data/processed/crime_clean.csv")) %>%
   st_transform(st_crs(house))
 
 # count of crime within 1/8 mi
-house_crime <- st_join(st_buffer(house, dist = 660), crime, join = st_intersects)%>%
-  group_by(key) %>% 
-  filter(!is.na(Offense.ID)) %>%
-  summarise(crime_c = n())
-
-# house$crime_c <- house %>%
-#     st_buffer(660) %>%
-#     aggregate(mutate(crime, counter = 1),., sum) %>%
-#     pull(counter)
+house$crime_c <- house %>%
+    st_buffer(660) %>%
+    aggregate(mutate(crime, counter = 1)%>%select(counter),., sum) %>%
+    pull(counter)
 
 
 # calculate the distance to the nearest 1/2/3/4/5 shopping center(s)
