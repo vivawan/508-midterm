@@ -160,14 +160,14 @@ hh <- hh %>%
 
 
 ## Internal Characteristics
-
-```{r, message = FALSE, warning = FALSE}
+### clean data
+```{r internal, message = FALSE, warning = FALSE}
 summary(hh)
 
 #add year_used and renovation and ensure categorical data are factor
 house <- hh %>% 
   mutate(year_used = 2015 - yr_built, # used year
-         reno_dum = if_else(yr_renovated>0, 1, 0),#renovation yes or no
+         reno_dum = as.factor(if_else(yr_renovated>0, 1, 0)),#renovation yes or no
          water_dum = as.factor(waterfront),
          view_cat = as.factor(view),
          condition_cat = as.factor(condition),
@@ -227,9 +227,27 @@ house <- house %>%
 house <- house %>%
   select("key", "price","year_used","reno_dum",
          "bedrooms", "bed_cat", "bathrooms", "bath_cat",
-         "sqft_living", "sqft_lot", "floors", "floor_cat",
+         "sqft_living", "sqft_lot", "floor_cat",
          "water_dum", "view_cat", "condition_cat", "grade_cat")
 ```
+
+```{r internal category}
+house %>% 
+  dplyr::select(price, bed_cat, bath_cat, water_dum, OWN_OCC, NUM_FLOORS) %>%
+  mutate(NUM_FLOORS = as.factor(NUM_FLOORS)) %>%
+  filter(SalePrice <= 1000000) %>%
+  gather(Variable, Value, -SalePrice) %>% 
+   ggplot(aes(Value, SalePrice)) +
+     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
+     facet_wrap(~Variable, ncol = 1, scales = "free") +
+     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
+     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+
 
 ## Socio-economic Characteristics
 
@@ -609,7 +627,26 @@ ggpairs()
 
 ```
 
+```{r price_map}
+library(RColorBrewer)
 
+palette5 <- brewer.pal(5, "YlGnBu")
+
+# ggplot, reorder
+boston.sf$quintiles <- ntile(boston.sf$PricePerSq, 5)
+
+# Mapping data
+ggplot() +
+  geom_sf(data = nhoods, fill = "lightgrey", col = "white") +
+  geom_sf(data = boston.sf, aes(colour = q5(PricePerSq)), 
+          show.legend = "point", size = .75) +
+  scale_colour_manual(values = palette5,
+                   labels=qBr(boston,"PricePerSq"),
+                   name="Quintile\nBreaks") +
+  labs(title="Price Per Square Foot, Boston") +
+  theme_void()
+
+```
 
 
 # Modeling
