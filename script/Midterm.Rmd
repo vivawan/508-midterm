@@ -251,17 +251,13 @@ house %>%
 
 ## Socio-economic Characteristics
 
-```{r load_key, results='hide'}
+```{r acs_vars, results='hide'}
 census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
-```
 
-```{r load_variables}
 acs_variable_list.2015 <- load_variables(2015, # year
                                          "acs5", # five year ACS estimates
                                          cache = TRUE)
-```
 
-```{r acs_vars}
 acs_vars <- c("B01003_001E", # total population
               "B01001A_001E", # white alone
               "B01001_003E", # male under 5
@@ -327,14 +323,16 @@ acsTractsSeattle.2015 <- get_acs(geography = "tract",
                                (pop_under14 + pop_over65)) * 100, digits = 2),
          elder_dep = round(pop_over65 / (total_pop - (pop_under14 + pop_over65)) * 100, digits = 2),
          bach_share = round(ifelse(edu_attain > 0, edu_bach/edu_attain, 0) * 100, digits = 2),
-         bach_dum = ifelse(bach_share > mean(acsTractsSeattle.2015$bach_share,
+         employ_rate = round(ifelse(total_labor > 0, employ_labor / total_labor, 0) * 100, digits = 2),
+         pover_rate = round(ifelse(total_pop > 0, poverty / total_pop, 0) * 100, digits = 2))
+
+acsTractsSeattle.2015 <- acsTractsSeattle.2015 %>%
+  mutate(bach_dum = ifelse(bach_share > mean(acsTractsSeattle.2015$bach_share,
                                                         na.rm = TRUE), "above", "below"),
          median_hh_dum = ifelse(median_hh_income > mean(acsTractsSeattle.2015$median_hh_income,
                                                         na.rm = TRUE), "above", "below"),
-         employ_rate = round(ifelse(total_labor > 0, employ_labor / total_labor, 0) * 100, digits = 2),
          employ_dum = ifelse(employ_rate > mean(acsTractsSeattle.2015$employ_rate,
                                                         na.rm = TRUE), "above", "below"),
-         pover_rate = round(ifelse(total_pop > 0, poverty / total_pop, 0) * 100, digits = 2),
          pover_dum = ifelse(pover_rate > mean(acsTractsSeattle.2015$pover_rate,
                                                         na.rm = TRUE), "above", "below")) %>%
   select(GEOID, NAME, pop_den, white_share, total_dep, elder_dep, bach_share, bach_dum, median_hh_income,
@@ -427,7 +425,8 @@ house <- house %>%
 - variable:
 1) percent of existing tree canopy (2016, hexagons)
 
-- reference:
+- reference: "a city facing major development pressure — trees were associated with an increase in single family home values"
+https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
 
