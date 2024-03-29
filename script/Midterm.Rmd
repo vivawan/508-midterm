@@ -361,7 +361,8 @@ house <- house %>%
 ### crime
 
 - variable:
-1) average distance to the nearest 1/2/3/4/5 crimes (robbery and  assault only)
+1) count of crimes within a 1/8 mi
+2) average distance to the nearest 1/2/3/4/5 crimes (robbery and  assault only)
 
 - reference:"only robbery and aggravated assault crimes (per acre) exert a meaningful influence upon neighborhood housing values." https://sciencedirect.com/science/article/pii/S0166046210000086#aep-abstract-id3
 "The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
@@ -405,9 +406,28 @@ house <- house %>%
 # write.csv(crime_clean , here::here("data/processed/crime_clean.csv"), row.names = FALSE)
 
 # read the cleaned data set
-crime <- read.csv(here::here("data/processed/crime_clean.csv"))
+crime <- read.csv(here::here("data/processed/crime_clean.csv")) %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)%>%
+  st_transform(st_crs(house))
 
+# count of crime within 1/8 mi
+house$crime_c =
+    st_buffer(house, 660) %>%
+    aggregate(mutate(crime, counter = 1),., sum) %>%
+    pull(counter)
 
+# calculate the distance to the nearest 1/2/3/4/5 shopping center(s)
+house <-  house %>%
+      mutate(crime_dis1 = nn_function(st_coordinates(house),
+                                      st_coordinates(crime), k = 1),
+             crime_dis2 = nn_function(st_coordinates(house),
+                                      st_coordinates(crime), k = 2),
+             crime_dis3 = nn_function(st_coordinates(house),
+                                      st_coordinates(crime), k = 3),
+             crime_dis4 = nn_function(st_coordinates(house),
+                                      st_coordinates(crime), k = 4),
+             crime_dis5 = nn_function(st_coordinates(house),
+                                      st_coordinates(crime), k = 5))
 ```
 
 
@@ -435,8 +455,7 @@ crime <- read.csv(here::here("data/processed/crime_clean.csv"))
 ggplot() + 
     geom_sf(data = seattle, color = "grey90", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
-  geom_sf(data = park, fill = "green4")+
-  geom_sf(data = park_500ft, fill = "green")
+  geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
     #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
     #geom_sf(data = poi_commer, color = "red", size = 0.3, pch = 16) + 
     labs(title = "Seattle House Location") +  # Set plot title
