@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   cache = TRUE
   )
+options(scipen = 999)
 
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
@@ -33,10 +34,10 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
-
 ```
 
 # Introduction
+
 This report elaborate on the process of developing and refining a comprehensive predictive model that accurately forecasts housing prices for King County, Washington (Seattle).
 
 ???by integrating both structural and locational attributes. The model aims to discern how various housing characteristics, such as size, age, and amenities, along with locational factors, including proximity to services, neighborhood quality, and accessibility, collectively impact property values.
@@ -90,47 +91,47 @@ reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-inv
 ## Boundary and House Location
 
 ```{r Seattle_boundary}
-seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>% # Read Seattle boundary
+# read Seattle boundary
+seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
   st_union() %>%
   st_as_sf()
 
 ggplot() + 
-    geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # Add Seattle boundary
-    labs(title = "Seattle, King County") +  # Set plot title
+    geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # add Seattle boundary
+    labs(title = "Seattle, King County") +  # set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 ```{r house_location}
-# Import house data
-hh<- read_csv(here::here("data/raw/kc_house_data.csv")) # Read house data
+# import house data
+hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
-# Quick check of house data
+# quick check of house data
 str(hh)
 anyNA(hh$lat)
 anyNA(hh$long)
 
-# Create house location
+# create house location
 hh <- hh %>%
-  st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # Convert to sf object with specified CRS
-  st_transform(st_crs(seattle)) %>%  # Transform coordinate reference system to "Washington State Plane North"
-  distinct()  # Keep only distinct geometries
+  st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # convert to sf object with specified CRS
+  st_transform(st_crs(seattle)) %>%  # transform coordinate reference system to "Washington State Plane North"
+  distinct()  # keep only distinct geometries
 
 house <- hh %>%
   st_intersection(seattle)
 
-# Plot Seattle house location
+# plot Seattle house location
 ggplot() + 
-    geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # Add Seattle boundary
-    geom_sf(data = house, color = "#2166ac", size = 0.5, pch = 16) +  # Add house location
-    labs(title = "Seattle House Location") +  # Set plot title
+    geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # add Seattle boundary
+    geom_sf(data = house, color = "#2166ac", size = 0.5, pch = 16) +  # add house location
+    labs(title = "Seattle House Location") +  # set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 ## Internal Characteristics
 
-### 
 ```{r}
 
 
@@ -138,10 +139,52 @@ ggplot() +
 
 ## Socio-economic Characteristics
 
-###
-```{r}
+```{r load_key, results='hide'}
+census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
+```
 
+```{r load_variables}
+acs_variable_list.2015 <- load_variables(2015, # year
+                                         "acs5", # five year ACS estimates
+                                         cache = TRUE)
+```
 
+```{r acs_vars}
+acs_vars <- c("B01003_001E", # total population
+              "B01001A_001E", # white alone
+              "", #
+              "", # 
+              "B19013_001E", # median household income
+              "B23025_004E", # employed labor force
+              "B23025_003E", # total labor force
+              "B17020_002E") # income below poverty level
+```
+
+- Population density (continuous)
+- White population share (continuous)
+- Age structure (continuous + category)
+- Education level (continuous + category)
+- Median household income (continuous + dummy)
+- Employment rate (continuous)
+- Poverty rate (continuous + dummy)
+
+```{r get_acs_2015}
+acsTractsSeattle.2015 <- get_acs(geography = "tract",
+                             year = 2015, 
+                             variables = acs_vars,
+                             geometry = TRUE,
+                             state = "PA", 
+                             county = "Philadelphia",
+                             output = "wide") %>%
+  select (GEOID, NAME, all_of(acs_vars)) %>% 
+  rename (total_pop = B01003_001E,
+          white_pop = B01001A_001E,
+          
+          median_hh_income = B19013_001E,
+          total_labor = B23025_003E,
+          employ_labor = B23025_004E,
+          poverty = B17020_002E) %>%
+  mutate( )
 ```
 
 ## Amenities Characteristics
@@ -173,13 +216,16 @@ house <- house %>%
     sub_dis > 2640 & sub_dis <= 5280 ~ "0.5-1mile",
     sub_dis > 5280 ~ "1+mile"
   ))
-
 ```
 
 ### school district
+
 - variable: the name of the school district
+
 - reference: "the price differentials for similar homes — same square footage, number of bedrooms and baths — that are located near each other but served by different school districts can range from tens of thousands to hundreds of thousands of dollars." https://www.seattletimes.com/business/how-much-do-good-schools-boost-home-prices/  
+
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
+
 ```{r school}
 sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))%>%
   st_transform(st_crs(house))
@@ -191,11 +237,15 @@ house <- house %>%
 ```
 
 ### parks
+
 - variable: 
 1) area of parks within 500 feet radius
 2) count of parks within 500 feet radius
+
 - reference: "Most community-sized parks (~40 acres) had a substantial impact on home prices up to a distance of 500 to 600 feet. While the influence of larger parks extended out to 2,000 feet, beyond 500 feet the influence was relatively small." https://www.naturequant.com/blog/Impact-of-Parks-on-Property-Value/  
+
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
+
 ```{r park}
 park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))%>%
   st_transform(st_crs(house))%>%
@@ -217,11 +267,28 @@ house <- house %>%
 
 ```
 
-### Medical Facilities
+### water body
+
+### tree canopy
+
+- variable:
+
+- refernce:
+
+- source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
+
+```{r tree_canopy}
+
+```
+
+### medical facilities
+
 - variable: 
 1) average distance to the nearest 1/2/3 medical facilities
 2) categories based on distance (0-0.5/0.5-1/1+ mile)
+
 - reference: "hospitals would only be highly evaluated in a ‘close-but-not-too-close’ geographic location" https://www.researchgate.net/publication/282942128_The_non-linearity_of_hospitals'_proximity_on_property_prices_experiences_from_Taipei_Taiwan
+
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
 
 ```{r medical}
@@ -248,15 +315,18 @@ house <- house %>%
 ```
 
 ### commercial
+
 - variable:  
 1) average distance to the nearest 1/2/3 shops
 2) categories based on distance (0-0.5/0.5-1/1+ mile)
+
 - reference: 
 1) "an inverse relationship between the housing price and its distance from the shopping mall" https://www.diva-portal.org/smash/get/diva2:1450713/FULLTEXT01.pdf  
 2) "Notwithstanding the negative externalities of shopping centres, residential
 properties within 100-metre radius of shopping centres command a higher premium
 than those farther away although the price-distance relationship is not monotonic
 while the proximity factor varies from housing estate to housing estate." https://www.prres.org/uploads/746/1752/Addae-Dapaah_Shopping_Centres_Proximate_Residential_Properties.pdf
+
 - source:https://gis-kingcounty.opendata.arcgis.com/datasets/4fdb4709874b46cf8dbb284182ca0094_383/explore?showTable=true  
 Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb4709874b46cf8dbb284182ca0094/info/metadata/metadata.xml?format=default&output=html
 - 690 Shopping Centers
@@ -289,11 +359,15 @@ house <- house %>%
 ```
 
 ### crime
+
 - variable:
 1) average distance to the nearest 1/2/3/4/5 crimes (robbery and  assault only)
+
 - reference:"only robbery and aggravated assault crimes (per acre) exert a meaningful influence upon neighborhood housing values." https://sciencedirect.com/science/article/pii/S0166046210000086#aep-abstract-id3
 "The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
+
 - source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
+
 ```{r crime}
 #***To avoid rerunning the huge dataset***
 #crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
@@ -340,7 +414,6 @@ crime <- read.csv(here::here("data/processed/crime_clean.csv"))
 
 ## Spatial Structure
 
-###
 ```{r}
 
 ```
@@ -355,7 +428,8 @@ crime <- read.csv(here::here("data/processed/crime_clean.csv"))
 
 
 
-#plot reference
+# Plot Reference
+
 ```{r}
 # Plot Seattle house location
 ggplot() + 
@@ -369,10 +443,5 @@ ggplot() +
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
-
-
-
-```
-
 
 
