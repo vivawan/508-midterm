@@ -132,16 +132,12 @@ ggplot() +
 
 ## Internal Characteristics
 
-###
-
 ```{r}
 
 
 ```
 
 ## Socio-economic Characteristics
-
-### census API key
 
 ```{r load_key, results='hide'}
 census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
@@ -154,12 +150,41 @@ acs_variable_list.2015 <- load_variables(2015, # year
 ```
 
 ```{r acs_vars}
-acs_vars <- c("B01001_001E", # ACS total Pop estimate
-              "B25002_001E", # Estimate of total housing units
-              "B25002_003E", # Number of vacant housing units
-              "B19013_001E", # Median HH Income ($)
-              "B02001_002E", # People describing themselves as "white alone"
-              "B06009_006E") # Total graduate or professional degree
+acs_vars <- c("B01003_001E", # total population
+              "B01001A_001E", # white alone
+              "", #
+              "", # 
+              "B19013_001E", # median household income
+              "B23025_004E", # employed labor force
+              "B23025_003E", # total labor force
+              "B17020_002E") # income below poverty level
+```
+
+- Population density (continuous)
+- White population share (continuous)
+- Age structure (continuous + category)
+- Education level (continuous + category)
+- Median household income (continuous + dummy)
+- Employment rate (continuous)
+- Poverty rate (continuous + dummy)
+
+```{r get_acs_2015}
+acsTractsSeattle.2015 <- get_acs(geography = "tract",
+                             year = 2015, 
+                             variables = acs_vars,
+                             geometry = TRUE,
+                             state = "PA", 
+                             county = "Philadelphia",
+                             output = "wide") %>%
+  select (GEOID, NAME, all_of(acs_vars)) %>% 
+  rename (total_pop = B01003_001E,
+          white_pop = B01001A_001E,
+          
+          median_hh_income = B19013_001E,
+          total_labor = B23025_003E,
+          employ_labor = B23025_004E,
+          poverty = B17020_002E) %>%
+  mutate( )
 ```
 
 ## Amenities Services
