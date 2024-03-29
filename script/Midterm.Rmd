@@ -273,7 +273,7 @@ house <- house %>%
 
 - variable:
 
-- refernce:
+- reference:
 
 - source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
 
