@@ -220,18 +220,18 @@ acsTractsSeattle.2015 <- get_acs(geography = "tract",
                                (pop_under14 + pop_over65)) * 100, digits = 2),
          elder_dep = round(pop_over65 / (total_pop - (pop_under14 + pop_over65)) * 100, digits = 2),
          bach_share = round(ifelse(edu_attain > 0, edu_bach/edu_attain, 0) * 100, digits = 2),
-         bach_cat = ifelse(bach_share > mean(acsTractsSeattle.2015$bach_share,
+         bach_dum = ifelse(bach_share > mean(acsTractsSeattle.2015$bach_share,
                                                         na.rm = TRUE), "above", "below"),
-         median_hh_cat = ifelse(median_hh_income > mean(acsTractsSeattle.2015$median_hh_income,
+         median_hh_dum = ifelse(median_hh_income > mean(acsTractsSeattle.2015$median_hh_income,
                                                         na.rm = TRUE), "above", "below"),
          employ_rate = round(ifelse(total_labor > 0, employ_labor / total_labor, 0) * 100, digits = 2),
-         employ_cat = ifelse(employ_rate > mean(acsTractsSeattle.2015$employ_rate,
+         employ_dum = ifelse(employ_rate > mean(acsTractsSeattle.2015$employ_rate,
                                                         na.rm = TRUE), "above", "below"),
          pover_rate = round(ifelse(total_pop > 0, poverty / total_pop, 0) * 100, digits = 2),
-         pover_cat = ifelse(pover_rate > mean(acsTractsSeattle.2015$pover_rate,
+         pover_dum = ifelse(pover_rate > mean(acsTractsSeattle.2015$pover_rate,
                                                         na.rm = TRUE), "above", "below")) %>%
-  select(GEOID, NAME, pop_den, white_share, total_dep, elder_dep, bach_share, bach_cat, median_hh_income,
-         median_hh_cat, employ_rate, employ_cat, pover_rate, pover_cat)
+  select(GEOID, NAME, pop_den, white_share, total_dep, elder_dep, bach_share, bach_dum, median_hh_income,
+         median_hh_dum, employ_rate, employ_dum, pover_rate, pover_dum)
 
 house <- house %>%
   st_join(., acsTractsSeattle.2015)
@@ -318,13 +318,20 @@ house <- house %>%
 ### tree canopy
 
 - variable:
+1) percent of existing tree canopy (2016, hexagons)
 
 - reference:
 
 - source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
 
 ```{r tree_canopy}
+tree_canopy_2016 <- st_read(here::here("data/raw/Amenities/Tree_Canopy.geojson"))%>%
+  st_transform(st_crs(house)) %>%
+  mutate(tree_canopy = round(TreeCanopy_2016_Percent, digits = 2)) %>%
+  select(tree_canopy)
 
+house <- house %>%
+  st_join(., tree_canopy_2016)
 ```
 
 ### medical facilities
@@ -387,7 +394,7 @@ mark_shop <- mark%>%
   filter(CODE == 690)
 
 # calculate the distance to the nearest 1/2/3 shopping center(s) 
-house <-  house %>%
+house <- house %>%
       mutate(shop_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(mark_shop), k = 1),
              shop_dis2 = nn_function(st_coordinates(house),
