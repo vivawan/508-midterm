@@ -64,10 +64,10 @@ This report elaborate on the process of developing and refining a comprehensive 
 **2. Socio-economic Characteristics**
 - Population density (continuous)
 - White population share (continuous)
-- Age structure (continuous + category)
-- Education level (continuous + category)
+- Age structure (continuous)
+- Education level (continuous + dummy)
 - Median household income (continuous + dummy)
-- Employment rate (continuous)
+- Employment rate (continuous + dummy)
 - Poverty rate (continuous + dummy)
 
 
@@ -246,39 +246,84 @@ acs_variable_list.2015 <- load_variables(2015, # year
 ```{r acs_vars}
 acs_vars <- c("B01003_001E", # total population
               "B01001A_001E", # white alone
-              "", #
-              "", # 
+              "B01001_003E", # male under 5
+              "B01001_004E", # male 5-9
+              "B01001_005E", # male 10-14
+              "B01001_020E", # male 65-66
+              "B01001_021E", # male 67-69
+              "B01001_022E", # male 70-74
+              "B01001_023E", # male 75-79
+              "B01001_024E", # male 80-84
+              "B01001_025E", # male over 85
+              "B01001_027E", # female under 5
+              "B01001_028E", # female 5-9
+              "B01001_029E", # female 10-14
+              "B01001_044E", # female 65-66
+              "B01001_045E", # female 67-69
+              "B01001_046E", # female 70-74
+              "B01001_047E", # female 75-79
+              "B01001_048E", # female 80-84
+              "B01001_049E", # female over 85
+              "B15003_001E", # educational attainment over 25
+              "B15003_022E", # bachelor's degree
               "B19013_001E", # median household income
               "B23025_004E", # employed labor force
               "B23025_003E", # total labor force
               "B17020_002E") # income below poverty level
 ```
 
-- Population density (continuous)
-- White population share (continuous)
-- Age structure (continuous + category)
-- Education level (continuous + category)
-- Median household income (continuous + dummy)
-- Employment rate (continuous)
-- Poverty rate (continuous + dummy)
+- age structure
+- reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
+
+- education level
+- reference: "The findings show that higher education does have a positive relationship to the house prices in Sweden."
+https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
 
 ```{r get_acs_2015}
 acsTractsSeattle.2015 <- get_acs(geography = "tract",
                              year = 2015, 
                              variables = acs_vars,
                              geometry = TRUE,
-                             state = "PA", 
-                             county = "Philadelphia",
+                             state = "Washington", 
+                             county = "King",
                              output = "wide") %>%
-  select (GEOID, NAME, all_of(acs_vars)) %>% 
-  rename (total_pop = B01003_001E,
+  st_transform(st_crs(seattle)) %>%
+  select(GEOID, NAME, all_of(acs_vars)) %>%
+  rename(total_pop = B01003_001E,
           white_pop = B01001A_001E,
-          
+          edu_bach = B15003_022E,
+          edu_attain = B15003_001E,
           median_hh_income = B19013_001E,
           total_labor = B23025_003E,
           employ_labor = B23025_004E,
           poverty = B17020_002E) %>%
-  mutate( )
+  mutate(area = st_area(.)) %>%
+  mutate(pop_den = ifelse(as.numeric(area) > 0, total_pop / area, 0),
+         white_share = round(ifelse(total_pop > 0, white_pop / total_pop, 0) * 100, digits = 2),
+         pop_under14 = B01001_003E + B01001_004E + B01001_005E + B01001_027E +
+            B01001_028E + B01001_029E,
+         pop_over65 = B01001_020E + B01001_021E + B01001_022E + B01001_023E +
+            B01001_024E + B01001_025E + B01001_044E + B01001_045E + B01001_046E +
+            B01001_047E + B01001_048E + B01001_049E,
+         total_dep = round((pop_under14 + pop_over65) / (total_pop -
+                               (pop_under14 + pop_over65)) * 100, digits = 2),
+         elder_dep = round(pop_over65 / (total_pop - (pop_under14 + pop_over65)) * 100, digits = 2),
+         bach_share = round(ifelse(edu_attain > 0, edu_bach/edu_attain, 0) * 100, digits = 2),
+         bach_cat = ifelse(bach_share > mean(acsTractsSeattle.2015$bach_share,
+                                                        na.rm = TRUE), "above", "below"),
+         median_hh_cat = ifelse(median_hh_income > mean(acsTractsSeattle.2015$median_hh_income,
+                                                        na.rm = TRUE), "above", "below"),
+         employ_rate = round(ifelse(total_labor > 0, employ_labor / total_labor, 0) * 100, digits = 2),
+         employ_cat = ifelse(employ_rate > mean(acsTractsSeattle.2015$employ_rate,
+                                                        na.rm = TRUE), "above", "below"),
+         pover_rate = round(ifelse(total_pop > 0, poverty / total_pop, 0) * 100, digits = 2),
+         pover_cat = ifelse(pover_rate > mean(acsTractsSeattle.2015$pover_rate,
+                                                        na.rm = TRUE), "above", "below")) %>%
+  select(GEOID, NAME, pop_den, white_share, total_dep, elder_dep, bach_share, bach_cat, median_hh_income,
+         median_hh_cat, employ_rate, employ_cat, pover_rate, pover_cat)
+
+house <- house %>%
+  st_join(., acsTractsSeattle.2015)
 ```
 
 ## Amenities Characteristics
@@ -357,10 +402,7 @@ house <- house %>%
                 st_drop_geometry()%>%
                 select(key,park_c, sum_park_area), by = "key")%>%
   rename(parks_area = "sum_park_area")
-
 ```
-
-### water body
 
 ### tree canopy
 
