@@ -153,6 +153,7 @@ ggplot() +
 2) categories based on distance (0-0.5/0.5-1/1+ mile) (0.5mile = 2640ft)  
 
 - reference: "houses within a quarter mile to a half mile of a Metro station sold for 7.5% more, and houses within a half mile to a mile sold for 3.9% more." https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.
+
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
 
 ```{r subway}
@@ -160,16 +161,18 @@ ggplot() +
 sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))%>%
   st_transform(st_crs(house))
 
-# counts of station within half a mile
-house$sub_c <- house %>% 
-    st_buffer(2640) %>% 
-    aggregate(mutate(sub%>%select(geometry), counter = 1),., sum) %>%
-    pull(counter)
-
-# calculate the distance to the nearest station 
+# the distance to the nearest station 
 house <-  house %>%
       mutate(sub_dis = nn_function(st_coordinates(house),
                                       st_coordinates(sub), k = 1))
+
+# categories based on distance
+house <- house %>%
+  mutate(sub_cat = case_when(
+    sub_dis <= 2640 ~ "within0.5mile",
+    sub_dis > 2640 & sub_dis <= 5280 ~ "0.5-1mile",
+    sub_dis > 5280 ~ "1+mile"
+  ))
 
 ```
 
@@ -187,9 +190,8 @@ house <- house %>%
   rename(sch = "DIRDST")
 ```
 
-
 ### parks
-???- variable: 
+- variable: 
 1) area of parks within 500 feet radius
 2) count of parks within 500 feet radius
 - reference: "Most community-sized parks (~40 acres) had a substantial impact on home prices up to a distance of 500 to 600 feet. While the influence of larger parks extended out to 2,000 feet, beyond 500 feet the influence was relatively small." https://www.naturequant.com/blog/Impact-of-Parks-on-Property-Value/  
@@ -197,18 +199,21 @@ house <- house %>%
 ```{r park}
 park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))%>%
   st_transform(st_crs(house))%>%
-  st_intersection(seattle)
+  st_intersection(seattle)%>%
+  mutate(park_area = st_area(.))
+  
+# area and count of parks within 500 feet
 
-#make a buffer around each house
-house_buff <- st_buffer(x = house, dist = 500)
+house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
+  group_by(id) %>% 
+  summarise(park_c = n_distinct(SITENAME, na.rm = TRUE),
+            sum_park_area = sum(park_area, na.rm = TRUE))
 
-# clip park within buffers and calculate area
-park_500ft <- st_intersection(park, house_buff)%>%
-  mutate(park_area = st_area(.)) 
-
-# add area column
 house <- house %>% 
-    left_join(park_500ft %>% st_drop_geometry() %>% select(id, park_area), by = "id")
+    left_join(house_parks%>%
+                st_drop_geometry()%>%
+                select(id,park_c, sum_park_area), by = "id")%>%
+  rename(park_area = "sum_park_area")
 
 ```
 
@@ -226,14 +231,25 @@ med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospi
 
 # calculate the distance to the nearest medical facilities 
 house <-  house %>%
-      mutate(med_dis = nn_function(st_coordinates(house),
-                                      st_coordinates(med), k = 1))
+      mutate(med_dis1 = nn_function(st_coordinates(house),
+                                      st_coordinates(med), k = 1),
+             med_dis2 = nn_function(st_coordinates(house),
+                                      st_coordinates(med), k = 2),
+             med_dis3 = nn_function(st_coordinates(house),
+                                      st_coordinates(med), k = 3))
 
+# categories based on distance
+house <- house %>%
+  mutate(med_cat = case_when(
+    med_dis1 <= 2640 ~ "within0.5mile",
+    med_dis1 > 2640 & med_dis1 <= 5280 ~ "0.5-1mile",
+    med_dis1 > 5280 ~ "1+mile"
+  ))
 ```
 
 ### commercial
 - variable:  
-1) average distance to the nearest 1/2/3 medical facilities
+1) average distance to the nearest 1/2/3 shops
 2) categories based on distance (0-0.5/0.5-1/1+ mile)
 - reference: 
 1) "an inverse relationship between the housing price and its distance from the shopping mall" https://www.diva-portal.org/smash/get/diva2:1450713/FULLTEXT01.pdf  
@@ -254,24 +270,70 @@ mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_p
 mark_shop <- mark%>%
   filter(CODE == 690)
 
-# counts of shopping center within half a mile
-house$shop_c <- house %>% 
-    st_buffer(2640) %>% 
-    aggregate(mutate(mark_shop%>%select(geometry), counter = 1),., sum) %>%
-    pull(counter)
-
-# calculate the distance to the nearest shopping center 
+# calculate the distance to the nearest 1/2/3 shopping center(s) 
 house <-  house %>%
-      mutate(shop_dis = nn_function(st_coordinates(house),
-                                      st_coordinates(mark_shop), k = 1))
+      mutate(shop_dis1 = nn_function(st_coordinates(house),
+                                      st_coordinates(mark_shop), k = 1),
+             shop_dis2 = nn_function(st_coordinates(house),
+                                      st_coordinates(mark_shop), k = 2),
+             shop_dis3 = nn_function(st_coordinates(house),
+                                      st_coordinates(mark_shop), k = 3))
+
+# categories based on distance
+house <- house %>%
+  mutate(shop_cat = case_when(
+    shop_dis1 <= 2640 ~ "within0.5mile",
+    shop_dis1 > 2640 & shop_dis1 <= 5280 ~ "0.5-1mile",
+    shop_dis1 > 5280 ~ "1+mile"
+  ))
 ```
 
 ### crime
 - variable:
-1) average distance to the nearest 1/2/3/4/5 crimes
-- reference:
-- source:
+1) average distance to the nearest 1/2/3/4/5 crimes (robbery and  assault only)
+- reference:"only robbery and aggravated assault crimes (per acre) exert a meaningful influence upon neighborhood housing values." https://sciencedirect.com/science/article/pii/S0166046210000086#aep-abstract-id3
+"The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
+- source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
 ```{r crime}
+#***To avoid rerun the huge dataset***
+#crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
+
+# get the target crime
+# crime_clean <- crime %>%
+#   mutate(year = str_sub(Report.Number, 1, 4)) %>%
+#   filter(year %in% c("2013", "2014", "2015") )%>% #choose those before and in 2015
+#   filter(!Offense %in% c(
+#     "Bad Checks",
+#     "Bribery",
+#     "Embezzlement",
+#     "Extortion/Blackmail",
+#     "Credit Card/Automated Teller Machine Fraud",
+#     "False Pretenses/Swindle/Confidence Game",
+#     "Identity Theft",
+#     "Impersonation",
+#     "Welfare Fraud",
+#     "Wire Fraud",
+#     "Curfew/Loitering/Vagrancy Violations",
+#     "Driving Under the Influence",
+#     "Drug Equipment Violations",
+#     "Drug/Narcotic Violations",
+#     "Betting/Wagering",
+#     "Gambling Equipment Violation",
+#     "Operating/Promoting/Assisting Gambling",
+#     "Liquor Law Violations",
+#     "Pornography/Obscene Material",
+#     "Assisting or Promoting Prostitution",
+#     "Prostitution",
+#     "Weapon Law Violations"
+#   ))%>% #exclude those with little impact on housing price e.g.Financial Crimes, Public Order Offenses
+#   filter(Longitude != 0 & Latitude != 0)# select the valid ones
+# 
+# write.csv(crime_clean , here::here("data/processed/crime_clean.csv"), row.names = FALSE)
+
+# read the cleaned dataset
+crime <- read.csv(here::here("data/processed/crime_clean.csv"))
+
+
 
 ```
 
