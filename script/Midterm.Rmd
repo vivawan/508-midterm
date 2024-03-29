@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   cache = TRUE
   )
+options(scipen = 999)
 
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
@@ -33,13 +34,13 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
-
 ```
 
 # Introduction
+
 This report elaborate on the process of developing and refining a comprehensive predictive model that accurately forecasts housing prices for King County, Washington (Seattle).
 
-???by integrating both structural and locational attributes. The model aims to discern how various housing characteristics, such as size, age, and amenities, along with locational factors, including proximity to services, neighborhood quality, and accessibility, collectively impact property values.
+???by integrating both structural and locational attributes. The model aims to discern how various housing characteristics, such as size, age, and amenities, along with location factors, including proximity to services, neighborhood quality, and accessibility, collectively impact property values.
 
 # Main Steps
 
@@ -90,47 +91,49 @@ reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-inv
 ## Boundary and House Location
 
 ```{r Seattle_boundary}
-seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>% # Read Seattle boundary
+# read Seattle boundary
+seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
   st_union() %>%
   st_as_sf()
 
 ggplot() + 
-    geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # Add Seattle boundary
-    labs(title = "Seattle, King County") +  # Set plot title
+    geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # add Seattle boundary
+    labs(title = "Seattle, King County") +  # set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 ```{r house_location}
-# Import house data
-hh<- read_csv(here::here("data/raw/kc_house_data.csv")) # Read house data
+# import house data
+hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
-# Quick check of house data
+# quick check of house data
 str(hh)
 anyNA(hh$lat)
 anyNA(hh$long)
 
-# Create house location
+# create house location
 hh <- hh %>%
-  st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # Convert to sf object with specified CRS
-  st_transform(st_crs(seattle)) %>%  # Transform coordinate reference system to "Washington State Plane North"
-  distinct()  # Keep only distinct geometries
+  st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # convert to sf object with specified CRS
+  st_transform(st_crs(seattle)) %>%  # transform coordinate reference system to "Washington State Plane North"
+  distinct()  # keep only distinct geometries
 
 house <- hh %>%
   st_intersection(seattle)
 
-# Plot Seattle house location
+# plot Seattle house location
 ggplot() + 
-    geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # Add Seattle boundary
-    geom_sf(data = house, color = "#2166ac", size = 0.5, pch = 16) +  # Add house location
-    labs(title = "Seattle House Location") +  # Set plot title
+    geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # add Seattle boundary
+    geom_sf(data = house, color = "#2166ac", size = 0.5, pch = 16) +  # add house location
+    labs(title = "Seattle House Location") +  # set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 ## Internal Characteristics
 
-### 
+###
+
 ```{r}
 
 
@@ -138,13 +141,28 @@ ggplot() +
 
 ## Socio-economic Characteristics
 
-###
-```{r}
+### census API key
 
-
+```{r load_key, results='hide'}
+census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
 ```
 
-## Amenities Characteristics
+```{r load_variables}
+acs_variable_list.2015 <- load_variables(2015, # year
+                                         "acs5", # five year ACS estimates
+                                         cache = TRUE)
+```
+
+```{r acs_vars}
+acs_vars <- c("B01001_001E", # ACS total Pop estimate
+              "B25002_001E", # Estimate of total housing units
+              "B25002_003E", # Number of vacant housing units
+              "B19013_001E", # Median HH Income ($)
+              "B02001_002E", # People describing themselves as "white alone"
+              "B06009_006E") # Total graduate or professional degree
+```
+
+## Amenities Services
 
 ### subway station
 
@@ -156,7 +174,7 @@ ggplot() +
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
 
 ```{r subway}
-#read station point data
+# read station point data
 sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))%>%
   st_transform(st_crs(house))
 
@@ -174,6 +192,7 @@ house <-  house %>%
 ```
 
 ### school district
+
 - variable: the name of the school district
 - reference: "the price differentials for similar homes — same square footage, number of bedrooms and baths — that are located near each other but served by different school districts can range from tens of thousands to hundreds of thousands of dollars." https://www.seattletimes.com/business/how-much-do-good-schools-boost-home-prices/  
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
@@ -189,6 +208,7 @@ house <- house %>%
 
 
 ### parks
+
 ???- variable: 
 1) area of parks within 500 feet radius
 2) count of parks within 500 feet radius
@@ -199,7 +219,7 @@ park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.ge
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-#make a buffer around each house
+# make a buffer around each house
 house_buff <- st_buffer(x = house, dist = 500)
 
 # clip park within buffers and calculate area
@@ -212,7 +232,8 @@ house <- house %>%
 
 ```
 
-### Medical Facilities
+### medical facilities
+
 - variable: 
 1) average distance to the nearest 1/2/3 medical facilities
 2) categories based on distance (0-0.5/0.5-1/1+ mile)
@@ -232,6 +253,7 @@ house <-  house %>%
 ```
 
 ### commercial
+
 - variable:  
 1) average distance to the nearest 1/2/3 medical facilities
 2) categories based on distance (0-0.5/0.5-1/1+ mile)
@@ -250,7 +272,7 @@ mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_p
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-#select shopping center
+# select shopping center
 mark_shop <- mark%>%
   filter(CODE == 690)
 
@@ -267,10 +289,12 @@ house <-  house %>%
 ```
 
 ### crime
+
 - variable:
 1) average distance to the nearest 1/2/3/4/5 crimes
 - reference:
 - source:
+
 ```{r crime}
 
 ```
@@ -294,24 +318,22 @@ house <-  house %>%
 
 
 
-#plot reference
+# Plot Reference
+
 ```{r}
-# Plot Seattle house location
+# plot Seattle house location
 ggplot() + 
     geom_sf(data = seattle, color = "grey90", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
   geom_sf(data = park, fill = "green4")+
   geom_sf(data = park_500ft, fill = "green")
-    #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
-    #geom_sf(data = poi_commer, color = "red", size = 0.3, pch = 16) + 
+    # geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
+    # geom_sf(data = poi_commer, color = "red", size = 0.3, pch = 16) + 
     labs(title = "Seattle House Location") +  # Set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-
-
-```
 
 
 
