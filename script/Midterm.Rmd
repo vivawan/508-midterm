@@ -139,8 +139,6 @@ hh <- hh %>%
 
 ## Internal Characteristics
 
-### clean data
-
 ```{r internal, message = FALSE, warning = FALSE}
 summary(hh)
 
@@ -161,14 +159,17 @@ house %>%
   summarize(price_m = mean(price))%>%
   ggplot(aes(x = bed.factor, y = price_m)) +
   geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-9,11+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-7,8+
+# group by mean
 house <- house %>%
   mutate(bed_cat = factor(case_when(
     bedrooms <=3 ~ "few",
-    bedrooms >3 | bedrooms <= 9 ~ "medium",
-    bedrooms >9 ~ "many"
+    bedrooms >3 & bedrooms <= 7 ~ "medium",
+    bedrooms >=8 ~ "many"
   )))%>%
   select(-bed.factor)
+# check the numbers of each category
+table(house$bed_cat)
 
 # bathroom category
 house$bath.factor <- factor(house$bathrooms, levels =sort(unique(house$bathrooms)))
@@ -178,14 +179,15 @@ house %>%
   summarize(price_m = mean(price))%>%
   ggplot(aes(x = bath.factor, y = price_m)) +
   geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0, 0.5-4, 4+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-4, 4+
 house <- house %>%
-  mutate(bath_cat = factor(case_when(
-    bathrooms == 0 ~ "no",
-    bathrooms >0 | bedrooms <= 4 ~ "few",
+  mutate(bath_dum = factor(case_when(
+    bathrooms <= 4 ~ "few",
     bathrooms > 4 ~ "many"
   )))%>%
   select(-bath.factor)
+# check the numbers of each category
+table(house$bath_dum)
 
 # floor category
 house$floor.factor <- factor(house$floors, levels =sort(unique(house$floors)))
@@ -202,28 +204,33 @@ house <- house %>%
     floors %in% c(2.5, 3.5) ~ "irregular"
   )))%>%
   select(-floor.factor)
+# check the numbers of each category
+table(house$floor_cat)
+
+#reclassify
+house <- house%>%
+  mutate(grade_dum = ifelse(grade <= 9, "low","high"))
+
+#other category variables
+colnames(house)
+str(house)
+house %>% 
+  st_drop_geometry()%>%
+  dplyr::select(price, reno_dum, bed_cat, bath_dum,floor_cat,
+                water_dum,view_cat,condition_cat, grade_dum) %>%
+  gather(Variable, Value, -price) %>% 
+   ggplot(aes(Value, price)) +
+     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
+     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
+     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # select variables
 house <- house %>%
   select("key", "price","year_used","reno_dum",
-         "bedrooms", "bed_cat", "bathrooms", "bath_cat",
+         "bedrooms", "bed_cat", "bathrooms", "bath_dum",
          "sqft_living", "sqft_lot", "floor_cat",
-         "water_dum", "view_cat", "condition_cat", "grade_cat")
-```
-
-```{r internal category}
-house %>% 
-  dplyr::select(price, bed_cat, bath_cat, water_dum, OWN_OCC, NUM_FLOORS) %>%
-  mutate(NUM_FLOORS = as.factor(NUM_FLOORS)) %>%
-  filter(SalePrice <= 1000000) %>%
-  gather(Variable, Value, -SalePrice) %>% 
-   ggplot(aes(Value, SalePrice)) +
-     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 1, scales = "free") +
-     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
-     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
+         "water_dum", "view_cat", "condition_cat", "grade_dum")
 ```
 
 ## Socio-economic Characteristics
@@ -392,7 +399,7 @@ sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Dist
 # add the school district variable
 house <- house %>% 
   st_join(sch%>%select(DIRDST), join = st_within)%>%
-  rename(sch = "DIRDST")
+  rename(sch_cat = "DIRDST")
 ```
 
 ### parks
@@ -414,13 +421,13 @@ park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.ge
 # area and count of parks within 500 feet
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
   group_by(key) %>% 
-  summarise(park_c = n_distinct(SITENAME, na.rm = TRUE),
+  summarise(park_cat = n_distinct(SITENAME, na.rm = TRUE),
             sum_park_area = sum(park_area, na.rm = TRUE))
 
 house <- house %>% 
     left_join(house_parks%>%
                 st_drop_geometry()%>%
-                select(key,park_c, sum_park_area), by = "key")%>%
+                select(key,park_cat, sum_park_area), by = "key")%>%
   rename(parks_area = "sum_park_area")
 ```
 
@@ -591,6 +598,25 @@ house <-  house %>%
                                       st_coordinates(crime), k = 4),
              crime_dis5 = nn_function(st_coordinates(house),
                                       st_coordinates(crime), k = 5))
+```
+
+### inspect categories
+
+```{r amenities category}
+#plot all the mean of category variable
+house %>% 
+  st_drop_geometry()%>%
+  dplyr::select(price ,sub_cat, park_cat, med_cat,shop_cat,sch_cat) %>%
+  gather(Variable, Value, -price) %>% 
+   ggplot(aes(Value, price)) +
+     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
+     facet_wrap(~Variable, ncol = 2, scales = "free") +
+     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
+     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#-> med_cat not useful
+
+house <- house %>%
+  select(-med_cat)
 ```
 
 ## Spatial Structure
