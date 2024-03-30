@@ -709,7 +709,6 @@ ggplot() +
 ```{r correlation}
 house %>%
   st_drop_geometry() %>%
-  select(-key)%>%
   pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
   ggplot(aes(x = value)) +
   geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
@@ -739,20 +738,91 @@ inTrain <- createDataPartition(
                         house$water_dum, house$view_cat, house$condition_cat, house$grade_dum,
                         house$bach_dum, house$median_hh_dum, house$employ_dum, house$pover_dum,
                         house$sub_cat, house$sch_cat, house$park_cat, house$shop_cat,
-                        house$S_NAME), 
+                        house$L_NAME, house$S_NAME, house$T_NAME), 
               p = .70, list = FALSE)  # create a vector for the training set (70%)
 
 # subset the dataset to create the training set
-seattle.training <- house[inTrain,]  # training set
+seattle.train <- house[inTrain,] # training set
 
-# subset the dataset to create the test set
-seattle.test <- house[-inTrain,]     # test set
+# subset the dataset to create the testing set
+seattle.test <- house[-inTrain,] # testing set
 ```
 
 ## Build Multiple Linear Regression Model
+
 ```{r lm}
-lm1 <- lm(price ~ ., data = seattle.training)
+# ignore neighborhood effect first
+seattle.train <- seattle.train %>%
+  select(-L_NAME, -S_NAME, -T_NAME)
+
+lm1 <- lm(price ~ ., data = seattle.train)
 summary(lm1)
+vif(lm1)
+
+# shop_dis
+lm2 <- lm(price ~ .-shop_dis2-shop_dis3, data = seattle.train)
+summary(lm2)
+vif(lm2)
+
+seattle.train <- seattle.train %>%
+  select(-shop_dis2, -shop_dis3)
+
+# med_dis
+lm3 <- lm(price ~ .-med_dis1-med_dis2, data = seattle.train)
+summary(lm3)
+vif(lm3)
+
+seattle.train <- seattle.train %>%
+  select(-med_dis1, -med_dis2)
+
+# crime_dis
+lm4 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5, data = seattle.train)
+summary(lm4)
+vif(lm4)
+
+seattle.train <- seattle.train %>%
+  select(-crime_dis2, -crime_dis3, -crime_dis4, -crime_dis5)
+cor(seattle.train%>%select(year_used, bedrooms, bathrooms, sqft_living,
+                               sqft_lot, pop_den, white_share, total_dep,
+                               elder_dep, bach_share, median_hh_income, employ_rate,
+                               pover_rate, sub_dis, parks_area, tree_canopy, med_dis3,
+                               shop_dis1, crime_c, crime_dis1))
+
+# sub_dis & sub_cat
+lm5 <- lm(price ~ .-sub_cat, data = seattle.train)
+summary(lm5)
+vif(lm5)
+
+seattle.train <- seattle.train %>%
+  select(-sub_cat)
+
+# crime_c & crime_dis
+lm6 <- lm(price ~ .-crime_dis1, data = seattle.train)
+summary(lm6)
+vif(lm6)
+
+seattle.train <- seattle.train %>%
+  select(-crime_dis1)
+
+# shop_dis & shop_cat
+lm7 <- lm(price ~ .-shop_cat, data = seattle.train)
+summary(lm7)
+vif(lm7)
+
+seattle.train <- seattle.train %>%
+  select(-shop_cat)
+
+# parks_area & park_cat
+lm8 <- lm(price ~ .-parks_area, data = seattle.train)
+summary(lm8)
+vif(lm8)
+
+seattle.train <- seattle.train %>%
+  select(-parks_area)
+
+#
+
+
 ```
 
 
