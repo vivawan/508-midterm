@@ -776,27 +776,6 @@ house %>%
 
 ```
 
-
-## Mapping
-
-```{r price_map}
-palette5 <- brewer.pal(5, "YlGnBu")
-
-# ggplot, reorder
-boston.sf$quintiles <- ntile(boston.sf$PricePerSq, 5)
-
-# mapping data
-ggplot() +
-  geom_sf(data = nhoods, fill = "lightgrey", col = "white") +
-  geom_sf(data = boston.sf, aes(colour = q5(PricePerSq)), 
-          show.legend = "point", size = .75) +
-  scale_colour_manual(values = palette5,
-                   labels=qBr(boston,"PricePerSq"),
-                   name="Quintile\nBreaks") +
-  labs(title="Price Per Square Foot, Boston") +
-  theme_void()
-```
-
 ## Four Home Price Correlation Scatterplots
 
 ### Living Area Square Feet
@@ -835,15 +814,60 @@ ggplot(house) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-### Living Area Square Feet
+### Crime Count within 1/8 mile of Each House
 
-```{r sqft_living}
+```{r crime_c}
 ggplot(house) +
   geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 2) +
-  labs(title = "Seattle House Price vs. Living Area Square Feet",
-       x = "Living Sqft",
+  labs(title = "Seattle House Price vs. Crime Count within 1/8 mile of Each House",
+       x = "Crime Count",
        y = "House Price") +
   theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+## Map of the Dependent Variable (House Price)
+
+```{r house_price}
+# quantile break and color palette
+breaks_quantiles <- classIntervals(house$price, n = 5, style = "quantile")
+colors <- brewer.pal(n = 5, name = "YlOrRd")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+
+# plot house price
+ggplot() +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+          aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+  scale_color_manual(values = colors,
+                    labels = labels,
+                    name = "House Price (Quantile)") +
+  labs(title = "House Price in Seattle, 2015") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+## Three Maps of Independent Variables
+
+```{r sqft_lot}
+# quantile break and color palette
+breaks_quantiles <- classIntervals(house$sqft_lot, n = 5, style = "quantile")
+colors <- brewer.pal(n = 5, name = "YlOrRd")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+
+ggplot() +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+          aes(color = cut(sqft_lot, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+  scale_color_manual(values = colors,
+                    labels = labels,
+                    name = "Taxi Trips (Quantile)") +
+  labs(title = "Taxi Trips by Census Tract in Philadelphia, 2017") +
+  theme_void() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
@@ -1250,6 +1274,13 @@ seattle.neigh.cv <-
      method = "lm", trControl = fitControl, na.action = na.pass)
 
 seattle.neigh.cv
+
+lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
+                 floor_cat + water_dum + view_cat + condition_cat + grade_dum +
+                 white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
+                 T_NAME, data = house_lm)
+summary(lm.final)
+plot(lm.final)
 ```
 
 
