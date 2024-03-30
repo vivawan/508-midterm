@@ -25,9 +25,10 @@ knitr::opts_chunk$set(
 options(scipen = 999)
 
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
-       patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer, car,
-       FNN, GGally, MASS, ISLR2)
+p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, janitor, classInt,
+       patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer,
+       car, FNN, GGally, MASS, ISLR2, spdep, caret, ckanr, grid, gridExtra, ggcorrplot,
+       jtools, broom, tufte, rmarkdown)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -222,7 +223,7 @@ house %>%
    ggplot(aes(Value, price)) +
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
      facet_wrap(~Variable, ncol = 4, scales = "free") +
-     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
+     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # select variables
@@ -656,15 +657,11 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 house <- house %>%
   st_join(., neigh_large) %>%
   st_join(., neigh_small) %>%
-  st_join(., neigh_tract) %>%
-  select(-GEOID, -NAME) %>%
-  st_drop_geometry()
+  st_join(., neigh_tract)
 ```
 
 
 # Data Description
-
-## 
 
 ## Summary Table
 
@@ -684,16 +681,18 @@ taxi_summary <- taxi_dat %>%
   pivot_wider(names_from = statistic, values_from = value)
 
 # categorical variables
+
 ```
 
-## mapping
+## Mapping
+
 ```{r price_map}
 palette5 <- brewer.pal(5, "YlGnBu")
 
 # ggplot, reorder
 boston.sf$quintiles <- ntile(boston.sf$PricePerSq, 5)
 
-# Mapping data
+# mapping data
 ggplot() +
   geom_sf(data = nhoods, fill = "lightgrey", col = "white") +
   geom_sf(data = boston.sf, aes(colour = q5(PricePerSq)), 
@@ -713,8 +712,8 @@ house %>%
   select(-key)%>%
   pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
   ggplot(aes(x = value)) +
-  geom_histogram(bins = 30, fill = "blue", color = "black") + # Adjust bin count as needed
-  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # Separate plot for each variable
+  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
+  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
   labs(x = "Value", y = "Count") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
@@ -725,20 +724,39 @@ house %>%
 
 # Modeling
 
-## split training and testing datasets
+## Split Training and Testing Datasets
 
 ```{r traintest}
-inTrain <- createDataPartition(
-              y = paste(boston.sf$Name, boston.sf$NUM_FLOORS.cat, #all the neighborhood, floor, style, air conditioning
-                        boston.sf$Style, boston.sf$R_AC), 
-              p = .60, list = FALSE)  # Create a vector (one column) of indices for the training set, take 60% for the training
-#usually 70%, but not fixed
+# finalize regression dataset
+house <- house %>%
+  select(-GEOID, -NAME, -key) %>%
+  st_drop_geometry()
+str(house)
 
-# Subset the dataset to create the training set
-boston.training <- boston.sf[inTrain,]  # Training set
-# Subset the dataset to create the test set
-boston.test <- boston.sf[-inTrain,]     # Test set
- 
+# split data 0.7/0.3
+inTrain <- createDataPartition(
+              y = paste(house$reno_dum, house$bed_cat, house$bath_dum, house$floor_cat,
+                        house$water_dum, house$view_cat, house$condition_cat, house$grade_dum,
+                        house$bach_dum, house$median_hh_dum, house$employ_dum, house$pover_dum,
+                        house$sub_cat, house$sch_cat, house$park_cat, house$shop_cat,
+                        house$S_NAME), 
+              p = .70, list = FALSE)  # create a vector for the training set (70%)
+
+# subset the dataset to create the training set
+seattle.training <- house[inTrain,]  # training set
+
+# subset the dataset to create the test set
+seattle.test <- house[-inTrain,]     # test set
+```
+
+## Build Multiple Linear Regression Model
+```{r lm}
+lm1 <- lm(price ~ ., data = seattle.training)
+summary(lm1)
+```
+
+
+```{r}
 # Fit a linear regression model to predict SalePrice using selected predictors
 reg.training <- 
   lm(SalePrice ~ ., data = as.data.frame(boston.training) %>% 
@@ -747,8 +765,9 @@ reg.training <-
                                            R_BDRMS, R_FULL_BTH, R_HALF_BTH, 
                                            R_KITCH, R_AC, R_FPLACE, crimes.Buffer))
 summary(reg.training)
+```
 
-
+``` {r}
 # Make predictions on the test set and evaluate model performance
 boston.test <-
   boston.test %>%  # Pipe the test set into the following operations
@@ -763,19 +782,12 @@ boston.test <-
          # Calculate the absolute percentage error
          SalePrice.APE = (abs(SalePrice.Predict - SalePrice)) / SalePrice) %>%
   filter(SalePrice < 5000000)  # Filter out records with SalePrice greater than $5,000,000
-
-
 ```
 
 ## Original House Price
 
 ```{r}
-house_lm <- house %>%
-  select(-key, -GEOID, -NAME) %>%
-  st_drop_geometry()
 
-lm1 <- lm(price ~ ., data = house_lm)
-summary(lm1)
 ```
 
 
@@ -787,7 +799,7 @@ summary(lm1)
 ```{r}
 # plot Seattle house location
 ggplot() + 
-    geom_sf(data = neigh_tract, color = "red", linewidth = 0.5) +  # Add Seattle boundary
+    geom_sf(data = neigh_large, color = "red", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
   #geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
     #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
