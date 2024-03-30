@@ -741,6 +741,48 @@ lma <- lm(log(price) ~ ., data = house_log)
 summary(lma)
 ```
 
+# training and testing datasets
+```{r traintest}
+# make sure get all the types of housing in the test sample
+# Split the dataset into a training set and a test set using stratified sampling
+inTrain <- createDataPartition(
+              y = paste(boston.sf$Name, boston.sf$NUM_FLOORS.cat, #all the neighborhood, floor, style, air conditioning
+                        boston.sf$Style, boston.sf$R_AC), 
+              p = .60, list = FALSE)  # Create a vector (one column) of indices for the training set, take 60% for the training
+#usually 70%, but not fixed
+
+# Subset the dataset to create the training set
+boston.training <- boston.sf[inTrain,]  # Training set
+# Subset the dataset to create the test set
+boston.test <- boston.sf[-inTrain,]     # Test set
+ 
+# Fit a linear regression model to predict SalePrice using selected predictors
+reg.training <- 
+  lm(SalePrice ~ ., data = as.data.frame(boston.training) %>% 
+                             dplyr::select(SalePrice, LivingArea, Style, 
+                                           GROSS_AREA, NUM_FLOORS.cat,
+                                           R_BDRMS, R_FULL_BTH, R_HALF_BTH, 
+                                           R_KITCH, R_AC, R_FPLACE, crimes.Buffer))
+summary(reg.training)
+
+
+# Make predictions on the test set and evaluate model performance
+boston.test <-
+  boston.test %>%  # Pipe the test set into the following operations
+  # Add a column indicating the type of regression model used
+  mutate(Regression = "Baseline Regression",
+         # Predict sale prices using the trained regression model
+         SalePrice.Predict = predict(reg.training, boston.test),
+         # Calculate the difference between predicted and actual sale prices
+         SalePrice.Error = SalePrice.Predict - SalePrice,
+         # Calculate the absolute difference between predicted and actual sale prices
+         SalePrice.AbsError = abs(SalePrice.Predict - SalePrice),
+         # Calculate the absolute percentage error
+         SalePrice.APE = (abs(SalePrice.Predict - SalePrice)) / SalePrice) %>%
+  filter(SalePrice < 5000000)  # Filter out records with SalePrice greater than $5,000,000
+
+
+```
 
 # Conclusion
 
