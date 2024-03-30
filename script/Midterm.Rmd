@@ -732,14 +732,14 @@ house <- house %>%
   st_drop_geometry()
 str(house)
 
-# split data 0.7/0.3
+# split data 0.6/0.4
 inTrain <- createDataPartition(
               y = paste(house$reno_dum, house$bed_cat, house$bath_dum, house$floor_cat,
                         house$water_dum, house$view_cat, house$condition_cat, house$grade_dum,
                         house$bach_dum, house$median_hh_dum, house$employ_dum, house$pover_dum,
                         house$sub_cat, house$sch_cat, house$park_cat, house$shop_cat,
                         house$L_NAME, house$S_NAME, house$T_NAME), 
-              p = .70, list = FALSE)  # create a vector for the training set (70%)
+              p = .60, list = FALSE)  # create a vector for the training set (60%)
 
 # subset the dataset to create the training set
 seattle.train <- house[inTrain,] # training set
