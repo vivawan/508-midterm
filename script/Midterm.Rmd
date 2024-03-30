@@ -720,14 +720,50 @@ ggplot() +
 
 ## Four Home Price Correlation Scatterplots
 
-### White Population Share
+### Living Area Square Feet
 
-```{r white_share}
+```{r sqft_living}
 ggplot(house) +
-  geom_point(aes(x = log(job_density + 1), y = log(taxi_trip_2017)), color = "black", pch = 16, size = 2) +
-  labs(title = "2017 Taxi Trips vs. Job Density",
-       x = "Employment per Acre (logged)",
-       y = "Taxi Trips (logged)") +
+  geom_point(aes(x = sqft_living, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Living Area Square Feet",
+       x = "Living Sqft",
+       y = "House Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### Median Household Income (Census Tract)
+
+```{r median_hh_income}
+ggplot(house) +
+  geom_point(aes(x = median_hh_income, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Median Household Income (Census Tract)",
+       x = "Income",
+       y = "House Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### Distance to the Nearest Shopping Center
+
+```{r shop_dis1}
+ggplot(house) +
+  geom_point(aes(x = shop_dis1, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Distance to the Nearest Shopping Center",
+       x = "Distance",
+       y = "House Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### Living Area Square Feet
+
+```{r sqft_living}
+ggplot(house) +
+  geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Living Area Square Feet",
+       x = "Living Sqft",
+       y = "House Price") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
