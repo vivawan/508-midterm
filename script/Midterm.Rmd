@@ -660,26 +660,104 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 
 ## Summary Table
 
-```{r data_summary}
+```{r continuous_summary}
 # continuous variables
 continuous_summary <- house %>%
   st_drop_geometry() %>%
-  select(-key)%>%
-  select_if(is.numeric)%>%
-  summarise(across(c(),
+  select(- key)%>%
+  summarise(across(where(is.numeric),
                    list(maximum = ~ max(., na.rm = TRUE),
                         minimum = ~ min(., na.rm = TRUE),
                         mean = ~ mean(., na.rm = TRUE),
-                        standard_deviation = ~ sd(., na.rm = TRUE)),
+                        standard_deviation = ~ sd(., na.rm = TRUE),
+                        n = ~ sum(!is.na(.x))),
                    .names = "{.col}:{.fn}")) %>%
   pivot_longer(cols = everything(), names_to = c("variables", "statistic"),
                names_sep = ":", values_to = "value") %>%
   mutate(value = round(value, digits = 2)) %>%
   pivot_wider(names_from = statistic, values_from = value)
 
-# categorical variables
+house_continuous <- house %>%
+  st_drop_geometry() %>%
+  select(- key) %>%
+  select_if(is.numeric)%>%
+  na.omit()
+  
+
+stargazer(house_continuous,
+          type = "text",
+          digits = 1,
+          title = "Summary Statistics")
+
+continuous_description <- data.frame(
+  variables = continuous_summary$variables,
+  category = rep(c("independent","internal", "socio-economic", "amenities"),
+                 times = c(1, 5, 8, 15)),
+  description = c("price of each unit",
+                  "years from built to 2015",
+                  "the number of bedrooms in each unit",
+                  "the number of bathrooms in each unit",
+                  "the area of living of each unit",
+                  "the area of parking lot of each unit",
+                  "the number of population per square feet in the census tract",
+                  "the ratio of white people to total population in the census tract",
+                  "the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
+                  "the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
+                  "the percentage of with a bachelor's degree among adults age 25 and older in the census tract",
+                  "median househhold income in the census tract",
+                  "the ratio of the employed to the working age population in the census tract",
+                  "the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract",
+                  "the distance to the nearest subway station",
+                  "the total area of parks located within a 500-foot radius of each unit",
+                  "the ratio of the area of tree canopy to the total area in the measuring space",
+                  "the distance to the nearest medical facility",
+                  "the average distance to the nearest 2 medical facilities",
+                  "the average distance to the nearest 3 medical facilities",
+                  "the distance to the nearest shopping center",
+                  "the average distance to the nearest 2 shopping center",
+                  "the average distance to the nearest 3 shopping center",
+                  "the number of crimes within a 1/8-mile radius around each unit",
+                  "the distance to the nearest crime",
+                  "the average distance to the nearest 2 crime",
+                  "the average distance to the nearest 3 crime",
+                  "the average distance to the nearest 4 crime",
+                  "the average distance to the nearest 5 crime"),
+  unit = c("$",
+           "year", "-","-","sqft","sqft",
+           "person / sqft", "%","%","%","%","$","%","%",
+           "feet","sqft","%","feet","feet","feet","feet","feet","feet",
+           "-", "feet","feet","feet","feet","feet"
+           ))
+continuous_description %>%
+  left_join(continuous_summary, by = "variables")%>%
+  kable() %>%
+  kable_styling()
+```
+```{r dummy summary}
+str(house[is.character()])
+# dummy variables
+dummy_summary <- house %>%
+  st_drop_geometry() %>%
+  summarise(across(c(reno_dum, bath_dum,water_dum,grade_dum)),
+            group_by(.) %>%
+              summarise(count = n()) %>%
+              mutate(percent = round(count/sum(count) * 100, digits = 2)))
+
+dummy_summary <- house %>%
+  st_drop_geometry() %>%
+  select(reno_dum, bath_dum, water_dum, grade_dum) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  group_by(variable, value) %>%
+  summarise(count = n(), .groups = 'drop') %>%
+  mutate(percent = round((count / sum(count)) * 100, digits = 2)) %>%
+  ungroup()
+
+
+
+
 
 ```
+
 
 
 # Exploratory Data Analysis
@@ -697,6 +775,7 @@ house %>%
   
 
 ```
+
 
 ## Mapping
 
