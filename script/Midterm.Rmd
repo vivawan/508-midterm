@@ -941,39 +941,28 @@ seattle.train <- seattle.train %>%
   select(-tree_canopy)
 ```
 
+## Test on testing dataset
 
-```{r}
-# Fit a linear regression model to predict SalePrice using selected predictors
-reg.training <- 
-  lm(SalePrice ~ ., data = as.data.frame(boston.training) %>% 
-                             dplyr::select(SalePrice, LivingArea, Style, 
-                                           GROSS_AREA, NUM_FLOORS.cat,
-                                           R_BDRMS, R_FULL_BTH, R_HALF_BTH, 
-                                           R_KITCH, R_AC, R_FPLACE, crimes.Buffer))
-summary(reg.training)
-```
+``` {r modify_model}
+# make predictions on the test set and evaluate model performance
+lm22 <- lm(price ~ ., data = seattle.train)
+summary(lm22)
+plot(lm22)
 
-``` {r}
-# Make predictions on the test set and evaluate model performance
-boston.test <-
-  boston.test %>%  # Pipe the test set into the following operations
-  # Add a column indicating the type of regression model used
-  mutate(Regression = "Baseline Regression",
-         # Predict sale prices using the trained regression model
-         SalePrice.Predict = predict(reg.training, boston.test),
-         # Calculate the difference between predicted and actual sale prices
-         SalePrice.Error = SalePrice.Predict - SalePrice,
-         # Calculate the absolute difference between predicted and actual sale prices
-         SalePrice.AbsError = abs(SalePrice.Predict - SalePrice),
-         # Calculate the absolute percentage error
-         SalePrice.APE = (abs(SalePrice.Predict - SalePrice)) / SalePrice) %>%
-  filter(SalePrice < 5000000)  # Filter out records with SalePrice greater than $5,000,000
-```
+## first regression model from last step
+seattle.test1 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm22, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-## Original House Price
-
-```{r}
-
+mean(seattle.test1$price.AbsError)
+mean(seattle.test1$price.APE)
 ```
 
 
