@@ -36,30 +36,30 @@ conflicts_prefer(dplyr::filter)
 source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
 ```
 
+
 # Introduction
 
 This report elaborate on the process of developing and refining a comprehensive predictive model that accurately forecasts housing prices for King County, Washington (Seattle).
 
 ???by integrating both structural and locational attributes. The model aims to discern how various housing characteristics, such as size, age, and amenities, along with locational factors, including proximity to services, neighborhood quality, and accessibility, collectively impact property values.
 
-# Main Steps
 
+# Data Wrangling
 
-
-# Data Selection
+## Data Selection
 
 **1. Internal Characteristics**
-- Year built
-- Year renovated (cat)
-- Bedroom
-- Bathroom
-- Living area
-- Lot area
-- Waterfront
-- View
-- Condition
-- Grade
-
+- Year used (continuous)
+- Renovation (dummy)
+- Bedroom (continuous + category)
+- Bathroom (continuous + category)
+- Floors (continuous + category)
+- Living area (continuous)
+- Lot area (continuous)
+- Waterfront (dummy)
+- View (category)
+- Condition (category)
+- Grade (category)
 
 **2. Socio-economic Characteristics**
 - Population density (continuous)
@@ -69,7 +69,6 @@ This report elaborate on the process of developing and refining a comprehensive 
 - Median household income (continuous + dummy)
 - Employment rate (continuous + dummy)
 - Poverty rate (continuous + dummy)
-
 
 **3. Amenities Services**
 - Subway Station (distance + category)
@@ -85,10 +84,7 @@ reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-inv
 - Large district
 - Small district
 
-
-# Data Wrangling
-
-## Boundary and House Location
+## Boundary and House
 
 ```{r Seattle_boundary}
 # read Seattle boundary
@@ -128,10 +124,7 @@ ggplot() +
     labs(title = "Seattle House Location") +  # set plot title
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-```
 
-## dependent variable
-```{r dependent}
 #examine house id
 length(unique(hh$id))#6691 < 6740
 #add an unique key
@@ -144,27 +137,14 @@ hh <- hh %>%
   filter(!price > 5000000)
 ```
 
-
-**1. Internal Characteristics**
-- Year used (continuous)
-- Renovation (dummy)
-- Bedroom (continuous + category)
-- Bathroom (continuous + category)
-- Floors (continuous + category)
-- Living area (continuous)
-- Lot area (continuous)
-- Waterfront (dummy)
-- View (category)
-- Condition (category)
-- Grade (category)
-
-
 ## Internal Characteristics
+
 ### clean data
+
 ```{r internal, message = FALSE, warning = FALSE}
 summary(hh)
 
-#add year_used and renovation and ensure categorical data are factor
+# add year_used and renovation and ensure categorical data are factor
 house <- hh %>% 
   mutate(year_used = 2015 - yr_built, # used year
          reno_dum = as.factor(if_else(yr_renovated>0, 1, 0)),#renovation yes or no
@@ -173,7 +153,7 @@ house <- hh %>%
          condition_cat = as.factor(condition),
          grade_cat = as.factor(grade))
 
-#bed categories
+# bed categories
 house$bed.factor <- factor(house$bedrooms, levels =sort(unique(house$bedrooms)))
 house %>%
   st_drop_geometry() %>%
@@ -223,7 +203,7 @@ house <- house %>%
   )))%>%
   select(-floor.factor)
 
-#select variables
+# select variables
 house <- house %>%
   select("key", "price","year_used","reno_dum",
          "bedrooms", "bed_cat", "bathrooms", "bath_cat",
@@ -245,9 +225,6 @@ house %>%
 
 
 ```
-
-
-
 
 ## Socio-economic Characteristics
 
@@ -339,7 +316,34 @@ acsTractsSeattle.2015 <- acsTractsSeattle.2015 %>%
          median_hh_dum, employ_rate, employ_dum, pover_rate, pover_dum)
 
 house <- house %>%
-  st_join(., acsTractsSeattle.2015)
+  st_join(., acsTractsSeattle.2015) %>%
+  filter(!is.na(pop_den)) # remove NA, one house may outside the boundary of census tracts
+
+# frequency of dummy variables
+table(house$bach_dum)
+table(house$median_hh_dum)
+table(house$employ_dum)
+table(house$pover_dum)
+
+## plot mean house price of bach_dum
+ggplot(house %>% st_drop_geometry() %>% group_by(bach_dum) %>%
+  summarise(aver_price = mean(price))) +
+  geom_col(aes(bach_dum,aver_price))
+
+## plot mean price of median_hh_dum
+ggplot(house %>% st_drop_geometry() %>% group_by(median_hh_dum) %>%
+  summarise(aver_price = mean(price))) +
+  geom_col(aes(median_hh_dum,aver_price))
+
+## plot mean price of employ_dum
+ggplot(house %>% st_drop_geometry() %>% group_by(employ_dum) %>%
+  summarise(aver_price = mean(price))) +
+  geom_col(aes(employ_dum,aver_price))
+
+## plot mean price of pover_dum
+ggplot(house %>% st_drop_geometry() %>% group_by(pover_dum) %>%
+  summarise(aver_price = mean(price))) +
+  geom_col(aes(pover_dum,aver_price))
 ```
 
 ## Amenities Characteristics
@@ -528,9 +532,9 @@ house <- house %>%
 
 - source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
 
-```{r crime}
-#***To avoid rerunning the huge dataset***
-#crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
+**To avoid rerunning the huge dataset:**
+```{r crime_clean, eval}
+# crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
 
 # get the target crime
 # crime_clean <- crime %>%
@@ -561,7 +565,7 @@ house <- house %>%
 #     "Weapon Law Violations"
 #   ))%>% #exclude those with little impact on housing price e.g.Financial Crimes, Public Order Offenses
 #   filter(Longitude != 0 & Latitude != 0)# select the valid ones
-# 
+#
 # write.csv(crime_clean , here::here("data/processed/crime_clean.csv"), row.names = FALSE)
 
 # read the cleaned data set
@@ -574,7 +578,6 @@ house$crime_c <- house %>%
     st_buffer(660) %>%
     aggregate(mutate(crime, counter = 1)%>%select(counter),., sum) %>%
     pull(counter)
-
 
 # calculate the distance to the nearest 1/2/3/4/5 shopping center(s)
 house <-  house %>%
@@ -590,8 +593,30 @@ house <-  house %>%
                                       st_coordinates(crime), k = 5))
 ```
 
+## Spatial Structure
+
+```{r fixed_effect}
+# large neighborhoods
+neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) %>%
+  st_transform(st_crs(house)) %>%
+  rename(NAME = L_HOOD) %>%
+  select(NAME)
+
+# small neighborhoods
+neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson")) %>%
+  st_transform(st_crs(house)) %>%
+  rename(NAME = S_HOOD) %>%
+  select(NAME)
+
+# census tracts
+neigh_tract <- acsTractsSeattle.2015 %>%
+  select(NAME)
+```
+
 
 # Data Description
+
+## 
 
 ## Summary Table
 
@@ -648,6 +673,8 @@ ggplot() +
 
 ```
 
+# Exploratory Data Analysis
+
 
 # Modeling
 
@@ -655,15 +682,14 @@ ggplot() +
 # Conclusion
 
 
-
 # Plot Reference
 
 ```{r}
 # plot Seattle house location
 ggplot() + 
-    geom_sf(data = seattle, color = "grey90", linewidth = 0.5) +  # Add Seattle boundary
+    geom_sf(data = neigh_large, color = "red", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
-  geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
+  #geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
     #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
     #geom_sf(data = poi_commer, color = "red", size = 0.3, pch = 16) + 
     labs(title = "Seattle House Location") +  # Set plot title
