@@ -351,6 +351,17 @@ ggplot(house %>% st_drop_geometry() %>% group_by(employ_dum) %>%
 ggplot(house %>% st_drop_geometry() %>% group_by(pover_dum) %>%
   summarise(aver_price = mean(price))) +
   geom_col(aes(pover_dum,aver_price))
+
+## plot all the mean of dummy variables
+house %>% 
+  st_drop_geometry()%>%
+  dplyr::select(price, bach_dum, median_hh_dum, employ_dum, pover_dum) %>%
+  gather(Variable, Value, -price) %>% 
+   ggplot(aes(Value, price)) +
+     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
+     facet_wrap(~Variable, ncol = 2, scales = "free") +
+     labs(title = "Price as a function of dummy variables", y = "Mean_Price") +
+     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ## Amenities Characteristics
@@ -603,7 +614,7 @@ house <-  house %>%
 ### inspect categories
 
 ```{r amenities category}
-#plot all the mean of category variable
+#plot all the mean of categorical variables
 house %>% 
   st_drop_geometry()%>%
   dplyr::select(price ,sub_cat, park_cat, med_cat,shop_cat,sch_cat) %>%
@@ -611,7 +622,7 @@ house %>%
    ggplot(aes(Value, price)) +
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
      facet_wrap(~Variable, ncol = 2, scales = "free") +
-     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
+     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 #-> med_cat not useful
 
@@ -636,7 +647,8 @@ neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neig
 
 # census tracts
 neigh_tract <- acsTractsSeattle.2015 %>%
-  select(NAME)
+  select(NAME) %>%
+  st_intersection(seattle)
 ```
 
 
@@ -696,13 +708,25 @@ ggplot() +
                    name="Quintile\nBreaks") +
   labs(title="Price Per Square Foot, Boston") +
   theme_void()
-
 ```
 
 # Exploratory Data Analysis
 
 
 # Modeling
+
+## Original House Price
+
+```{r}
+lm1
+```
+
+
+## Logged House Price
+
+```{r}
+
+```
 
 
 # Conclusion
@@ -713,7 +737,7 @@ ggplot() +
 ```{r}
 # plot Seattle house location
 ggplot() + 
-    geom_sf(data = neigh_large, color = "red", linewidth = 0.5) +  # Add Seattle boundary
+    geom_sf(data = neigh_tract, color = "red", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
   #geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
     #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
