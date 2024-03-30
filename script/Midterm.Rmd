@@ -1104,7 +1104,7 @@ seattle.cv <-
                                               sqft_living, sqft_lot, floor_cat,
                                               water_dum, view_cat, condition_cat,
                                               grade_dum, white_share, median_hh_income,
-                                              sch_cat, park_cat, shop_dis1), 
+                                              sch_cat, park_cat, shop_dis1),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
 seattle.cv
@@ -1118,7 +1118,7 @@ seattle.neigh.cv <-
                                               sqft_living, sqft_lot, floor_cat,
                                               water_dum, view_cat, condition_cat,
                                               grade_dum, white_share, median_hh_income,
-                                              sch_cat, park_cat, shop_dis1, T_NAME), 
+                                              sch_cat, park_cat, shop_dis1, T_NAME),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
 seattle.neigh.cv
