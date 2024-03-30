@@ -421,14 +421,16 @@ park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.ge
 # area and count of parks within 500 feet
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
   group_by(key) %>% 
-  summarise(park_cat = n_distinct(SITENAME, na.rm = TRUE),
+  summarise(park_c = n_distinct(SITENAME, na.rm = TRUE),
             sum_park_area = sum(park_area, na.rm = TRUE))
+house_parks$all_park_area <- as.numeric(house_parks$sum_park_area)
+house_parks$park_cat <- as.factor(house_parks$park_c)
 
 house <- house %>% 
     left_join(house_parks%>%
                 st_drop_geometry()%>%
-                select(key,park_cat, sum_park_area), by = "key")%>%
-  rename(parks_area = "sum_park_area")
+                select(key,park_cat, all_park_area), by = "key")%>%
+  rename(parks_area = all_park_area)
 ```
 
 ### tree canopy
@@ -664,20 +666,7 @@ taxi_summary <- taxi_dat %>%
 # categorical variables
 ```
 
-##
-
-```{r first plot}
-house.numeric <- house %>%
-          st_drop_geometry() %>% 
-          select_if(is.numeric) %>%
-          na.omit()
-
-ggpairs()
-
-
-
-```
-
+## mapping
 ```{r price_map}
 library(RColorBrewer)
 
@@ -700,6 +689,20 @@ ggplot() +
 ```
 
 # Exploratory Data Analysis
+```{r correlation}
+house %>%
+  st_drop_geometry() %>%
+  select(-key)%>%
+  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 30, fill = "blue", color = "black") + # Adjust bin count as needed
+  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # Separate plot for each variable
+  labs(x = "Value", y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  
+
+```
 
 
 # Modeling
