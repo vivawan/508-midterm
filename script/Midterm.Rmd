@@ -662,8 +662,10 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 
 ```{r data_summary}
 # continuous variables
-taxi_summary <- taxi_dat %>%
+continuous_summary <- house %>%
   st_drop_geometry() %>%
+  select(-key)%>%
+  select_if(is.numeric)%>%
   summarise(across(c(),
                    list(maximum = ~ max(., na.rm = TRUE),
                         minimum = ~ min(., na.rm = TRUE),
@@ -717,6 +719,12 @@ house %>%
 
 
 # Modeling
+
+Process:
+1) whole data set -> run lm -> select one var in each category
+2) split data set -> run lm on trainning data set -> run vif and cor -> deal with multicolinearity
+3) delete insignificant var. until all var at p < 0.05
+4) delete var. with large p and examine R^2 & residual
 
 ## Original House Price
 
