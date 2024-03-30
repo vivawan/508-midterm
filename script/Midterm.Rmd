@@ -718,14 +718,24 @@ ggplot() +
 ## Original House Price
 
 ```{r}
-lm1
+house_lm <- house %>%
+  select(-key, -GEOID, -NAME) %>%
+  st_drop_geometry()
+
+lm1 <- lm(price ~ ., data = house_lm)
+summary(lm1)
 ```
 
 
 ## Logged House Price
 
 ```{r}
+house_log <- house %>%
+  select(-key, -GEOID, -NAME) %>%
+  st_drop_geometry()
 
+lma <- lm(log(price) ~ ., data = house_log)
+summary(lma)
 ```
 
 
