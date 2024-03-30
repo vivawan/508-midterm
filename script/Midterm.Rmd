@@ -971,40 +971,124 @@ house %>%
 
 ```
 
-
-## Mapping
-
-```{r price_map}
-palette5 <- brewer.pal(5, "YlGnBu")
-
-# ggplot, reorder
-boston.sf$quintiles <- ntile(boston.sf$PricePerSq, 5)
-
-# mapping data
-ggplot() +
-  geom_sf(data = nhoods, fill = "lightgrey", col = "white") +
-  geom_sf(data = boston.sf, aes(colour = q5(PricePerSq)), 
-          show.legend = "point", size = .75) +
-  scale_colour_manual(values = palette5,
-                   labels=qBr(boston,"PricePerSq"),
-                   name="Quintile\nBreaks") +
-  labs(title="Price Per Square Foot, Boston") +
-  theme_void()
-```
-
 ## Four Home Price Correlation Scatterplots
 
-### White Population Share
+### Living Area Square Feet
 
-```{r white_share}
+```{r sqft_living}
 ggplot(house) +
-  geom_point(aes(x = log(job_density + 1), y = log(taxi_trip_2017)), color = "black", pch = 16, size = 2) +
-  labs(title = "2017 Taxi Trips vs. Job Density",
-       x = "Employment per Acre (logged)",
-       y = "Taxi Trips (logged)") +
+  geom_point(aes(x = sqft_living, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Living Area Square Feet",
+       x = "Living Sqft",
+       y = "House Price") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
+
+### Median Household Income (Census Tract)
+
+```{r median_hh_income}
+ggplot(house) +
+  geom_point(aes(x = median_hh_income, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Median Household Income (Census Tract)",
+       x = "Income",
+       y = "House Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### Distance to the Nearest Shopping Center
+
+```{r shop_dis1}
+ggplot(house) +
+  geom_point(aes(x = shop_dis1, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Distance to the Nearest Shopping Center",
+       x = "Distance",
+       y = "House Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### Crime Count within 1/8 mile of Each House
+
+```{r crime_c}
+ggplot(house) +
+  geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 2) +
+  labs(title = "Seattle House Price vs. Crime Count within 1/8 mile of Each House",
+       x = "Crime Count",
+       y = "House Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+## Map of the Dependent Variable (House Price)
+
+```{r house_price}
+# quantile break and color palette
+breaks_quantiles <- classIntervals(house$price, n = 5, style = "quantile")
+colors <- brewer.pal(n = 5, name = "YlOrRd")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+
+# plot house price
+ggplot() +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+          aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+  scale_color_manual(values = colors,
+                    labels = labels,
+                    name = "House Price (Quantile)") +
+  labs(title = "House Price in Seattle, 2015") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+## Three Maps of Independent Variables
+
+### Lot Square Feet
+
+```{r sqft_lot}
+# quantile break and color palette
+breaks_quantiles <- classIntervals(house$sqft_lot, n = 5, style = "quantile")
+colors <- brewer.pal(n = 5, name = "YlOrRd")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+
+# plot lot square feet
+ggplot() +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+          aes(color = cut(sqft_lot, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+  scale_color_manual(values = colors,
+                    labels = labels,
+                    name = "Lot Square Feet (Quantile)") +
+  labs(title = "Lot Square Feet of Houses in Seattle, 2015") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### School District
+
+```{r sch_cat}
+colors <- brewer.pal(n = 7, name = "Set3")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+
+# plot lot square feet
+ggplot() +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+          aes(color = sch_cat), size = 1) +
+  scale_color_manual(values = colors,
+                    name = "Lot Square Feet (Quantile)") +
+  labs(title = "Lot Square Feet of Houses in Seattle, 2015") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
 
 # Modeling
 
@@ -1409,6 +1493,13 @@ seattle.neigh.cv <-
      method = "lm", trControl = fitControl, na.action = na.pass)
 
 seattle.neigh.cv
+
+lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
+                 floor_cat + water_dum + view_cat + condition_cat + grade_dum +
+                 white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
+                 T_NAME, data = house_lm)
+summary(lm.final)
+plot(lm.final)
 ```
 
 
