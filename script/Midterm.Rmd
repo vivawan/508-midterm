@@ -25,9 +25,10 @@ knitr::opts_chunk$set(
 options(scipen = 999)
 
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, ggplot2, janitor, classInt,
-       patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer, car,
-       FNN, GGally, MASS, ISLR2)
+p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, janitor, classInt,
+       patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer,
+       car, FNN, GGally, MASS, ISLR2, spdep, caret, ckanr, grid, gridExtra, ggcorrplot,
+       jtools, broom, tufte, rmarkdown)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -222,7 +223,7 @@ house %>%
    ggplot(aes(Value, price)) +
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
      facet_wrap(~Variable, ncol = 4, scales = "free") +
-     labs(title = "Price as a function of\ncategorical variables", y = "Mean_Price") +
+     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # select variables
@@ -599,7 +600,7 @@ house$crime_c <- house %>%
     aggregate(mutate(crime, counter = 1)%>%select(counter),., sum) %>%
     pull(counter)
 
-# calculate the distance to the nearest 1/2/3/4/5 shopping center(s)
+# calculate the distance to the nearest 1/2/3/4/5 crime locations
 house <-  house %>%
       mutate(crime_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(crime), k = 1),
@@ -638,25 +639,24 @@ house <- house %>%
 # large neighborhoods
 neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) %>%
   st_transform(st_crs(house)) %>%
-  rename(NAME = L_HOOD) %>%
-  select(NAME)
+  rename(L_NAME = L_HOOD) %>%
+  select(L_NAME)
 
 # small neighborhoods
 neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson")) %>%
   st_transform(st_crs(house)) %>%
-  rename(NAME = S_HOOD) %>%
-  select(NAME)
+  rename(S_NAME = S_HOOD) %>%
+  select(S_NAME)
 
 # census tracts
 neigh_tract <- acsTractsSeattle.2015 %>%
   select(NAME) %>%
+  rename(T_NAME = NAME) %>%
   st_intersection(seattle)
 ```
 
 
 # Data Description
-
-## 
 
 ## Summary Table
 
@@ -678,18 +678,18 @@ continuous_summary <- house %>%
   pivot_wider(names_from = statistic, values_from = value)
 
 # categorical variables
+
 ```
 
-## mapping
-```{r price_map}
-library(RColorBrewer)
+## Mapping
 
+```{r price_map}
 palette5 <- brewer.pal(5, "YlGnBu")
 
 # ggplot, reorder
 boston.sf$quintiles <- ntile(boston.sf$PricePerSq, 5)
 
-# Mapping data
+# mapping data
 ggplot() +
   geom_sf(data = nhoods, fill = "lightgrey", col = "white") +
   geom_sf(data = boston.sf, aes(colour = q5(PricePerSq)), 
@@ -702,14 +702,14 @@ ggplot() +
 ```
 
 # Exploratory Data Analysis
+
 ```{r correlation}
 house %>%
   st_drop_geometry() %>%
-  select(-key)%>%
   pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
   ggplot(aes(x = value)) +
-  geom_histogram(bins = 30, fill = "blue", color = "black") + # Adjust bin count as needed
-  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # Separate plot for each variable
+  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
+  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
   labs(x = "Value", y = "Count") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
@@ -720,6 +720,7 @@ house %>%
 
 # Modeling
 
+
 Process:
 1) whole data set -> run lm -> select one var in each category
 2) split data set -> run lm on trainning data set -> run vif and cor -> deal with multicolinearity
@@ -728,42 +729,160 @@ Process:
 
 ## Original House Price
 
-```{r}
-house_lm <- house %>%
-  select(-key, -GEOID, -NAME) %>%
-  st_drop_geometry()
+## Initial Variables Selection
 
-lm1 <- lm(price ~ ., data = house_lm)
+
+```{r selection}
+# finalize regression dataset
+house <- house %>%
+  mutate(parks_area_log = log(parks_area + 1)) %>%
+  select(-GEOID, -NAME) %>%
+  st_drop_geometry()
+str(house)
+
+# select continuous or categorical variable
+lm1 <- lm(price ~ .-key, data = house)
 summary(lm1)
+
+## bedroom
+lm2 <- lm(price ~ .-bed_cat-key, data = house)
+summary(lm2)
+
+house <- house %>%
+  select(-bed_cat)
+
+## bathroom
+lm3 <- lm(price ~ .-bathrooms-key, data = house)
+summary(lm3)
+
+house <- house %>%
+  select(-bathrooms)
+
+## dependency
+lm4 <- lm(price ~ .-total_dep-key, data = house)
+summary(lm4)
+
+house <- house %>%
+  select(-total_dep)
+
+## bachelor degree
+lm5 <- lm(price ~ .-bach_dum-key, data = house)
+summary(lm5)
+
+house <- house %>%
+  select(-bach_dum)
+
+## median household income
+lm6 <- lm(price ~ .-median_hh_dum-key, data = house)
+summary(lm6)
+
+house <- house %>%
+  select(-median_hh_dum)
+
+## employment
+lm7 <- lm(price ~ .-employ_dum-key, data = house)
+summary(lm7)
+
+house <- house %>%
+  select(-employ_dum)
+
+## poverty
+lm8 <- lm(price ~ .-pover_dum-key, data = house)
+summary(lm8)
+
+house <- house %>%
+  select(-pover_dum)
+
+## subway station
+lm9 <- lm(price ~ .-sub_cat-key, data = house)
+summary(lm9)
+
+house <- house %>%
+  select(-sub_cat)
+
+## park
+lm10 <- lm(price ~ .-parks_area-parks_area_log-key, data = house)
+summary(lm10)
+
+house <- house %>%
+  select(-parks_area, -parks_area_log)
+
+## medical facility
+lm11 <- lm(price ~ .-med_dis2-med_dis3-key, data = house)
+summary(lm11)
+
+house <- house %>%
+  select(-med_dis2, -med_dis3)
+
+## shopping center
+lm12 <- lm(price ~ .-shop_dis2-shop_dis3-key, data = house)
+summary(lm12)
+
+house <- house %>%
+  select(-shop_dis2, -shop_dis3)
+
+lm13 <- lm(price ~ .-shop_cat-key, data = house)
+summary(lm13)
+
+house <- house %>%
+  select(-shop_cat)
+
+## crime
+lm14 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+summary(lm14)
+
+house <- house %>%
+  select(-crime_dis2, -crime_dis3, -crime_dis4, -crime_dis5)
+
+lm15 <- lm(price ~ .-crime_dis1-key, data = house)
+summary(lm15)
+
+house <- house %>%
+  select(-crime_dis1)
+
+## add fixed effect
+house_lm <- house %>%
+  left_join(hh%>%select(key), by = "key") %>%
+  st_as_sf() %>%
+  st_join(., neigh_large) %>%
+  st_join(., neigh_small) %>%
+  st_join(., neigh_tract) %>%
+  st_drop_geometry() %>%
+  select(-key)
+str(house)
 ```
 
+## Split Training and Testing Datasets
 
-## Logged House Price
+```{r traintest}
+# split data 0.6/0.4
+inTrain <- createDataPartition(
+              y = paste(house$reno_dum, house$bed_cat, house$bath_dum, house$floor_cat,
+                        house$water_dum, house$view_cat, house$condition_cat, house$grade_dum,
+                        house$bach_dum, house$median_hh_dum, house$employ_dum, house$pover_dum,
+                        house$sub_cat, house$sch_cat, house$park_cat, house$shop_cat,
+                        house$L_NAME, house$S_NAME, house$T_NAME), 
+              p = .60, list = FALSE)  # create a vector for the training set (60%)
+
+# subset the dataset to create the training set
+seattle.train <- house[inTrain,] # training set
+
+# subset the dataset to create the testing set
+seattle.test <- house[-inTrain,] # testing set
+```
+
+## Build Multiple Linear Regression Model
+
+```{r lm}
+# ignore neighborhood effect first
+seattle.train <- seattle.train %>%
+  select(-L_NAME, -S_NAME, -T_NAME)
+
+
+```
+
 
 ```{r}
-house_log <- house %>%
-  select(-key, -GEOID, -NAME) %>%
-  st_drop_geometry()
-
-lma <- lm(log(price) ~ ., data = house_log)
-summary(lma)
-```
-
-# training and testing datasets
-```{r traintest}
-# make sure get all the types of housing in the test sample
-# Split the dataset into a training set and a test set using stratified sampling
-inTrain <- createDataPartition(
-              y = paste(boston.sf$Name, boston.sf$NUM_FLOORS.cat, #all the neighborhood, floor, style, air conditioning
-                        boston.sf$Style, boston.sf$R_AC), 
-              p = .60, list = FALSE)  # Create a vector (one column) of indices for the training set, take 60% for the training
-#usually 70%, but not fixed
-
-# Subset the dataset to create the training set
-boston.training <- boston.sf[inTrain,]  # Training set
-# Subset the dataset to create the test set
-boston.test <- boston.sf[-inTrain,]     # Test set
- 
 # Fit a linear regression model to predict SalePrice using selected predictors
 reg.training <- 
   lm(SalePrice ~ ., data = as.data.frame(boston.training) %>% 
@@ -772,8 +891,9 @@ reg.training <-
                                            R_BDRMS, R_FULL_BTH, R_HALF_BTH, 
                                            R_KITCH, R_AC, R_FPLACE, crimes.Buffer))
 summary(reg.training)
+```
 
-
+``` {r}
 # Make predictions on the test set and evaluate model performance
 boston.test <-
   boston.test %>%  # Pipe the test set into the following operations
@@ -788,9 +908,14 @@ boston.test <-
          # Calculate the absolute percentage error
          SalePrice.APE = (abs(SalePrice.Predict - SalePrice)) / SalePrice) %>%
   filter(SalePrice < 5000000)  # Filter out records with SalePrice greater than $5,000,000
+```
 
+## Original House Price
+
+```{r}
 
 ```
+
 
 # Conclusion
 
@@ -800,7 +925,7 @@ boston.test <-
 ```{r}
 # plot Seattle house location
 ggplot() + 
-    geom_sf(data = neigh_tract, color = "red", linewidth = 0.5) +  # Add Seattle boundary
+    geom_sf(data = neigh_large, color = "red", linewidth = 0.5) +  # Add Seattle boundary
     geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
   #geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
     #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
