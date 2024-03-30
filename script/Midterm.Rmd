@@ -868,6 +868,7 @@ table(house_lm$park_cat)
 table(house_lm$L_NAME)
 
 # split data 0.7/0.3
+set.seed(1)
 inTrain <- createDataPartition(
               y = paste(house_lm$reno_dum, house_lm$bath_dum, house_lm$floor_cat,
                         house_lm$water_dum, house_lm$view_cat, house_lm$condition_cat,
@@ -946,7 +947,7 @@ seattle.train <- seattle.train %>%
 ``` {r modify_model}
 # make predictions on the test set and evaluate model performance
 lm22 <- lm(price ~ ., data = seattle.train)
-summary(lm22)
+summary(lm22) # adjusted R-squared = 0.802
 plot(lm22)
 
 ## first regression model from last step
@@ -961,9 +962,144 @@ seattle.test1 <-
          # calculate the absolute percentage error
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-mean(seattle.test1$price.AbsError)
-mean(seattle.test1$price.APE)
+mean(seattle.test1$price.AbsError) # 94490.7
+mean(seattle.test1$price.APE) # 19.10%
+
+## remove "year_used"
+lm23 <- lm(price ~ .-year_used, data = seattle.train)
+summary(lm23) # adjusted R-squared = 0.8019
+
+seattle.test2 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm23, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test2$price.AbsError) # 94371.65
+mean(seattle.test2$price.APE) # 19.05%
+
+seattle.train <- seattle.train %>%
+  select(-year_used)
+
+## remove "crime_c"
+lm24 <- lm(price ~ .-crime_c, data = seattle.train)
+summary(lm24) # adjusted R-squared = 0.8015
+
+seattle.test3 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm24, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test3$price.AbsError) # 94189.17
+mean(seattle.test3$price.APE) # 19.00%
+
+seattle.train <- seattle.train %>%
+  select(-crime_c)
+
+## remove "employ_rate"
+lm25 <- lm(price ~ .-employ_rate, data = seattle.train)
+summary(lm25) # adjusted R-squared = 0.8005
+
+seattle.test4 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm25, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test4$price.AbsError) # 93891.87
+mean(seattle.test4$price.APE) # 18.93%
+
+seattle.train <- seattle.train %>%
+  select(-employ_rate)
+
+## remove "med_dis1"
+lm26 <- lm(price ~ .-med_dis1, data = seattle.train)
+summary(lm26) # adjusted R-squared = 0.7995
+
+seattle.test5 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm26, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test5$price.AbsError) # 93529.29
+mean(seattle.test5$price.APE) # 18.79%
+
+seattle.train <- seattle.train %>%
+  select(-med_dis1)
+
+## remove "elder_dep"
+lm27 <- lm(price ~ .-elder_dep, data = seattle.train)
+summary(lm27) # adjusted R-squared = 0.7965
+
+seattle.test6 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm27, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test6$price.AbsError) # 93115.74
+mean(seattle.test6$price.APE) # 18.59%
+
+seattle.train <- seattle.train %>%
+  select(-elder_dep)
+
+## remove "pop_den"
+lm28 <- lm(price ~ .-pop_den, data = seattle.train)
+summary(lm28) # adjusted R-squared = 0.7965
+
+seattle.test7 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm28, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test7$price.AbsError) # 93073.76
+mean(seattle.test7$price.APE) # 18.57%
+
+seattle.train <- seattle.train %>%
+  select(-pop_den)
 ```
+
+## Cross Validation
+
+```{r cv}
+
+```
+
+
+
 
 
 # Conclusion
