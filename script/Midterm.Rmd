@@ -759,6 +759,24 @@ dummy_summary <- house %>%
 ```
 
 
+
+# Exploratory Data Analysis
+
+```{r correlation}
+house %>%
+  st_drop_geometry() %>%
+  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
+  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
+  labs(x = "Value", y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  
+
+```
+
+
 ## Mapping
 
 ```{r price_map}
@@ -779,25 +797,21 @@ ggplot() +
   theme_void()
 ```
 
-# Exploratory Data Analysis
+## Four Home Price Correlation Scatterplots
 
-```{r correlation}
-house %>%
-  st_drop_geometry() %>%
-  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
-  ggplot(aes(x = value)) +
-  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
-  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
-  labs(x = "Value", y = "Count") +
+### White Population Share
+
+```{r white_share}
+ggplot(house) +
+  geom_point(aes(x = log(job_density + 1), y = log(taxi_trip_2017)), color = "black", pch = 16, size = 2) +
+  labs(title = "2017 Taxi Trips vs. Job Density",
+       x = "Employment per Acre (logged)",
+       y = "Taxi Trips (logged)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
-  
-
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-
 # Modeling
-
 
 Process:
 1) whole data set -> run lm -> select one var in each category
@@ -927,72 +941,283 @@ house_lm <- house %>%
   st_join(., neigh_tract) %>%
   st_drop_geometry() %>%
   select(-key)
-str(house)
+str(house_lm)
 ```
 
 ## Split Training and Testing Datasets
 
 ```{r traintest}
-# split data 0.6/0.4
+# check frequency of categorical variables
+table(house_lm$reno_dum)
+table(house_lm$bath_dum)
+table(house_lm$floor_cat)
+table(house_lm$water_dum)
+table(house_lm$view_cat)
+table(house_lm$condition_cat)
+table(house_lm$grade_dum)
+table(house_lm$sch_cat)
+table(house_lm$park_cat)
+table(house_lm$L_NAME)
+
+# split data 0.7/0.3
+set.seed(1)
 inTrain <- createDataPartition(
-              y = paste(house$reno_dum, house$bed_cat, house$bath_dum, house$floor_cat,
-                        house$water_dum, house$view_cat, house$condition_cat, house$grade_dum,
-                        house$bach_dum, house$median_hh_dum, house$employ_dum, house$pover_dum,
-                        house$sub_cat, house$sch_cat, house$park_cat, house$shop_cat,
-                        house$L_NAME, house$S_NAME, house$T_NAME), 
-              p = .60, list = FALSE)  # create a vector for the training set (60%)
+              y = paste(house_lm$reno_dum, house_lm$bath_dum, house_lm$floor_cat,
+                        house_lm$water_dum, house_lm$view_cat, house_lm$condition_cat,
+                        house_lm$grade_dum, house_lm$sch_cat, house_lm$park_cat, house_lm$L_NAME), 
+              p = .70, list = FALSE)  # create a vector for the training set (70%)
 
 # subset the dataset to create the training set
-seattle.train <- house[inTrain,] # training set
+seattle.train.lm <- house_lm[inTrain,] # training set
 
 # subset the dataset to create the testing set
-seattle.test <- house[-inTrain,] # testing set
+seattle.test.lm <- house_lm[-inTrain,] # testing set
 ```
 
 ## Build Multiple Linear Regression Model
 
-```{r lm}
+```{r multiple_regression}
 # ignore neighborhood effect first
-seattle.train <- seattle.train %>%
+seattle.train <- seattle.train.lm %>%
   select(-L_NAME, -S_NAME, -T_NAME)
 
+seattle.test <- seattle.test.lm %>%
+  select(-L_NAME, -S_NAME, -T_NAME)
 
+# build regression model on training dataset
+lm16 <- lm(price ~ ., data = seattle.train)
+summary(lm16)
+vif(lm16)
+str(seattle.train)
+cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
+                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+
+## sub_dis
+lm17 <- lm(sub_dis ~ reno_dum + bath_dum + floor_cat + water_dum + view_cat +
+             condition_cat + grade_dum + sch_cat + park_cat, data = seattle.train)
+summary(lm17)
+vif(lm17)
+
+lm18 <- lm(price ~ .-sub_dis, data = seattle.train)
+summary(lm18)
+vif(lm18)
+
+seattle.train <- seattle.train %>%
+  select(-sub_dis)
+
+## high correlation: white share & bachelor degree
+lm19 <- lm(price ~ .-bach_share, data = seattle.train)
+summary(lm19)
+vif(lm19)
+
+seattle.train <- seattle.train %>%
+  select(-bach_share)
+cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
+                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+
+## high correlation: white share & poverty rate
+lm20 <- lm(price ~ .-pover_rate, data = seattle.train)
+summary(lm20)
+vif(lm20)
+
+seattle.train <- seattle.train %>%
+  select(-pover_rate)
+cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
+                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+
+## insignificance: tree canopy
+lm21 <- lm(price ~ .-tree_canopy, data = seattle.train)
+summary(lm21)
+vif(lm21)
+
+seattle.train <- seattle.train %>%
+  select(-tree_canopy)
+```
+
+## Test on testing dataset
+
+``` {r modify_model}
+# make predictions on the test set and evaluate model performance
+lm22 <- lm(price ~ ., data = seattle.train)
+summary(lm22) # adjusted R-squared = 0.802
+plot(lm22)
+
+## first regression model from last step
+seattle.test1 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm22, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test1$price.AbsError) # 94490.7
+mean(seattle.test1$price.APE) # 19.10%
+
+## remove "year_used"
+lm23 <- lm(price ~ .-year_used, data = seattle.train)
+summary(lm23) # adjusted R-squared = 0.8019
+
+seattle.test2 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm23, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test2$price.AbsError) # 94371.65
+mean(seattle.test2$price.APE) # 19.05%
+
+seattle.train <- seattle.train %>%
+  select(-year_used)
+
+## remove "crime_c"
+lm24 <- lm(price ~ .-crime_c, data = seattle.train)
+summary(lm24) # adjusted R-squared = 0.8015
+
+seattle.test3 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm24, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test3$price.AbsError) # 94189.17
+mean(seattle.test3$price.APE) # 19.00%
+
+seattle.train <- seattle.train %>%
+  select(-crime_c)
+
+## remove "employ_rate"
+lm25 <- lm(price ~ .-employ_rate, data = seattle.train)
+summary(lm25) # adjusted R-squared = 0.8005
+
+seattle.test4 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm25, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test4$price.AbsError) # 93891.87
+mean(seattle.test4$price.APE) # 18.93%
+
+seattle.train <- seattle.train %>%
+  select(-employ_rate)
+
+## remove "med_dis1"
+lm26 <- lm(price ~ .-med_dis1, data = seattle.train)
+summary(lm26) # adjusted R-squared = 0.7995
+
+seattle.test5 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm26, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test5$price.AbsError) # 93529.29
+mean(seattle.test5$price.APE) # 18.79%
+
+seattle.train <- seattle.train %>%
+  select(-med_dis1)
+
+## remove "elder_dep"
+lm27 <- lm(price ~ .-elder_dep, data = seattle.train)
+summary(lm27) # adjusted R-squared = 0.7965
+
+seattle.test6 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm27, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test6$price.AbsError) # 93115.74
+mean(seattle.test6$price.APE) # 18.59%
+
+seattle.train <- seattle.train %>%
+  select(-elder_dep)
+
+## remove "pop_den"
+lm28 <- lm(price ~ .-pop_den, data = seattle.train)
+summary(lm28) # adjusted R-squared = 0.7965
+
+seattle.test7 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm28, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test7$price.AbsError) # 93073.76
+mean(seattle.test7$price.APE) # 18.57%
+
+seattle.train <- seattle.train %>%
+  select(-pop_den)
+```
+
+## Cross Validation
+
+```{r cv}
+# without fixed effect
+set.seed(1)
+fitControl <- trainControl(method = "cv", number = 100)
+
+seattle.cv <- 
+  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
+                                              sqft_living, sqft_lot, floor_cat,
+                                              water_dum, view_cat, condition_cat,
+                                              grade_dum, white_share, median_hh_income,
+                                              sch_cat, park_cat, shop_dis1),
+     method = "lm", trControl = fitControl, na.action = na.pass)
+
+seattle.cv
+
+# with fixed effect
+set.seed(1)
+fitControl <- trainControl(method = "cv", number = 100)
+
+seattle.neigh.cv <- 
+  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
+                                              sqft_living, sqft_lot, floor_cat,
+                                              water_dum, view_cat, condition_cat,
+                                              grade_dum, white_share, median_hh_income,
+                                              sch_cat, park_cat, shop_dis1, T_NAME),
+     method = "lm", trControl = fitControl, na.action = na.pass)
+
+seattle.neigh.cv
 ```
 
 
-```{r}
-# Fit a linear regression model to predict SalePrice using selected predictors
-reg.training <- 
-  lm(SalePrice ~ ., data = as.data.frame(boston.training) %>% 
-                             dplyr::select(SalePrice, LivingArea, Style, 
-                                           GROSS_AREA, NUM_FLOORS.cat,
-                                           R_BDRMS, R_FULL_BTH, R_HALF_BTH, 
-                                           R_KITCH, R_AC, R_FPLACE, crimes.Buffer))
-summary(reg.training)
-```
 
-``` {r}
-# Make predictions on the test set and evaluate model performance
-boston.test <-
-  boston.test %>%  # Pipe the test set into the following operations
-  # Add a column indicating the type of regression model used
-  mutate(Regression = "Baseline Regression",
-         # Predict sale prices using the trained regression model
-         SalePrice.Predict = predict(reg.training, boston.test),
-         # Calculate the difference between predicted and actual sale prices
-         SalePrice.Error = SalePrice.Predict - SalePrice,
-         # Calculate the absolute difference between predicted and actual sale prices
-         SalePrice.AbsError = abs(SalePrice.Predict - SalePrice),
-         # Calculate the absolute percentage error
-         SalePrice.APE = (abs(SalePrice.Predict - SalePrice)) / SalePrice) %>%
-  filter(SalePrice < 5000000)  # Filter out records with SalePrice greater than $5,000,000
-```
-
-## Original House Price
-
-```{r}
-
-```
 
 
 # Conclusion
