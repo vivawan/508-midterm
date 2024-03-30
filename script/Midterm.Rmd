@@ -653,11 +653,6 @@ neigh_tract <- acsTractsSeattle.2015 %>%
   select(NAME) %>%
   rename(T_NAME = NAME) %>%
   st_intersection(seattle)
-
-house <- house %>%
-  st_join(., neigh_large) %>%
-  st_join(., neigh_small) %>%
-  st_join(., neigh_tract)
 ```
 
 
@@ -723,15 +718,29 @@ house %>%
 
 # Modeling
 
-## Split Training and Testing Datasets
+## Initial Variables Selection
 
-```{r traintest}
+```{r selection}
 # finalize regression dataset
 house <- house %>%
+  mutate(parks_area_log = log(parks_area))
   select(-GEOID, -NAME, -key) %>%
   st_drop_geometry()
 str(house)
 
+lm1 <- lm(price ~ ., data = house)
+summary(lm1)
+
+
+house <- house %>%
+  st_join(., neigh_large) %>%
+  st_join(., neigh_small) %>%
+  st_join(., neigh_tract)
+```
+
+## Split Training and Testing Datasets
+
+```{r traintest}
 # split data 0.6/0.4
 inTrain <- createDataPartition(
               y = paste(house$reno_dum, house$bed_cat, house$bath_dum, house$floor_cat,
