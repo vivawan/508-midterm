@@ -849,36 +849,96 @@ house_lm <- house %>%
   st_join(., neigh_tract) %>%
   st_drop_geometry() %>%
   select(-key)
-str(house)
+str(house_lm)
 ```
 
 ## Split Training and Testing Datasets
 
 ```{r traintest}
-# split data 0.6/0.4
+# check frequency of categorical variables
+table(house_lm$reno_dum)
+table(house_lm$bath_dum)
+table(house_lm$floor_cat)
+table(house_lm$water_dum)
+table(house_lm$view_cat)
+table(house_lm$condition_cat)
+table(house_lm$grade_dum)
+table(house_lm$sch_cat)
+table(house_lm$park_cat)
+table(house_lm$L_NAME)
+
+# split data 0.7/0.3
 inTrain <- createDataPartition(
-              y = paste(house$reno_dum, house$bed_cat, house$bath_dum, house$floor_cat,
-                        house$water_dum, house$view_cat, house$condition_cat, house$grade_dum,
-                        house$bach_dum, house$median_hh_dum, house$employ_dum, house$pover_dum,
-                        house$sub_cat, house$sch_cat, house$park_cat, house$shop_cat,
-                        house$L_NAME, house$S_NAME, house$T_NAME), 
-              p = .60, list = FALSE)  # create a vector for the training set (60%)
+              y = paste(house_lm$reno_dum, house_lm$bath_dum, house_lm$floor_cat,
+                        house_lm$water_dum, house_lm$view_cat, house_lm$condition_cat,
+                        house_lm$grade_dum, house_lm$sch_cat, house_lm$park_cat, house_lm$L_NAME), 
+              p = .70, list = FALSE)  # create a vector for the training set (70%)
 
 # subset the dataset to create the training set
-seattle.train <- house[inTrain,] # training set
+seattle.train.lm <- house_lm[inTrain,] # training set
 
 # subset the dataset to create the testing set
-seattle.test <- house[-inTrain,] # testing set
+seattle.test.lm <- house_lm[-inTrain,] # testing set
 ```
 
 ## Build Multiple Linear Regression Model
 
-```{r lm}
+```{r multiple_regression}
 # ignore neighborhood effect first
-seattle.train <- seattle.train %>%
+seattle.train <- seattle.train.lm %>%
   select(-L_NAME, -S_NAME, -T_NAME)
 
+seattle.test <- seattle.test.lm %>%
+  select(-L_NAME, -S_NAME, -T_NAME)
 
+# build regression model on training dataset
+lm16 <- lm(price ~ ., data = seattle.train)
+summary(lm16)
+vif(lm16)
+str(seattle.train)
+cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
+                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+
+## sub_dis
+lm17 <- lm(sub_dis ~ reno_dum + bath_dum + floor_cat + water_dum + view_cat +
+             condition_cat + grade_dum + sch_cat + park_cat, data = seattle.train)
+summary(lm17)
+vif(lm17)
+
+lm18 <- lm(price ~ .-sub_dis, data = seattle.train)
+summary(lm18)
+vif(lm18)
+
+seattle.train <- seattle.train %>%
+  select(-sub_dis)
+
+## high correlation: white share & bachelor degree
+lm19 <- lm(price ~ .-bach_share, data = seattle.train)
+summary(lm19)
+vif(lm19)
+
+seattle.train <- seattle.train %>%
+  select(-bach_share)
+cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
+                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+
+## high correlation: white share & poverty rate
+lm20 <- lm(price ~ .-pover_rate, data = seattle.train)
+summary(lm20)
+vif(lm20)
+
+seattle.train <- seattle.train %>%
+  select(-pover_rate)
+cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
+                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+
+## insignificance: tree canopy
+lm21 <- lm(price ~ .-tree_canopy, data = seattle.train)
+summary(lm21)
+vif(lm21)
+
+seattle.train <- seattle.train %>%
+  select(-tree_canopy)
 ```
 
 
