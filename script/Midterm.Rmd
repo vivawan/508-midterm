@@ -638,19 +638,27 @@ house <- house %>%
 # large neighborhoods
 neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) %>%
   st_transform(st_crs(house)) %>%
-  rename(NAME = L_HOOD) %>%
-  select(NAME)
+  rename(L_NAME = L_HOOD) %>%
+  select(L_NAME)
 
 # small neighborhoods
 neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson")) %>%
   st_transform(st_crs(house)) %>%
-  rename(NAME = S_HOOD) %>%
-  select(NAME)
+  rename(S_NAME = S_HOOD) %>%
+  select(S_NAME)
 
 # census tracts
 neigh_tract <- acsTractsSeattle.2015 %>%
   select(NAME) %>%
+  rename(T_NAME = NAME) %>%
   st_intersection(seattle)
+
+house <- house %>%
+  st_join(., neigh_large) %>%
+  st_join(., neigh_small) %>%
+  st_join(., neigh_tract) %>%
+  select(-GEOID, -NAME) %>%
+  st_drop_geometry()
 ```
 
 
@@ -680,8 +688,6 @@ taxi_summary <- taxi_dat %>%
 
 ## mapping
 ```{r price_map}
-library(RColorBrewer)
-
 palette5 <- brewer.pal(5, "YlGnBu")
 
 # ggplot, reorder
@@ -719,21 +725,9 @@ house %>%
 
 # Modeling
 
-## Original House Price
+## split training and testing datasets
 
-```{r}
-house <- house %>%
-  select(-key, -GEOID, -NAME) %>%
-  st_drop_geometry()
-
-lm1 <- lm(price ~ ., data = house_lm)
-summary(lm1)
-```
-
-# training and testing datasets
 ```{r traintest}
-# make sure get all the types of housing in the test sample
-# Split the dataset into a training set and a test set using stratified sampling
 inTrain <- createDataPartition(
               y = paste(boston.sf$Name, boston.sf$NUM_FLOORS.cat, #all the neighborhood, floor, style, air conditioning
                         boston.sf$Style, boston.sf$R_AC), 
@@ -771,6 +765,17 @@ boston.test <-
   filter(SalePrice < 5000000)  # Filter out records with SalePrice greater than $5,000,000
 
 
+```
+
+## Original House Price
+
+```{r}
+house_lm <- house %>%
+  select(-key, -GEOID, -NAME) %>%
+  st_drop_geometry()
+
+lm1 <- lm(price ~ ., data = house_lm)
+summary(lm1)
 ```
 
 
