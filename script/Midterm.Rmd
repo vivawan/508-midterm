@@ -681,6 +681,23 @@ continuous_summary <- house %>%
 
 ```
 
+
+# Exploratory Data Analysis
+
+```{r correlation}
+house %>%
+  st_drop_geometry() %>%
+  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
+  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
+  labs(x = "Value", y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  
+
+```
+
 ## Mapping
 
 ```{r price_map}
@@ -701,25 +718,21 @@ ggplot() +
   theme_void()
 ```
 
-# Exploratory Data Analysis
+## Four Home Price Correlation Scatterplots
 
-```{r correlation}
-house %>%
-  st_drop_geometry() %>%
-  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
-  ggplot(aes(x = value)) +
-  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
-  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
-  labs(x = "Value", y = "Count") +
+### White Population Share
+
+```{r white_share}
+ggplot(house) +
+  geom_point(aes(x = log(job_density + 1), y = log(taxi_trip_2017)), color = "black", pch = 16, size = 2) +
+  labs(title = "2017 Taxi Trips vs. Job Density",
+       x = "Employment per Acre (logged)",
+       y = "Taxi Trips (logged)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
-  
-
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-
 # Modeling
-
 
 Process:
 1) whole data set -> run lm -> select one var in each category
