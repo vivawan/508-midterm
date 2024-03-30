@@ -600,7 +600,7 @@ house$crime_c <- house %>%
     aggregate(mutate(crime, counter = 1)%>%select(counter),., sum) %>%
     pull(counter)
 
-# calculate the distance to the nearest 1/2/3/4/5 shopping center(s)
+# calculate the distance to the nearest 1/2/3/4/5 crime locations
 house <-  house %>%
       mutate(crime_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(crime), k = 1),
@@ -723,19 +723,119 @@ house %>%
 ```{r selection}
 # finalize regression dataset
 house <- house %>%
-  mutate(parks_area_log = log(parks_area))
-  select(-GEOID, -NAME, -key) %>%
+  mutate(parks_area_log = log(parks_area + 1)) %>%
+  select(-GEOID, -NAME) %>%
   st_drop_geometry()
 str(house)
 
-lm1 <- lm(price ~ ., data = house)
+# select continuous or categorical variable
+lm1 <- lm(price ~ .-key, data = house)
 summary(lm1)
 
+## bedroom
+lm2 <- lm(price ~ .-bed_cat-key, data = house)
+summary(lm2)
 
 house <- house %>%
+  select(-bed_cat)
+
+## bathroom
+lm3 <- lm(price ~ .-bathrooms-key, data = house)
+summary(lm3)
+
+house <- house %>%
+  select(-bathrooms)
+
+## dependency
+lm4 <- lm(price ~ .-total_dep-key, data = house)
+summary(lm4)
+
+house <- house %>%
+  select(-total_dep)
+
+## bachelor degree
+lm5 <- lm(price ~ .-bach_dum-key, data = house)
+summary(lm5)
+
+house <- house %>%
+  select(-bach_dum)
+
+## median household income
+lm6 <- lm(price ~ .-median_hh_dum-key, data = house)
+summary(lm6)
+
+house <- house %>%
+  select(-median_hh_dum)
+
+## employment
+lm7 <- lm(price ~ .-employ_dum-key, data = house)
+summary(lm7)
+
+house <- house %>%
+  select(-employ_dum)
+
+## poverty
+lm8 <- lm(price ~ .-pover_dum-key, data = house)
+summary(lm8)
+
+house <- house %>%
+  select(-pover_dum)
+
+## subway station
+lm9 <- lm(price ~ .-sub_cat-key, data = house)
+summary(lm9)
+
+house <- house %>%
+  select(-sub_cat)
+
+## park
+lm10 <- lm(price ~ .-parks_area-parks_area_log-key, data = house)
+summary(lm10)
+
+house <- house %>%
+  select(-parks_area, -parks_area_log)
+
+## medical facility
+lm11 <- lm(price ~ .-med_dis2-med_dis3-key, data = house)
+summary(lm11)
+
+house <- house %>%
+  select(-med_dis2, -med_dis3)
+
+## shopping center
+lm12 <- lm(price ~ .-shop_dis2-shop_dis3-key, data = house)
+summary(lm12)
+
+house <- house %>%
+  select(-shop_dis2, -shop_dis3)
+
+lm13 <- lm(price ~ .-shop_cat-key, data = house)
+summary(lm13)
+
+house <- house %>%
+  select(-shop_cat)
+
+## crime
+lm14 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+summary(lm14)
+
+house <- house %>%
+  select(-crime_dis2, -crime_dis3, -crime_dis4, -crime_dis5)
+
+lm15 <- lm(price ~ .-crime_dis1-key, data = house)
+summary(lm15)
+
+house <- house %>%
+  select(-crime_dis1)
+
+## add fixed effect
+house <- house %>%
+  left_join(hh%>%select(key),by = "key") %>%
+  st_as_sf() %>%
   st_join(., neigh_large) %>%
   st_join(., neigh_small) %>%
   st_join(., neigh_tract)
+str(house)
 ```
 
 ## Split Training and Testing Datasets
