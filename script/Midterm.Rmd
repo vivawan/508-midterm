@@ -2,15 +2,14 @@
 title: "Property Value Prediction Model for Seattle"
 author: "Viva/Yaohan"
 date: "`r Sys.Date()`"
-output:
-   html_document:
+output: 
+  html_document:
     keep_md: yes
     toc: yes
     theme: flatly
     toc_float: yes
     code_folding: hide
     number_sections: no
-    fontsize: 12pt
   pdf_document:
     toc: yes
 ---
