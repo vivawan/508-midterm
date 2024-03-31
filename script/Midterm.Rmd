@@ -28,7 +28,7 @@ if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, janitor, classInt,
        patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer,
        car, FNN, GGally, MASS, ISLR2, spdep, caret, ckanr, grid, gridExtra, ggcorrplot,
-       jtools, broom, tufte, rmarkdown)
+       jtools, broom, tufte, rmarkdown,corrr)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -684,35 +684,35 @@ continuous_description <- data.frame(
   variables = continuous_summary$variables,
   category = rep(c("independent","internal", "socio-economic", "amenities"),
                  times = c(1, 5, 8, 15)),
-  description = c("price of each unit",
-                  "years from built to 2015",
-                  "the number of bedrooms in each unit",
-                  "the number of bathrooms in each unit",
-                  "the area of living of each unit",
-                  "the area of the lot of each unit",
-                  "the number of population per square feet in the census tract",
-                  "the ratio of white people to total population in the census tract",
-                  "the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
-                  "the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
-                  "the percentage of with a bachelor's degree among adults age 25 and older in the census tract",
-                  "median househhold income in the census tract",
-                  "the ratio of the employed to the working age population in the census tract",
-                  "the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract",
-                  "the distance to the nearest subway station",
-                  "the total area of parks located within a 500-foot radius of each unit",
-                  "the ratio of the area of tree canopy to the total area in the measuring space",
-                  "the distance to the nearest medical facility",
-                  "the average distance to the nearest 2 medical facilities",
-                  "the average distance to the nearest 3 medical facilities",
-                  "the distance to the nearest shopping center",
-                  "the average distance to the nearest 2 shopping center",
-                  "the average distance to the nearest 3 shopping center",
-                  "the number of crimes within a 1/8-mile radius around each unit",
-                  "the distance to the nearest crime",
-                  "the average distance to the nearest 2 crime",
-                  "the average distance to the nearest 3 crime",
-                  "the average distance to the nearest 4 crime",
-                  "the average distance to the nearest 5 crime"),
+  description = c("Price: price of each unit",
+                  "Year Used: years from built to 2015",
+                  "No.bedrooms: the number of bedrooms in each unit",
+                  "No.bathrooms: the number of bathrooms in each unit",
+                  "Living Area: the area of living of each unit",
+                  "Lot Area: the area of the lot of each unit",
+                  "Population Density: the number of population per square feet in the census tract",
+                  "White Population Share:the ratio of white people to total population in the census tract",
+                  "Total Dependency Ratio: the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
+                  "Elderly Dependency Ratio: the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
+                  "Bachelor's Degree Rate: the percentage of with a bachelor's degree among adults age 25 and older in the census tract",
+                  "Median Household Income: median househhold income in the census tract",
+                  "Employment Rate: the ratio of the employed to the working age population in the census tract",
+                  "Poverty Rate: the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract",
+                  "Nearest Subway Distance: the distance to the nearest subway station",
+                  "Parks' Area 500ft: the total area of parks located within a 500-foot radius of each unit",
+                  "Tree Canopy Ratio: the ratio of the area of tree canopy to the total area in the measuring space",
+                  "Nearest Medical Distance: the distance to the nearest medical facility",
+                  "Average Distance to 2 Medicals: the average distance to the nearest 2 medical facilities",
+                  "Average Distance to 3 Medicals:the average distance to the nearest 3 medical facilities",
+                  "Nearest shopping Distance:the distance to the nearest shopping center",
+                  "Average Distance to 2 Shoppings:the average distance to the nearest 2 shopping center",
+                  "Average Distance to 3 Shoppings:the average distance to the nearest 3 shopping center",
+                  "No.crime: the number of crimes within a 1/8-mile radius around each unit",
+                  "Nearest Crime Distance: the distance to the nearest crime",
+                  "Average Distance to 2 Crimes:the average distance to the nearest 2 crime",
+                  "Average Distance to 3 Crimes:the average distance to the nearest 3 crime",
+                  "Average Distance to 4 Crimes:the average distance to the nearest 4 crime",
+                  "Average Distance to 5 Crimes:the average distance to the nearest 5 crime"),
   unit = c("$",
            "year", "-","-","sqft","sqft",
            "person / sqft", "%","%","%","%","$","%","%",
@@ -949,29 +949,40 @@ house %>%
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable() %>%
   kable_styling()
-
-
-
-
-
 ```
 
 
 # Exploratory Data Analysis
 
-```{r correlation}
-house %>%
-  st_drop_geometry() %>%
-  pivot_longer(cols = where(is.numeric), names_to = "variable", values_to = "value")%>%
-  ggplot(aes(x = value)) +
-  geom_histogram(bins = 30, fill = "blue", color = "black") + # adjust bin count as needed
-  facet_wrap(~variable,ncol = 4,  scales = "free_x") + # separate plot for each variable
-  labs(x = "Value", y = "Count") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
-  
+## Correlation matrix
 
+```{r correlation}
+# Select only numeric variables and remove rows with missing values
+house_numeric <- house %>%
+  st_drop_geometry() %>%  # Remove geometry column if present
+  select(-key) %>% # delete unrelative column
+  select_if(is.numeric) %>%  # Select only numeric variables
+  na.omit()%>%  # Remove rows with missing values
+  setNames(c("Price","Year Used", "No.bedrooms","No.bathrooms",
+           "Living Area","Lot Area","Population Density","White Population Share",
+           "Total Dependency Ratio","Elderly Dependency Ratio","Bachelor's Degree Rate","Median Household Income",
+           "Employment Rate","Poverty Rate","Nearest Subway Distance","Parks' Area 500ft","Tree Canopy Ratio",
+           "Nearest Medical Distance","Average Distance to 2 Medicals","Average Distance to 3 Medicals",
+           "Nearest Shopping Distance","Average Distance to 2 Shoppings","Average Distance to 3 Shoppings",
+           "No.crime","Nearest Crime Distance","Average Distance to 2 Crimes","Average Distance to 3 Crimes","Average Distance to 4 Crimes","Average Distance to 5 Crimes"))
+
+# Calculate correlation matrix
+correlation_matrix <- cor(house_numeric)
+
+#plot the correlation plot using the corrr library
+house_numeric %>% 
+  corrr::correlate() %>% 
+  autoplot() +
+  geom_text(aes(label = round(r,digits=2)),size = 2)
 ```
+
+
+
 
 ## Four Home Price Correlation Scatterplots
 
