@@ -10,7 +10,7 @@ output:
     toc_float: yes
     code_folding: hide
     number_sections: no
-    fontsize:12pt
+    fontsize: 12pt
   pdf_document:
     toc: yes
 ---
