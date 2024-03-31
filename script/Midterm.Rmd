@@ -1071,19 +1071,20 @@ ggplot() +
 ### School District
 
 ```{r sch_cat}
+# color palette
 colors <- brewer.pal(n = 7, name = "Set3")
-labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
-                 " - ", 
-                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+labels <- c("District One", "District Two", "District Three", "District Four",
+            "District Five", "District Six", "District Seven")
 
-# plot lot square feet
+# plot school district
 ggplot() +
-  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
   geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
           aes(color = sch_cat), size = 1) +
   scale_color_manual(values = colors,
-                    name = "Lot Square Feet (Quantile)") +
-  labs(title = "Lot Square Feet of Houses in Seattle, 2015") +
+                     labels = labels,
+                    name = "School District") +
+  labs(title = "School Districts in Seattle, 2015") +
   theme_void() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
