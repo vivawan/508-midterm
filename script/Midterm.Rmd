@@ -1532,6 +1532,9 @@ seattle.neigh.cv
 ## Final Model
 
 ```{r}
+seattle.train.lm <- seattle.train.lm %>%
+  mutate(T_NAME = as.factor(T_NAME))
+
 lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1,
@@ -1553,9 +1556,9 @@ plot(lm.final.nhood)
 
 ```{r predict_plot}
 ## final model without fixed effect
-seattle.test <-
+reg.test <-
   seattle.test.lm %>%
-  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+  mutate(regression = "Baseline Regression", # add a column indicating the type of regression model used
          price.predict = predict(lm.final, seattle.test.lm), # predict house prices using the trained regression model
          # calculate the difference between predicted and actual house prices
          price.error = price.predict - price,
@@ -1565,10 +1568,14 @@ seattle.test <-
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
 ## model with fixed effect (census tracts)
-seattle.test.nhood <-
-  seattle.test.lm %>%
-  mutate(regression = "neighborhood effects", # add a column indicating the type of regression model used
-         price.predict = predict(lm.final.nhood, seattle.test.lm), # predict house prices using the trained regression model
+train_levels <- levels(lm.final.nhood$model$T_NAME)
+seattle.test.lm.filter <- seattle.test.lm %>%
+  filter(T_NAME %in% train_levels)
+
+reg.test.nhood <-
+  seattle.test.lm.filter %>%
+  mutate(regression = "Neighborhood Effects", # add a column indicating the type of regression model used
+         price.predict = predict(lm.final.nhood, seattle.test.lm.filter), # predict house prices using the trained regression model
          # calculate the difference between predicted and actual house prices
          price.error = price.predict - price,
          # calculate the absolute difference between predicted and actual house prices
@@ -1576,17 +1583,27 @@ seattle.test.nhood <-
          # calculate the absolute percentage error
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-mean(seattle.test$price.AbsError) # 93073.76
-mean(seattle.test7$price.APE) # 18.57%
+## combine two model results
+bothregressions <- 
+  rbind(select(reg.test, starts_with("price"), regression, T_NAME),
+    select(reg.test.nhood, starts_with("price"), regression, T_NAME))
 
-seattle.train <- seattle.train %>%
-  select(-pop_den)
-bothRegressions <- 
-  rbind(
-    select(boston.test, starts_with("SalePrice"), Regression, Name) %>%
-      mutate(lagPriceError = lag.listw(spatialWeights.test, SalePrice.Error)),
-    select(boston.test.nhood, starts_with("SalePrice"), Regression, Name) %>%
-      mutate(lagPriceError = lag.listw(spatialWeights.test, SalePrice.Error)))  
+## plot predicted prices and observed prices
+bothregressions %>%
+  select(price.predict, price, regression) %>%
+  ggplot(aes(price, price.predict)) +
+  geom_point() +
+  stat_smooth(aes(price, price), 
+             method = "lm", se = FALSE, size = 1, color="#b2182b") + 
+  stat_smooth(aes(price, price.predict), 
+              method = "lm", se = FALSE, size = 1, color="#2166ac") +
+  facet_wrap(~regression) +
+  labs(title="Predicted House Price as a Function of Observed Price",
+       subtitle="Red line represents a perfect prediction; Blue line represents prediction",
+       x = "Observed Price", y = "Predicted Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold")) +
+  scale_y_continuous(breaks = seq(0, 2500000, by = 500000))
 ```
 
 ### Map of Residuals
