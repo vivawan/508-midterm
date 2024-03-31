@@ -662,6 +662,7 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 # Data Description
 
 ## Continuous Variable
+
 ```{r continuous_summary}
 # continuous variables
 continuous_summary <- house %>%
@@ -682,7 +683,7 @@ continuous_summary <- house %>%
 
 continuous_description <- data.frame(
   variables = continuous_summary$variables,
-  category = rep(c("independent","internal", "socio-economic", "amenities"),
+  category = rep(c("dependent","internal", "socio-economic", "amenities"),
                  times = c(1, 5, 8, 15)),
   description = c("price of each unit",
                   "years from built to 2015",
@@ -722,9 +723,11 @@ continuous_description <- data.frame(
 continuous_description %>%
   left_join(continuous_summary, by = "variables")%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 ```
+
 ## Categorical Variable
+
 ```{r category summary, message=FALSE, warning=FALSE}
 str(house)
 # categorical variables
@@ -737,7 +740,7 @@ house %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### bed_cat, 0-3,4-7,8+
 house %>%
@@ -751,7 +754,7 @@ house %>%
                          "the unit has 4-7 bedrooms",
                          "the unit has more than 8 bedrooms"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### bath_dum, 0-4, 4+
 house %>%
@@ -764,7 +767,7 @@ house %>%
   mutate(description = c("the unit has 0-4 bathrooms", 
                          "the unit has more than 4 bedrooms"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
          
 ### floor_cat, 1-2+3, 2.5+3.5
 house %>%
@@ -777,7 +780,7 @@ house %>%
   mutate(description = c("the unit has 2.5/3.5 floors",
                          "the unit has 1/1.5/2/3 floors"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### water_dum 
 house %>%
@@ -788,9 +791,8 @@ house %>%
          description = c("the unit isn't located at waterfront area", 
                          "the unit is located at waterfront area"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
-#!!!!!!
 ### view_cat, 0,1,2,3,4
 house %>%
   st_drop_geometry() %>%
@@ -805,7 +807,7 @@ house %>%
                          "the unit has a view scoring 3/4",
                          "the unit has a view scoring 4/4" ))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### condition_cat
 house %>%
@@ -821,7 +823,7 @@ house %>%
                          "the unit's condition scores 4/5",
                          "the unit's condition scores 5/5"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### grade_dum
 house %>%
@@ -834,7 +836,7 @@ house %>%
   mutate(description = c("the unit's grade is 4-9", 
                          "the unit's grade is 10-13"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### bach_dum
 house %>%
@@ -860,7 +862,7 @@ house %>%
   mutate(description = c("the unit is in a census tract with a median household income below the Seattle average", 
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### employ_dum
 house %>%
@@ -873,7 +875,7 @@ house %>%
   mutate(description = c("the unit is in a census tract with a employment rate below the Seattle average", 
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### pover_dum
 house %>%
@@ -886,7 +888,7 @@ house %>%
   mutate(description = c("the unit is in a census tract with a poverty rate below the Seattle average", 
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### sub_cat
 house %>%
@@ -900,7 +902,7 @@ house %>%
                          "the unit is within a 0.5-mile to 1-mile radius of a subway station",
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### sch_cat
 house %>%
@@ -918,7 +920,7 @@ house %>%
                          "the unit is in school district six",
                          "the unit is in school district seven"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### park_cat
 house %>%
@@ -934,7 +936,7 @@ house %>%
                          "the unit is within a 500-feet radius of three park",
                          "the unit is within a 500-feet radius of four park"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 
 ### shop_cat
 house %>%
@@ -948,7 +950,7 @@ house %>%
                          "the unit is within a 0.5-mile to 1-mile radius of a shopping center",
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = F, html_font = "Cambria")
 ```
 
 
@@ -1029,7 +1031,7 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 # plot house price
 ggplot() +
   geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+  geom_sf(data = house,
           aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
   scale_color_manual(values = colors,
                     labels = labels,
@@ -1054,8 +1056,8 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 # plot lot square feet
 ggplot() +
   geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
-          aes(color = cut(sqft_lot, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+  geom_sf(data = house, aes(color = cut(sqft_lot, breaks = breaks_quantiles$brks,
+                                        include.lowest = TRUE)), size = 1) +
   scale_color_manual(values = colors,
                     labels = labels,
                     name = "Lot Square Feet (Quantile)") +
@@ -1075,8 +1077,7 @@ labels <- c("District One", "District Two", "District Three", "District Four",
 # plot school district
 ggplot() +
   geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
-          aes(color = sch_cat), size = 1) +
+  geom_sf(data = house, aes(color = sch_cat), size = 1) +
   scale_color_manual(values = colors,
                      labels = labels,
                     name = "School District") +
@@ -1096,8 +1097,7 @@ labels <- c("District One", "District Two", "District Three", "District Four",
 # plot school district
 ggplot() +
   geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
-          aes(color = sch_cat), size = 1) +
+  geom_sf(data = house, aes(color = sch_cat), size = 1) +
   scale_color_manual(values = colors,
                      labels = labels,
                     name = "School District") +
@@ -1115,10 +1115,7 @@ Process:
 3) delete insignificant var. until all var at p < 0.05
 4) delete var. with large p and examine R^2 & residual
 
-## Original House Price
-
 ## Initial Variables Selection
-
 
 ```{r selection}
 # finalize regression dataset
