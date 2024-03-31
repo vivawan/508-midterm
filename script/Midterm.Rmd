@@ -34,72 +34,59 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
+
+```
+
+```{r read, include=FALSE}
+## read Seattle boundary
+seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
+  st_union() %>%
+  st_as_sf() 
+
+## load census tract data
+census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
+
+acs_variable_list.2015 <- load_variables(2015, # year
+                                         "acs5", # five year ACS estimates
+                                         cache = TRUE)
+
+acs_vars <- c("B01003_001E", # total population
+              "B01001A_001E", # white alone
+              "B01001_003E", # male under 5
+              "B01001_004E", # male 5-9
+              "B01001_005E", # male 10-14
+              "B01001_020E", # male 65-66
+              "B01001_021E", # male 67-69
+              "B01001_022E", # male 70-74
+              "B01001_023E", # male 75-79
+              "B01001_024E", # male 80-84
+              "B01001_025E", # male over 85
+              "B01001_027E", # female under 5
+              "B01001_028E", # female 5-9
+              "B01001_029E", # female 10-14
+              "B01001_044E", # female 65-66
+              "B01001_045E", # female 67-69
+              "B01001_046E", # female 70-74
+              "B01001_047E", # female 75-79
+              "B01001_048E", # female 80-84
+              "B01001_049E", # female over 85
+              "B15003_001E", # educational attainment over 25
+              "B15003_022E", # bachelor's degree
+              "B19013_001E", # median household income
+              "B23025_004E", # employed labor force
+              "B23025_003E", # total labor force
+              "B17020_002E") # income below poverty level
 ```
 
 
 # Introduction
 
-This report elaborate on the process of developing and refining a comprehensive predictive model that accurately forecasts housing prices for King County, Washington (Seattle).
+- goal
+- methods of data collection
+- analysis area: housing unit in Seattle, exclude one housing unit with an extremely high price over 7 million.
+- show house location
 
-???by integrating both structural and locational attributes. The model aims to discern how various housing characteristics, such as size, age, and amenities, along with locational factors, including proximity to services, neighborhood quality, and accessibility, collectively impact property values.
-
-
-# Data Wrangling
-
-## Data Selection
-
-**1. Internal Characteristics**
-- Year used (continuous)
-- Renovation (dummy)
-- Bedroom (continuous + category)
-- Bathroom (continuous + category)
-- Floors (continuous + category)
-- Living area (continuous)
-- Lot area (continuous)
-- Waterfront (dummy)
-- View (category)
-- Condition (category)
-- Grade (category)
-
-**2. Socio-economic Characteristics**
-- Population density (continuous)
-- White population share (continuous)
-- Age structure (continuous)
-- Education level (continuous + dummy)
-- Median household income (continuous + dummy)
-- Employment rate (continuous + dummy)
-- Poverty rate (continuous + dummy)
-
-**3. Amenities Services**
-- Subway Station (distance + category)
-- School District (category)
-- Park (area + count)
-- Medical Facilities (distance + category)
-- Commercial center (distance + count)
-- Crime rate (distance + )
-
-reference: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-investors-find-good-properties
-
-**4. Spatial Structure**
-- Large district
-- Small district
-
-## Boundary and House
-
-```{r Seattle_boundary}
-# read Seattle boundary
-seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
-  st_union() %>%
-  st_as_sf() 
-
-ggplot() + 
-    geom_sf(data = seattle, color = "#d7191c", linewidth = 0.4) +  # add Seattle boundary
-    labs(title = "Seattle, King County") +  # set plot title
-    theme_void() +
-    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-```
-
-```{r house_location}
+```{r house_location, echo=FALSE, message=FALSE}
 # import house data
 kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
@@ -118,28 +105,61 @@ hh <- kc_hh %>%
   st_intersection(seattle)
 
 # plot Seattle house location
-ggplot() + 
-    geom_sf(data = seattle, color = "#b2182b", linewidth = 0.5) +  # add Seattle boundary
-    geom_sf(data = hh, color = "#2166ac", size = 0.5, pch = 16) +  # add house location
-    labs(title = "Seattle House Location") +  # set plot title
-    theme_void() +
-    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+# ggplot() + 
+#     geom_sf(data = seattle, aes(color = "Seattle Boundary"), linewidth = 0.5) +  # add Seattle boundary
+#     geom_sf(data = hh, aes(color = "House Locations"), size = 0.5, pch = 16) +  # add house location
+#     labs(title = "Seattle House Location",
+#          color = "Legend") +  # set plot title
+#   scale_color_manual(values = c("Seattle Boundary" = "#b2182b", "House Locations" = "#2166ac")) +
+#     theme_void() +
+#     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 #examine house id
-length(unique(hh$id))#6691 < 6740
+hh.id<-length(unique(hh$id))#6691 < 6740
 #add an unique key
 hh$key <- 1:nrow(hh)
 
 #exclude outliers with extremely high price
-hist(hh$price)
-hh[hh$price > 3000000,]
 hh <- hh %>%
   filter(!price > 5000000)
+
+ggplot() + 
+  geom_sf(data = seattle, aes(fill = "Seattle Boundary"), color = NA) +  # Use fill for polygon, label "Legend"
+  geom_sf(data = hh, aes(color = "Housing Units", shape = "Housing Units"), size = 0.5) +  # Use color and shape for points, label "Legend"
+  labs(title = "Housing Unit Locations in Seattle", 
+       color = "Legend",  # This now acts as the legend title for both fill and color
+       fill = NULL,  # Hide separate fill legend
+       shape = NULL) +  # Hide separate shape legend, if unnecessary
+  scale_fill_manual(values = c("Seattle Boundary" = "grey90")) +  # Set polygon fill color
+  scale_color_manual(values = c("Housing Units" = "#2166ac"), name = "Legend") +  # Set point color and unified legend title
+  scale_shape_manual(values = c("Housing Units" = 16), guide = FALSE) +  # Set point shape, hide shape guide if it's redundant
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        legend.position = "right")  # Customize legend position
 ```
 
-## Internal Characteristics
 
-```{r internal, message = FALSE, warning = FALSE}
+# Data Description
+
+## Variable Selection
+- four categories
+- first selection based on literature theory
+- category reclassification based on plot
+
+**1. Internal Characteristics**
+- Year used (continuous)
+- Renovation (dummy)
+- Bedroom (continuous + category)
+- Bathroom (continuous + category)
+- Floors (continuous + category)
+- Living area (continuous)
+- Lot area (continuous)
+- Waterfront (dummy)
+- View (category)
+- Condition (category)
+- Grade (category)
+
+```{r internal, message=FALSE, warning=FALSE, include=FALSE}
 # add year_used and renovation and ensure categorical data are factor
 house <- hh %>% 
   mutate(year_used = 2015 - yr_built, # used year
@@ -209,20 +229,6 @@ table(house$floor_cat)
 house <- house%>%
   mutate(grade_dum = factor(ifelse(grade <= 9, "low","high"), levels = c("low","high")))
 
-#other category variables
-colnames(house)
-str(house)
-house %>% 
-  st_drop_geometry()%>%
-  dplyr::select(price, reno_dum, bed_cat, bath_dum,floor_cat,
-                water_dum,view_cat,condition_cat, grade_dum) %>%
-  gather(Variable, Value, -price) %>% 
-   ggplot(aes(Value, price)) +
-     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 4, scales = "free") +
-     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
-     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 # select variables
 house <- house %>%
   select("key", "price","year_used","reno_dum",
@@ -231,51 +237,16 @@ house <- house %>%
          "water_dum", "view_cat", "condition_cat", "grade_dum")
 ```
 
-## Socio-economic Characteristics
+**2. Socio-economic Characteristics**
+- Population density (continuous)
+- White population share (continuous)
+- Age structure (continuous)
+- Education level (continuous + dummy)
+- Median household income (continuous + dummy)
+- Employment rate (continuous + dummy)
+- Poverty rate (continuous + dummy)
 
-```{r acs_vars, results='hide'}
-census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
-
-acs_variable_list.2015 <- load_variables(2015, # year
-                                         "acs5", # five year ACS estimates
-                                         cache = TRUE)
-
-acs_vars <- c("B01003_001E", # total population
-              "B01001A_001E", # white alone
-              "B01001_003E", # male under 5
-              "B01001_004E", # male 5-9
-              "B01001_005E", # male 10-14
-              "B01001_020E", # male 65-66
-              "B01001_021E", # male 67-69
-              "B01001_022E", # male 70-74
-              "B01001_023E", # male 75-79
-              "B01001_024E", # male 80-84
-              "B01001_025E", # male over 85
-              "B01001_027E", # female under 5
-              "B01001_028E", # female 5-9
-              "B01001_029E", # female 10-14
-              "B01001_044E", # female 65-66
-              "B01001_045E", # female 67-69
-              "B01001_046E", # female 70-74
-              "B01001_047E", # female 75-79
-              "B01001_048E", # female 80-84
-              "B01001_049E", # female over 85
-              "B15003_001E", # educational attainment over 25
-              "B15003_022E", # bachelor's degree
-              "B19013_001E", # median household income
-              "B23025_004E", # employed labor force
-              "B23025_003E", # total labor force
-              "B17020_002E") # income below poverty level
-```
-
-- age structure
-- reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
-
-- education level
-- reference: "The findings show that higher education does have a positive relationship to the house prices in Sweden."
-https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
-
-```{r get_acs_2015}
+```{r socio-economic variable, results='hide', include=FALSE}
 acsTractsSeattle.2015 <- get_acs(geography = "tract",
                              year = 2015, 
                              variables = acs_vars,
@@ -324,35 +295,19 @@ acsTractsSeattle.2015 <- acsTractsSeattle.2015 %>%
   select(GEOID, NAME, pop_den, white_share, total_dep, elder_dep, bach_share, bach_dum, median_hh_income,
          median_hh_dum, employ_rate, employ_dum, pover_rate, pover_dum)
 
+# assign census tract characteristics to house
 house <- house %>%
-  st_join(., acsTractsSeattle.2015) %>%
-  filter(!is.na(pop_den)) # remove NA, one house may outside the boundary of census tracts
+  st_join(., acsTractsSeattle.2015) 
+
+# remove NA, one house may outside the boundary of census tracts
+house <- house %>%
+  filter(!is.na(pop_den)) 
 
 # frequency of dummy variables
 table(house$bach_dum)
 table(house$median_hh_dum)
 table(house$employ_dum)
 table(house$pover_dum)
-
-## plot mean house price of bach_dum
-ggplot(house %>% st_drop_geometry() %>% group_by(bach_dum) %>%
-  summarise(aver_price = mean(price))) +
-  geom_col(aes(bach_dum,aver_price))
-
-## plot mean price of median_hh_dum
-ggplot(house %>% st_drop_geometry() %>% group_by(median_hh_dum) %>%
-  summarise(aver_price = mean(price))) +
-  geom_col(aes(median_hh_dum,aver_price))
-
-## plot mean price of employ_dum
-ggplot(house %>% st_drop_geometry() %>% group_by(employ_dum) %>%
-  summarise(aver_price = mean(price))) +
-  geom_col(aes(employ_dum,aver_price))
-
-## plot mean price of pover_dum
-ggplot(house %>% st_drop_geometry() %>% group_by(pover_dum) %>%
-  summarise(aver_price = mean(price))) +
-  geom_col(aes(pover_dum,aver_price))
 
 ## plot all the mean of dummy variables
 house %>% 
@@ -366,19 +321,15 @@ house %>%
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Amenities Characteristics
+**3. Amenities Services**
+- Subway Station (distance + category)
+- School District (category)
+- Park (area + count)
+- Medical Facilities (distance + category)
+- Commercial center (distance + count)
+- Crime rate (distance + )
 
-### subway station
-
-- variable  
-1) distance to the nearest station
-2) categories based on distance (0-0.5/0.5-1/1+ mile) (0.5mile = 2640ft)  
-
-- reference: "houses within a quarter mile to a half mile of a Metro station sold for 7.5% more, and houses within a half mile to a mile sold for 3.9% more." https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.
-
-- source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
-
-```{r subway}
+```{r subway, include=FALSE}
 #read station point data
 sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))%>%
   st_transform(st_crs(house))
@@ -398,35 +349,18 @@ house <- house %>%
 
 ```
 
-### school district
-
-- variable: the name of the school district
-
-- reference: "the price differentials for similar homes — same square footage, number of bedrooms and baths — that are located near each other but served by different school districts can range from tens of thousands to hundreds of thousands of dollars." https://www.seattletimes.com/business/how-much-do-good-schools-boost-home-prices/  
-
-- source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
-
-```{r school}
+```{r school, include=FALSE}
 sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))%>%
   st_transform(st_crs(house))
 
 # add the school district variable
 house <- house %>% 
   st_join(sch%>%select(DIRDST), join = st_within)%>%
-  rename(sch_cat = "DIRDST")
+  rename(sch_cat = "DIRDST")%>%
+  mutate(sch_cat = factor(sch_cat, levels = c("DD1","DD2","DD3","DD4","DD5","DD6","DD7"))) 
 ```
 
-### parks
-
-- variable: 
-1) area of parks within 500 feet radius
-2) count of parks within 500 feet radius
-
-- reference: "Most community-sized parks (~40 acres) had a substantial impact on home prices up to a distance of 500 to 600 feet. While the influence of larger parks extended out to 2,000 feet, beyond 500 feet the influence was relatively small." https://www.naturequant.com/blog/Impact-of-Parks-on-Property-Value/  
-
-- source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
-
-```{r park}
+```{r park, include=FALSE}
 park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))%>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)%>%
@@ -447,17 +381,7 @@ house <- house %>%
   rename(parks_area = all_park_area)
 ```
 
-### tree canopy
-
-- variable:
-1) percent of existing tree canopy (2016, hexagons)
-
-- reference: "a city facing major development pressure — trees were associated with an increase in single family home values"
-https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
-
-- source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
-
-```{r tree_canopy}
+```{r tree_canopy, include=FALSE}
 tree_canopy_2016 <- st_read(here::here("data/raw/Amenities/Tree_Canopy.geojson"))%>%
   st_transform(st_crs(house)) %>%
   mutate(tree_canopy = round(TreeCanopy_2016_Percent, digits = 2)) %>%
@@ -467,17 +391,7 @@ house <- house %>%
   st_join(., tree_canopy_2016)
 ```
 
-### medical facilities
-
-- variable: 
-1) average distance to the nearest 1/2/3 medical facilities
-2) categories based on distance (0-0.5/0.5-1/1+ mile)
-
-- reference: "hospitals would only be highly evaluated in a ‘close-but-not-too-close’ geographic location" https://www.researchgate.net/publication/282942128_The_non-linearity_of_hospitals'_proximity_on_property_prices_experiences_from_Taipei_Taiwan
-
-- source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
-
-```{r medical}
+```{r medical, echo=FALSE}
 med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospitals___medical_facilities_point.geojson"))%>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
@@ -500,24 +414,7 @@ house <- house %>%
   ))
 ```
 
-### commercial
-
-- variable:  
-1) average distance to the nearest 1/2/3 shops
-2) categories based on distance (0-0.5/0.5-1/1+ mile)
-
-- reference: 
-1) "an inverse relationship between the housing price and its distance from the shopping mall" https://www.diva-portal.org/smash/get/diva2:1450713/FULLTEXT01.pdf  
-2) "Notwithstanding the negative externalities of shopping centres, residential
-properties within 100-metre radius of shopping centres command a higher premium
-than those farther away although the price-distance relationship is not monotonic
-while the proximity factor varies from housing estate to housing estate." https://www.prres.org/uploads/746/1752/Addae-Dapaah_Shopping_Centres_Proximate_Residential_Properties.pdf
-
-- source:https://gis-kingcounty.opendata.arcgis.com/datasets/4fdb4709874b46cf8dbb284182ca0094_383/explore?showTable=true  
-Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb4709874b46cf8dbb284182ca0094/info/metadata/metadata.xml?format=default&output=html
-- 690 Shopping Centers
-
-```{r commercial}
+```{r commercial, include=FALSE}
 mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))%>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
@@ -544,18 +441,7 @@ house <- house %>%
   ),levels = c("within0.5mile","0.5-1mile","1+mile")))
 ```
 
-### crime
 
-- variable:
-1) count of crimes within a 1/8 mi
-2) average distance to the nearest 1/2/3/4/5 crimes (robbery and  assault only)
-
-- reference:"only robbery and aggravated assault crimes (per acre) exert a meaningful influence upon neighborhood housing values." https://sciencedirect.com/science/article/pii/S0166046210000086#aep-abstract-id3
-"The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
-
-- source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
-
-**To avoid rerunning the huge dataset:**
 ```{r crime_clean, eval}
 # crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
 
@@ -616,28 +502,12 @@ house <-  house %>%
                                       st_coordinates(crime), k = 5))
 ```
 
-### inspect categories
+**4. Spatial Structure**
+- Large District
+- Small District
+- Census Tract
 
-```{r amenities category}
-#plot all the mean of categorical variables
-house %>% 
-  st_drop_geometry()%>%
-  dplyr::select(price ,sub_cat, park_cat, med_cat,shop_cat,sch_cat) %>%
-  gather(Variable, Value, -price) %>% 
-   ggplot(aes(Value, price)) +
-     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 2, scales = "free") +
-     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
-     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-#-> med_cat not useful
-
-house <- house %>%
-  select(-med_cat)
-```
-
-## Spatial Structure
-
-```{r fixed_effect}
+```{r fixed_effect, include=FALSE}
 # large neighborhoods
 neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) %>%
   st_transform(st_crs(house)) %>%
@@ -657,12 +527,32 @@ neigh_tract <- acsTractsSeattle.2015 %>%
   st_intersection(seattle)
 ```
 
-
-# Data Description
-
 ## Continuous Variable
+- exclude outliers based on scatter plots
+```{r continuous_clean, echo=FALSE}
+# exclude outlier
+house <- house%>%
+  filter(bedrooms<30 & crime_dis1 < 750 & bathrooms < 6)
 
-```{r continuous_summary}
+# plot the final continuous variable
+st_drop_geometry(house) %>% 
+  select(-key)%>%
+  select_if(is.numeric) %>%
+  gather(Variable, Value, -price) %>% 
+   ggplot(aes(Value, price)) +
+     geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
+     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     labs(title = "Price as a function of continuous variables") +
+  theme(text = element_text(size = 12), # Default text size for all text
+          plot.title = element_text(size = 8, face = "bold"), # Title
+          axis.text = element_text(size = 8), # Axis text
+          axis.title = element_text(size = 8), # Axis titles
+          strip.text = element_text(size = 8)) # Facet label text
+     
+```
+
+- statistical summary
+```{r continuous_summary, echo=FALSE}
 # continuous variables
 continuous_summary <- house %>%
   st_drop_geometry() %>%
@@ -726,10 +616,32 @@ continuous_description %>%
 ```
 
 ## Categorical Variable
+- make sure all category variables have significant difference between the means of housing price in different groups
+```{r category mean plot, echo=FALSE}
+# exclude useless variable
+house <- house %>%
+  select(-med_cat)
 
-```{r category summary, message=FALSE, warning=FALSE}
-# categorical variables
+#plot all the mean of price on each final categorical variable
+house %>% 
+  st_drop_geometry()%>%
+  select(-GEOID,-NAME)%>%
+  select(price,reno_dum, bed_cat, bath_dum,
+                floor_cat,water_dum, view_cat, condition_cat, grade_dum, bach_dum, median_hh_dum, employ_dum, pover_dum, sub_cat, sch_cat, park_cat, shop_cat)%>%
+  gather(Variable, Value, -price) %>% 
+   ggplot(aes(Value, price)) +
+     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
+     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
+     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+```
+
+
+- statistical summary
+
+**Renovation Status**
+```{r reno_dum_sum, echo=FALSE}
 ### reno_dum
 house %>%
   st_drop_geometry() %>%
@@ -738,8 +650,11 @@ house %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Category of Bedroom Count**
+```{r bed_cat_sum, echo=FALSE}
 ### bed_cat, 0-3,4-7,8+
 house %>%
   st_drop_geometry() %>%
@@ -752,8 +667,11 @@ house %>%
                          "the unit has 4-7 bedrooms",
                          "the unit has more than 8 bedrooms"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Category of Bathroom Count**
+```{r bath_dum_sum, echo=FALSE}
 ### bath_dum, 0-4, 4+
 house %>%
   st_drop_geometry() %>%
@@ -765,8 +683,10 @@ house %>%
   mutate(description = c("the unit has 0-4 bathrooms", 
                          "the unit has more than 4 bedrooms"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-         
+  kable_classic(full_width = T, html_font = "Cambria")
+```
+**Category by Floors**
+```{r floor_cat_sum, echo=FALSE}
 ### floor_cat, 1-2+3, 2.5+3.5
 house %>%
   st_drop_geometry() %>%
@@ -778,8 +698,11 @@ house %>%
   mutate(description = c("the unit has 2.5/3.5 floors",
                          "the unit has 1/1.5/2/3 floors"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Location by Waterfront **
+```{r water_dum_sum,echo=FALSE}
 ### water_dum 
 house %>%
   st_drop_geometry() %>%
@@ -789,8 +712,11 @@ house %>%
          description = c("the unit isn't located at waterfront area", 
                          "the unit is located at waterfront area"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**View Quality**
+```{r view_cat_sum}
 ### view_cat, 0,1,2,3,4
 house %>%
   st_drop_geometry() %>%
@@ -805,8 +731,11 @@ house %>%
                          "the unit has a view scoring 3/4",
                          "the unit has a view scoring 4/4" ))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Condition Level**
+```{r condition_cat_sum}
 ### condition_cat
 house %>%
   st_drop_geometry() %>%
@@ -821,8 +750,11 @@ house %>%
                          "the unit's condition scores 4/5",
                          "the unit's condition scores 5/5"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Grade Level**
+```{r grade_dum_sum, echo=FALSE}
 ### grade_dum
 house %>%
   st_drop_geometry() %>%
@@ -834,8 +766,11 @@ house %>%
   mutate(description = c("the unit's grade is 4-9", 
                          "the unit's grade is 10-13"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Bachelor's Degree Rate Level**
+```{r bach_dum_sum, echo=FALSE}
 ### bach_dum
 house %>%
   st_drop_geometry() %>%
@@ -847,8 +782,11 @@ house %>%
   mutate(description = c("the unit is in a census tract with a bachelor's degree rate below the Seattle average", 
                          "the unit is in a census tract with a bachelor's degree rate above the Seattle average"))%>%
   kable() %>%
-  kable_styling()
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Median Household Income Level**
+```{r median_hh_dum_sum, echo=FALSE}
 ### median_hh_dum
 house %>%
   st_drop_geometry() %>%
@@ -860,8 +798,11 @@ house %>%
   mutate(description = c("the unit is in a census tract with a median household income below the Seattle average", 
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Employment Rate Level**
+```{r employ_dum_sum, echo=FALSE}
 ### employ_dum
 house %>%
   st_drop_geometry() %>%
@@ -873,8 +814,11 @@ house %>%
   mutate(description = c("the unit is in a census tract with a employment rate below the Seattle average", 
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Poverty Rate Level**
+```{r pover_dum_sum, echo=FALSE}
 ### pover_dum
 house %>%
   st_drop_geometry() %>%
@@ -886,8 +830,11 @@ house %>%
   mutate(description = c("the unit is in a census tract with a poverty rate below the Seattle average", 
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Category by Subway Distance**
+```{r sub_cat_sum, echo=FALSE}
 ### sub_cat
 house %>%
   st_drop_geometry() %>%
@@ -900,8 +847,11 @@ house %>%
                          "the unit is within a 0.5-mile to 1-mile radius of a subway station",
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**School District**
+```{r sch_cat_sum, echo=FALSE}
 ### sch_cat
 house %>%
   st_drop_geometry() %>%
@@ -918,8 +868,11 @@ house %>%
                          "the unit is in school district six",
                          "the unit is in school district seven"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Number of nearby Parks**
+```{r park_cat_sum, echo=FALSE}
 ### park_cat
 house %>%
   st_drop_geometry() %>%
@@ -934,8 +887,11 @@ house %>%
                          "the unit is within a 500-feet radius of three park",
                          "the unit is within a 500-feet radius of four park"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
+```
 
+**Category by Shopping Center Distance**
+```{r shop_cat_sum, echo=FALSE}
 ### shop_cat
 house %>%
   st_drop_geometry() %>%
@@ -948,13 +904,17 @@ house %>%
                          "the unit is within a 0.5-mile to 1-mile radius of a shopping center",
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = T, html_font = "Cambria")
 ```
 
 
+```{r}
+
+```
+
+
+
 # Exploratory Data Analysis
-
-
 ## Correlation matrix
 
 ```{r correlation, message=FALSE}
@@ -979,7 +939,7 @@ correlation_matrix <- cor(house_numeric)
 house_numeric %>% 
   corrr::correlate() %>% 
   autoplot() +
-  geom_text(aes(label = round(r,digits=2)),size = 2)
+  geom_text(aes(label = round(r,digits=2)),size = 1)
 ```
 
 
@@ -987,7 +947,7 @@ house_numeric %>%
 
 ## Four Home Price Correlation Scatterplots
 
-### Living Area Square Feet
+**Living Area Square Feet**
 
 ```{r sqft_living}
 ggplot(house) +
@@ -999,7 +959,7 @@ ggplot(house) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-### Median Household Income (Census Tract)
+**Median Household Income (Census Tract)**
 
 ```{r median_hh_income}
 ggplot(house) +
@@ -1011,7 +971,7 @@ ggplot(house) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-### Distance to the Nearest Shopping Center
+**Distance to the Nearest Shopping Center**
 
 ```{r shop_dis1}
 ggplot(house) +
@@ -1023,7 +983,7 @@ ggplot(house) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-### Crime Count within 1/8 mile of Each House
+**Crime Count within 1/8 mile of Each House**
 
 ```{r crime_c}
 ggplot(house) +
@@ -1060,7 +1020,7 @@ ggplot() +
 
 ## Three Maps of Independent Variables
 
-### Lot Square Feet
+**Lot Square Feet**
 
 ```{r sqft_lot}
 # quantile break and color palette
@@ -1083,7 +1043,7 @@ ggplot() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-### School District
+**School District**
 
 ```{r sch_cat}
 # color palette
@@ -1103,7 +1063,7 @@ ggplot() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-### White Population Share
+**White Population Share**
 
 ```{r white_share}
 # quantile break and color palette
@@ -1130,20 +1090,19 @@ ggplot() +
 # Modeling
 
 Process:
-1) whole data set -> run lm -> select one var in each category
-2) split data set -> run lm on training data set -> run vif and cor -> deal with multicollinearity
-3) delete insignificant var. until all var at p < 0.05
-4) delete var. with large p and examine R^2 & residual
+ 
+2) split data set -> run lm on training data set -> run vif and cor -> deal with multicollinearity  
+3) delete insignificant var. until all var at p < 0.05  
+4) delete var. with large p and examine R^2 & residual  
 
 ## Initial Variables Selection
-
-```{r selection}
+- whole data set -> run lm -> select one var in each category 
+- selection rule: for each factor, choose only one variable with the significance
+```{r selection, include=FALSE}
 # finalize regression dataset
 house <- house %>%
-  mutate(parks_area_log = log(parks_area + 1)) %>%
   select(-GEOID, -NAME) %>%
   st_drop_geometry()
-str(house)
 
 # select continuous or categorical variable
 lm1 <- lm(price ~ .-key, data = house)
@@ -1151,89 +1110,103 @@ summary(lm1)
 
 ## bedroom
 lm2 <- lm(price ~ .-bed_cat-key, data = house)
-summary(lm2)
+lm2.2 <- lm(price ~ .-bedrooms-key, data = house)
+stargazer(lm2,lm2.2, type="text")
 
 house <- house %>%
   select(-bed_cat)
 
 ## bathroom
 lm3 <- lm(price ~ .-bathrooms-key, data = house)
-summary(lm3)
+lm3.2 <- lm(price ~ .-bath_dum-key, data = house)
+stargazer(lm3,lm3.2, type="text")
 
 house <- house %>%
   select(-bathrooms)
 
 ## dependency
 lm4 <- lm(price ~ .-total_dep-key, data = house)
-summary(lm4)
+lm4.2 <- lm(price ~ .-elder_dep-key, data = house)
+stargazer(lm4,lm4.2, type="text")
 
 house <- house %>%
   select(-total_dep)
 
 ## bachelor degree
 lm5 <- lm(price ~ .-bach_dum-key, data = house)
-summary(lm5)
+lm5.2 <- lm(price ~ .-bach_share-key, data = house)
+stargazer(lm5,lm5.2, type="text")
 
 house <- house %>%
   select(-bach_dum)
 
 ## median household income
 lm6 <- lm(price ~ .-median_hh_dum-key, data = house)
-summary(lm6)
+lm6.2 <- lm(price ~ .-median_hh_income-key, data = house)
+stargazer(lm6,lm6.2, type="text")
 
 house <- house %>%
   select(-median_hh_dum)
 
 ## employment
 lm7 <- lm(price ~ .-employ_dum-key, data = house)
-summary(lm7)
+lm7.2 <- lm(price ~ .-employ_rate-key, data = house)
+stargazer(lm7,lm7.2, type="text")
 
 house <- house %>%
   select(-employ_dum)
 
 ## poverty
 lm8 <- lm(price ~ .-pover_dum-key, data = house)
-summary(lm8)
+lm8.2 <- lm(price ~ .-pover_rate-key, data = house)
+stargazer(lm8,lm8.2, type="text")
 
 house <- house %>%
   select(-pover_dum)
 
 ## subway station
 lm9 <- lm(price ~ .-sub_cat-key, data = house)
-summary(lm9)
+lm9.2 <- lm(price ~ .-sub_dis-key, data = house)
+stargazer(lm9,lm9.2, type="text")
 
 house <- house %>%
   select(-sub_cat)
 
 ## park
-lm10 <- lm(price ~ .-parks_area-parks_area_log-key, data = house)
-summary(lm10)
+lm10 <- lm(price ~ .-parks_area-key, data = house)
+lm10.2 <- lm(price ~ .-park_cat-key, data = house)
+stargazer(lm10,lm10.2, type="text")
 
 house <- house %>%
-  select(-parks_area, -parks_area_log)
+  select(-parks_area)
 
 ## medical facility
 lm11 <- lm(price ~ .-med_dis2-med_dis3-key, data = house)
-summary(lm11)
+lm11.2 <- lm(price ~ .-med_dis1-med_dis2-key, data = house)
+lm11.3 <- lm(price ~ .-med_dis1-med_dis3-key, data = house)
+stargazer(lm11,lm11.2,lm11.3, type="text")
 
 house <- house %>%
   select(-med_dis2, -med_dis3)
 
 ## shopping center
-lm12 <- lm(price ~ .-shop_dis2-shop_dis3-key, data = house)
-summary(lm12)
+lm12 <- lm(price ~ .-shop_dis2-shop_dis3-shop_cat-key, data = house)
+lm12.2 <- lm(price ~ .-shop_dis1-shop_dis2-shop_cat-key, data = house)
+lm12.3 <- lm(price ~ .-shop_dis1-shop_dis3-shop_cat-key, data = house)
+lm12.4 <- lm(price ~ .-shop_dis1-shop_dis2-shop_dis3-key, data = house)
+stargazer(lm12,lm12.2,lm12.3,lm12.4, type="text")
 
 house <- house %>%
-  select(-shop_dis2, -shop_dis3)
+  select(-shop_dis2, -shop_dis3,-shop_cat)
 
-lm13 <- lm(price ~ .-shop_cat-key, data = house)
-summary(lm13)
-
-house <- house %>%
-  select(-shop_cat)
 
 ## crime
 lm14 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+lm14.2 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+lm14.3 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+lm14.4 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+lm14.5 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+lm14.6 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
 summary(lm14)
 
 house <- house %>%
@@ -1613,4 +1586,102 @@ bothregressions %>%
 
 
 # Conclusion
+
+
+
+#Appendix1: Variable Selection Reference
+
+## Socio-economic characteristics
+
+### age structure
+- variable
+1)  
+2)  
+- reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
+
+### education level
+- variable: 
+- reference: "The findings show that higher education does have a positive relationship to the house prices in Sweden."
+https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
+
+## Amenities Characteristics
+
+Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-investors-find-good-properties  
+
+### subway station
+
+- variable  
+1) distance to the nearest station
+2) categories based on distance (0-0.5/0.5-1/1+ mile) (0.5mile = 2640ft)  
+
+- reference: "houses within a quarter mile to a half mile of a Metro station sold for 7.5% more, and houses within a half mile to a mile sold for 3.9% more." https://www.freddiemac.com/research/insight/20191002-metro-station-impact#:~:text=Similarly%2C%20houses%20within%20a%20quarter,mile%20sold%20for%203.9%25%20more.
+
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
+
+### school district
+
+- variable: the name of the school district
+
+- reference: "the price differentials for similar homes — same square footage, number of bedrooms and baths — that are located near each other but served by different school districts can range from tens of thousands to hundreds of thousands of dollars." https://www.seattletimes.com/business/how-much-do-good-schools-boost-home-prices/  
+
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
+
+### parks
+
+- variable: 
+1) area of parks within 500 feet radius
+2) count of parks within 500 feet radius
+
+- reference: "Most community-sized parks (~40 acres) had a substantial impact on home prices up to a distance of 500 to 600 feet. While the influence of larger parks extended out to 2,000 feet, beyond 500 feet the influence was relatively small." https://www.naturequant.com/blog/Impact-of-Parks-on-Property-Value/  
+
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
+
+### tree canopy
+
+- variable:
+1) percent of existing tree canopy (2016, hexagons)
+
+- reference: "a city facing major development pressure — trees were associated with an increase in single family home values"
+https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
+
+- source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
+
+### medical facilities
+
+- variable: 
+1) average distance to the nearest 1/2/3 medical facilities
+2) categories based on distance (0-0.5/0.5-1/1+ mile)
+
+- reference: "hospitals would only be highly evaluated in a ‘close-but-not-too-close’ geographic location" https://www.researchgate.net/publication/282942128_The_non-linearity_of_hospitals'_proximity_on_property_prices_experiences_from_Taipei_Taiwan
+
+- source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
+
+
+### commercial
+
+- variable:  
+1) average distance to the nearest 1/2/3 shops
+2) categories based on distance (0-0.5/0.5-1/1+ mile)
+
+- reference: 
+1) "an inverse relationship between the housing price and its distance from the shopping mall" https://www.diva-portal.org/smash/get/diva2:1450713/FULLTEXT01.pdf  
+2) "Notwithstanding the negative externalities of shopping centres, residential
+properties within 100-metre radius of shopping centres command a higher premium
+than those farther away although the price-distance relationship is not monotonic
+while the proximity factor varies from housing estate to housing estate." https://www.prres.org/uploads/746/1752/Addae-Dapaah_Shopping_Centres_Proximate_Residential_Properties.pdf
+
+- source:https://gis-kingcounty.opendata.arcgis.com/datasets/4fdb4709874b46cf8dbb284182ca0094_383/explore?showTable=true  
+Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb4709874b46cf8dbb284182ca0094/info/metadata/metadata.xml?format=default&output=html
+- 690 Shopping Centers
+
+### crime
+
+- variable:
+1) count of crimes within a 1/8 mi
+2) average distance to the nearest 1/2/3/4/5 crimes (robbery and  assault only)
+
+- reference:"only robbery and aggravated assault crimes (per acre) exert a meaningful influence upon neighborhood housing values." https://sciencedirect.com/science/article/pii/S0166046210000086#aep-abstract-id3
+"The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
+
+- source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
 
