@@ -1106,20 +1106,23 @@ ggplot() +
 
 ### White Population Share
 
-```{r sch_cat}
-# color palette
-colors <- brewer.pal(n = 7, name = "Set3")
-labels <- c("District One", "District Two", "District Three", "District Four",
-            "District Five", "District Six", "District Seven")
+```{r white_share}
+# quantile break and color palette
+breaks_quantiles <- classIntervals(acsTractsSeattle.2015$white_share, n = 5, style = "quantile")
+colors <- brewer.pal(n = 5, name = "Blues")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
 
-# plot school district
+# plot white population share
 ggplot() +
-  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = house, aes(color = sch_cat), size = 1) +
-  scale_color_manual(values = colors,
-                     labels = labels,
-                    name = "School District") +
-  labs(title = "School Districts in Seattle, 2015") +
+  geom_sf(data = st_intersection(acsTractsSeattle.2015, seattle),
+          aes(fill = cut(white_share, breaks = breaks_quantiles$brks, include.lowest = TRUE)),
+          color = "#ECECEC") +
+  scale_fill_manual(values = colors,
+                    labels = labels,
+                    name = "White Population Share (Quantile)") +
+  labs(title = "White Population Share of Different Census Tracts in Seattle, 2015") +
   theme_void() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
@@ -1129,7 +1132,7 @@ ggplot() +
 
 Process:
 1) whole data set -> run lm -> select one var in each category
-2) split data set -> run lm on trainning data set -> run vif and cor -> deal with multicolinearity
+2) split data set -> run lm on training data set -> run vif and cor -> deal with multicollinearity
 3) delete insignificant var. until all var at p < 0.05
 4) delete var. with large p and examine R^2 & residual
 
@@ -1525,7 +1528,11 @@ seattle.neigh.cv <-
      method = "lm", trControl = fitControl, na.action = na.pass)
 
 seattle.neigh.cv
+```
 
+## Final Model
+
+```{r}
 lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
@@ -1534,26 +1541,20 @@ summary(lm.final)
 plot(lm.final)
 ```
 
+## Visualize Model Results
 
+### Predicted Prices vs. Observed Prices
 
+```{r predict_plot}
+
+```
+
+### Map of Residuals
+
+```{r residual_map}
+
+```
 
 
 # Conclusion
-
-
-# Plot Reference
-
-```{r}
-# plot Seattle house location
-ggplot() + 
-    geom_sf(data = neigh_large, color = "red", linewidth = 0.5) +  # Add Seattle boundary
-    geom_sf(data = house, color = "black", size = 0.1, pch = 16) +
-  #geom_sf(data = crime, color = "green4", size = 0.01, pch = 16)+
-    #geom_sf(data = mark_commer, color = "blue", size = 0.3, pch = 16) + 
-    #geom_sf(data = poi_commer, color = "red", size = 0.3, pch = 16) + 
-    labs(title = "Seattle House Location") +  # Set plot title
-    theme_void() +
-    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-```
-
 
