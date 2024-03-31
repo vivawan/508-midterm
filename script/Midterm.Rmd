@@ -910,13 +910,13 @@ house %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2))%>%
   mutate(sch_cat = factor(sch_cat, levels = c("DD1","DD2","DD3","DD4","DD5","DD6","DD7"))) %>%
   arrange(sch_cat)%>%
-  mutate(description = c("the unit is in school district DD1",
-                         "the unit is in school district DD2",
-                         "the unit is in school district DD3",
-                         "the unit is in school district DD4",
-                         "the unit is in school district DD5",
-                         "the unit is in school district DD6",
-                         "the unit is in school district DD7"))%>%
+  mutate(description = c("the unit is in school district one",
+                         "the unit is in school district two",
+                         "the unit is in school district three",
+                         "the unit is in school district four",
+                         "the unit is in school district five",
+                         "the unit is in school district six",
+                         "the unit is in school district seven"))%>%
   kable() %>%
   kable_styling()
 
@@ -949,11 +949,6 @@ house %>%
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable() %>%
   kable_styling()
-
-
-
-
-
 ```
 
 
@@ -969,8 +964,6 @@ house %>%
   labs(x = "Value", y = "Count") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
-  
-
 ```
 
 ## Four Home Price Correlation Scatterplots
@@ -1072,6 +1065,27 @@ ggplot() +
 ```
 
 ### School District
+
+```{r sch_cat}
+# color palette
+colors <- brewer.pal(n = 7, name = "Set3")
+labels <- c("District One", "District Two", "District Three", "District Four",
+            "District Five", "District Six", "District Seven")
+
+# plot school district
+ggplot() +
+  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = st_as_sf(house%>%left_join(.,hh%>%select(key, geometry), by = "key")),
+          aes(color = sch_cat), size = 1) +
+  scale_color_manual(values = colors,
+                     labels = labels,
+                    name = "School District") +
+  labs(title = "School Districts in Seattle, 2015") +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+### White Population Share
 
 ```{r sch_cat}
 # color palette
