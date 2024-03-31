@@ -1557,8 +1557,8 @@ reg.test.nhood <-
 
 ## combine two model results
 bothregressions <- 
-  rbind(select(reg.test, starts_with("price"), regression, T_NAME),
-    select(reg.test.nhood, starts_with("price"), regression, T_NAME))
+  rbind(select(reg.test, starts_with("price"), regression, T_NAME, bedrooms, sqft_living, sqft_lot),
+    select(reg.test.nhood, starts_with("price"), regression, T_NAME, bedrooms, sqft_living, sqft_lot))
 
 ## plot predicted prices and observed prices
 bothregressions %>%
@@ -1581,7 +1581,48 @@ bothregressions %>%
 ### Map of Residuals
 
 ```{r residual_map}
+# test set error for both regressions
+bothregressions.error <- bothregressions %>%
+  left_join(.,hh%>%select(price, bedrooms, sqft_living, sqft_lot),
+            by = c("price", "bedrooms", "sqft_living", "sqft_lot"))
 
+## quantile break and color palette
+breaks_quantiles <- classIntervals(bothregressions.error$price.AbsError, n = 5, style = "quantile")
+colors <- brewer.pal(n = 5, name = "YlOrRd")
+labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], format = "f", digits = 0, big.mark = ","), 
+                 " - ", 
+                 formatC(breaks_quantiles$brks[-1], format = "f", digits = 0, big.mark = ","))
+
+## plot absolute errors (residuals)
+ggplot() +
+  geom_sf(data = st_intersection(acsTractsSeattle.2015, seattle), fill = "#ECECEC", color = "#2166ac", linewidth = 0.2) +
+    geom_sf(data = st_as_sf(bothregressions.error),
+          aes(color = cut(price.AbsError, breaks = breaks_quantiles$brks, include.lowest = TRUE))) +
+  scale_color_manual(values = colors,
+                    labels = labels,
+                    name = "Absolute Errors (Quantile)") +
+  facet_wrap(~regression) +
+  labs(title = "Test Set Errors (Residuals) for Both Regressions") +
+  theme_void() +
+  theme(plot.title = element_text(face = "bold"))
+
+# test set MAPE by neighborhood
+bothregressions.nhood <- bothregressions %>%
+  group_by(T_NAME, regression) %>%
+  summarise(price.MAPE = mean(price.APE, na.rm = TRUE)) %>%
+  ungroup() %>%
+  left_join(.,acsTractsSeattle.2015%>%select(NAME), by = c("T_NAME" = "NAME")) %>%
+  st_as_sf()
+
+## plot mean absolute percent error
+ggplot() +
+  geom_sf(data = bothregressions.nhood, aes(fill = price.MAPE)) +
+  geom_sf(data =st_as_sf(bothregressions.error), color = "#2166ac", size = 0.5) +
+  scale_fill_gradient(low = "#ffffb2", high = "#bd0026", name = "MAPE (%)") +
+  facet_wrap(~regression) +
+  labs(title = "Test Set Mean Absolute Percent Errors (MAPE) for Census Tracts") +
+  theme_void() +
+  theme(plot.title = element_text(face = "bold"))
 ```
 
 
