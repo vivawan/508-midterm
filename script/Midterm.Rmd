@@ -729,7 +729,6 @@ continuous_description %>%
 ## Categorical Variable
 
 ```{r category summary, message=FALSE, warning=FALSE}
-str(house)
 # categorical variables
 
 ### reno_dum
@@ -959,7 +958,7 @@ house %>%
 
 ## Correlation matrix
 
-```{r correlation}
+```{r correlation, message=FALSE}
 # Select only numeric variables and remove rows with missing values
 house_numeric <- house %>%
   st_drop_geometry() %>%  # Remove geometry column if present
