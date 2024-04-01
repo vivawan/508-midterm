@@ -21,8 +21,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   cache = TRUE,
-  dpi = 150
-  )
+  dpi = 150)
 options(scipen = 999)
 
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
@@ -216,7 +215,7 @@ house %>%
   geom_col(position = "dodge")+
   plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
 
-##reclassify grade
+## reclassify grade
 house %>%
   st_drop_geometry() %>%
   group_by(grade)%>%
@@ -544,7 +543,7 @@ st_drop_geometry(house) %>%
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of continuous variables") +
-  theme_void() +
+  theme_minimal() +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 8, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
@@ -634,7 +633,8 @@ house %>%
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
-     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
@@ -1068,7 +1068,7 @@ ggplot() +
 
 ## Initial Variables Selection
 
-- Whole data set -> run lm -> select one var in each category 
+1) Whole data set -> run lm -> select one var in each category 
 - Selection rule: for each factor, choose only one variable with the significance
 ```{r selection, results='hide'}
 # finalize regression dataset
@@ -1298,7 +1298,7 @@ seattle.train <- seattle.train %>%
 ### Trade Off on Accuracy and Generalizability
 
 - all variables are already significant at p=0.1
-- delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError,APE
+- delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError, APE
 ```{r testing, results='hide'}
 # make predictions on the test set and evaluate model performance
 lm19 <- lm(price ~ ., data = seattle.train)

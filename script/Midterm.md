@@ -324,20 +324,7 @@ table(house$bach_dum)
 table(house$median_hh_dum)
 table(house$employ_dum)
 table(house$pover_dum)
-
-## plot all the mean of dummy variables
-house %>% 
-  st_drop_geometry()%>%
-  dplyr::select(price, bach_dum, median_hh_dum, employ_dum, pover_dum) %>%
-  gather(Variable, Value, -price) %>% 
-   ggplot(aes(Value, price)) +
-     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 2, scales = "free") +
-     labs(title = "Price as a function of dummy variables", y = "Mean_Price") +
-     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
-![](Midterm_files/figure-html/socio-economic variable-1.png)<!-- -->
 
 **3. Amenities Services**  
 - Subway Station (distance + category)  
@@ -561,6 +548,7 @@ st_drop_geometry(house) %>%
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of continuous variables") +
+  theme_void() +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 8, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
@@ -571,7 +559,7 @@ st_drop_geometry(house) %>%
 ![](Midterm_files/figure-html/continuous_clean-1.png)<!-- -->
 
 - Statistical summary
-<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> variables </th>
@@ -948,7 +936,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Renovation Status</caption>
  <thead>
   <tr>
@@ -991,7 +979,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category of Bedroom Count</caption>
  <thead>
   <tr>
@@ -1040,7 +1028,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category of Bathroom Count</caption>
  <thead>
   <tr>
@@ -1082,7 +1070,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Floors</caption>
  <thead>
   <tr>
@@ -1122,7 +1110,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Waterfront Factor</caption>
  <thead>
   <tr>
@@ -1167,7 +1155,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>View Quality</caption>
  <thead>
   <tr>
@@ -1230,7 +1218,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Condition Level</caption>
  <thead>
   <tr>
@@ -1290,7 +1278,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Grade Level</caption>
  <thead>
   <tr>
@@ -1332,7 +1320,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Bachelor's Degree Rate Level</caption>
  <thead>
   <tr>
@@ -1374,7 +1362,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Median Household Income Level</caption>
  <thead>
   <tr>
@@ -1416,7 +1404,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Employment Rate Level</caption>
  <thead>
   <tr>
@@ -1458,7 +1446,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Poverty Rate Level</caption>
  <thead>
   <tr>
@@ -1501,7 +1489,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Subway Distance</caption>
  <thead>
   <tr>
@@ -1554,7 +1542,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>School District</caption>
  <thead>
   <tr>
@@ -1629,7 +1617,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Number of nearby Parks</caption>
  <thead>
   <tr>
@@ -1690,7 +1678,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Shopping Center Distance</caption>
  <thead>
   <tr>
@@ -2081,7 +2069,7 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> dataset </th>
@@ -2511,8 +2499,7 @@ seattle.train.lm <- seattle.train.lm %>%
 
 par(mfrow = c(2, 2))
 
-
-#with fixed effect
+# with fixed effect
 lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
