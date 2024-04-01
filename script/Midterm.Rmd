@@ -1243,7 +1243,7 @@ summary(lm14)
 vif(lm14) #sub_dis = 2.664951
 
 ## cor on continuous variable
-seattle.train %>% 
+cor.multi <- seattle.train %>% 
   select_if(is.numeric)%>%
   corrr::correlate() %>% 
   autoplot() +
@@ -1523,9 +1523,28 @@ moranTest.stats <- moranTest$statistic # 0.2198671
 - Without fixed effect  
 
 **Model results:**  
-RMSE: 156578.5  
-R-squared: 0.780399  
-MAE: 105068.2
+RMSE: 156295.9  
+R-squared: 0.7848814  
+MAE: 105016.8
+
+- Choose between different scales of fixed effect  
+
+**Large neighborhoods:**  
+RMSE: 153985.8  
+R-squared: 0.789073  
+MAE: 102216
+
+**Small neighborhoods:**  
+RMSE: 143720.6  
+R-squared: 0.8175728  
+MAE: 95373.4  
+
+**Census tracts:**  
+RMSE: 143074.6  
+R-squared: 0.8202731  
+MAE: 94702.93  
+
+
 ```{r cv, include=FALSE}
 # without fixed effect
 set.seed(1)
@@ -1540,43 +1559,6 @@ seattle.cv <-
                                               grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
-#RMSE      R-squared  MAE     
-#156578.5  0.780399  105068.2
-```
-
-- Choose between different scales of fixed effect  
-
-**Large neighborhoods:**  
-RMSE: 153034.2  
-R-squared: 0.7909463  
-MAE: 102264.7
-
-**Small neighborhoods:**  
-RMSE: 143720.6  
-R-squared: 0.8175728  
-MAE: 95373.4  
-
-**Census tracts:**  
-RMSE: 143009.4  
-R-squared: 0.8164543  
-MAE: 94772.01  
-
-```{r cv with fixed effect}
-# with fixed effect
-set.seed(1)
-fitControl <- trainControl(method = "cv", number = 100)
-
-### tract: T_NAME
-seattle.neighT.cv <- 
-  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
-                                              sqft_living, sqft_lot, floor_cat,
-                                              water_dum, view_cat, condition_cat,
-                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, T_NAME),
-     method = "lm", trControl = fitControl, na.action = na.pass)
-
-#RMSE      Rsquared   MAE     
-#143009.4  0.8164543  94772.01
-
 ### Large: L_NAME
 seattle.neighL.cv <- 
   train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
@@ -1585,8 +1567,6 @@ seattle.neighL.cv <-
                                               grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, L_NAME),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
-#RMSE      Rsquared   MAE     
-#153034.2  0.7909463  102264.7
 
 ### Small: S_NAME
 seattle.neighS.cv <- 
@@ -1596,10 +1576,25 @@ seattle.neighS.cv <-
                                               grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, S_NAME),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
-#RMSE      Rsquared   MAE    
-#143720.6  0.8175728  95373.4
+
+### tract: T_NAME
+seattle.neighT.cv <- 
+  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
+                                              sqft_living, sqft_lot, floor_cat,
+                                              water_dum, view_cat, condition_cat,
+                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, T_NAME),
+     method = "lm", trControl = fitControl, na.action = na.pass)
+
 
 #-> census tract as the fixed effect improves the model most
+
+data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv$results,seattle.neighT.cv$results))%>%
+  mutate(intercept = c("baseline","fix_effect_large_district", "fix_effect_small_neighborhood", "fix_effect_census_tract"))%>%
+  rename(model = "intercept")%>%
+  kable()%>%
+  kable_classic(full_width = F, html_font = "Cambria")
+  
+
 ```
 
 ## Final Model
