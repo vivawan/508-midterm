@@ -543,9 +543,8 @@ st_drop_geometry(house) %>%
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of continuous variables") +
-  theme_minimal() +
   theme(text = element_text(size = 12), # Default text size for all text
-          plot.title = element_text(size = 8, face = "bold"), # Title
+          plot.title = element_text(size = 12, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
           axis.title = element_text(size = 8), # Axis titles
           strip.text = element_text(size = 8)) # Facet label text
@@ -603,7 +602,7 @@ continuous_description <- data.frame(
                   "Average Distance to 4 Crimes:the average distance to the nearest 4 crime",
                   "Average Distance to 5 Crimes:the average distance to the nearest 5 crime"),
   unit = c("$",
-           "year", "-","-","sqft","sqft",
+           "year", "#","#","sqft","sqft",
            "person / sqft", "%","%","%","%","$","%","%",
            "feet","sqft","%","feet","feet","feet","feet","feet","feet",
            "-", "feet","feet","feet","feet","feet"
@@ -613,13 +612,12 @@ continuous_description %>%
   kable() %>%
   kable_classic(full_width = F, html_font = "Cambria")%>%
   kable_styling(position = "center")
-  
 ```
 
 ## Categorical Variable
 
 - Make sure all category variables have significant difference between the means of housing price in different groups
-```{r category mean plot, echo=TRUE, message=FALSE, warning=FALSE, fig.height=15}
+```{r category mean plot, echo=TRUE, message=FALSE, warning=FALSE, fig.height=10}
 # exclude useless variable
 house <- house %>%
   select(-med_cat)
@@ -635,8 +633,11 @@ house %>%
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(text = element_text(size = 12), # Default text size for all text
+          plot.title = element_text(size = 12, face = "bold"), # Title
+          axis.text = element_text(size = 8), # Axis text
+          axis.title = element_text(size = 8), # Axis titles
+          strip.text = element_text(size = 8)) # Facet label text
 ```
 
 
@@ -1456,7 +1457,6 @@ seattle.train <- seattle.train %>%
 ## "reno_dum","bedrooms","bath_dum", "sqft_living", "sqft_lot", "floor_cat", "water_dum", "view_cat", "condition_cat", "grade_dum", "white_share", "median_hh_income", "sch_cat", "park_cat", "shop_dis1" -> keep
 
 #-> both worse
-
 ```
 
 ### Spatial Autocorrelation
@@ -1522,31 +1522,6 @@ moranTest.stats <- moranTest$statistic # 0.2198671
 
 ### Cross Validation
 
-- Without fixed effect  
-
-**Model results:**  
-RMSE: 156295.9  
-R-squared: 0.7848814  
-MAE: 105016.8
-
-- Choose between different scales of fixed effect  
-
-**Large neighborhoods:**  
-RMSE: 153985.8  
-R-squared: 0.789073  
-MAE: 102216
-
-**Small neighborhoods:**  
-RMSE: 143720.6  
-R-squared: 0.8175728  
-MAE: 95373.4  
-
-**Census tracts:**  
-RMSE: 143074.6  
-R-squared: 0.8202731  
-MAE: 94702.93  
-
-
 ```{r cv, echo=TRUE}
 # without fixed effect
 set.seed(1)
@@ -1593,10 +1568,9 @@ seattle.neighT.cv <-
 data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv$results,seattle.neighT.cv$results))%>%
   mutate(intercept = c("baseline","fix_effect_large_district", "fix_effect_small_neighborhood", "fix_effect_census_tract"))%>%
   rename(model = "intercept")%>%
+  select(-RMSESD, -RsquaredSD, -MAESD) %>%
   kable()%>%
-  kable_classic(full_width = F, html_font = "Cambria")
-  
-
+  kable_classic(full_width = T, html_font = "Cambria")
 ```
 
 ## Final Model
@@ -1634,7 +1608,7 @@ lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
                  T_NAME, data = seattle.train.lm)
 plot(lm.final.nhood)
-mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
+mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1)
 ```
 
 ## Visualize Model Results
