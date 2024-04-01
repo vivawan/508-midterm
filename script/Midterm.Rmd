@@ -1754,9 +1754,10 @@ balabalbala
 ## Socio-economic Characteristics
 
 ### Age Structure
+
 - variable
-1)  
-2)  
+1)  total dependency ratio
+2)  elderly dependency ratio
 - reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
 
 ### Education Level
