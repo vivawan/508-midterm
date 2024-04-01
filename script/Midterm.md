@@ -2151,8 +2151,10 @@ seattle.train <- seattle.train %>%
 
 ### Trade Off on Accuracy and Generalizability
 
-- all variables are already significant at p=0.1
-- delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError, APE
+
+- All variables are already significant at p=0.1
+- Delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError, APE
+
 
 ```r
 # make predictions on the test set and evaluate model performance
@@ -2328,10 +2330,12 @@ spatialWeights <- nb2listw(neighborList, style="W")
 house.sf %>%
   mutate(lagPrice = lag.listw(spatialWeights, price))%>%
   ggplot()+
-  geom_point(aes(x = lagPrice, y = price))+
+  geom_point(aes(x = lagPrice, y = price), color = "black", pch = 16, size = 1.6)+
   stat_smooth(aes(lagPrice, price), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Price as a Function of the Spatial Lag of Price")
+  labs(title="Price as a Function of the Spatial Lag of Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 ![](Midterm_files/figure-html/spatial autocorrelation-1.png)<!-- -->
@@ -2349,10 +2353,12 @@ spatialWeights.test <- nb2listw(neighborList.test, style="W")
 seattle.test7 %>% 
   mutate(lagPriceError = lag.listw(spatialWeights.test, price.error)) %>%
   ggplot()+
-  geom_point(aes(x = lagPriceError, y = price.error))+
+  geom_point(aes(x = lagPriceError, y = price.error), color = "black", pch = 16, size = 1.6)+
   stat_smooth(aes(lagPriceError, price.error), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Error as a Function of the Spatial Lag of Error")
+  labs(title="Error as a Function of the Spatial Lag of Error")+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 ![](Midterm_files/figure-html/spatial autocorrelation-2.png)<!-- -->
@@ -2414,23 +2420,23 @@ MAE: 94702.93
 **Dependent variable:**  
 House Price
 
-**Independent variable:**  
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-9.
-10.
-11.
-12.
-13.
-14.
-15.
-16.
+**Independent variables:**  
+1. reno_dum ()
+2. bedrooms ()
+3. bath_dum ()
+4. sqft_living ()
+5. sqft_lot ()
+6. floor_cat ()
+7. water_dum ()
+8. view_cat ()
+9. condition_cat ()
+10. grade_dum ()
+11. white_share ()
+12. median_hh_income ()
+13. sch_cat ()
+14. park_cat ()
+15. shop_dis1 ()
+16. T_NAME ()
 
 
 ```r
@@ -2919,60 +2925,7 @@ stargazer(lm.final.nhood, type = "text")
 
 ### Predicted Prices vs. Observed Prices
 
-
-```
-## 
-## Call:
-## lm(formula = price ~ reno_dum + bedrooms + bath_dum + sqft_living + 
-##     sqft_lot + floor_cat + water_dum + view_cat + condition_cat + 
-##     grade_dum + white_share + median_hh_income + sch_cat + park_cat + 
-##     shop_dis1, data = seattle.train.lm)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -1229126   -86037    -3329    68436  1656706 
-## 
-## Coefficients:
-##                      Estimate   Std. Error t value             Pr(>|t|)    
-## (Intercept)      -286569.3272   54703.7405  -5.239  0.00000016841205071 ***
-## reno_dum1          34856.9959    9071.6739   3.842             0.000123 ***
-## bedrooms          -20948.7141    3067.5005  -6.829  0.00000000000954574 ***
-## bath_dummany      170942.1946   24074.9153   7.100  0.00000000000141660 ***
-## sqft_living          223.8311       4.6563  48.070 < 0.0000000000000002 ***
-## sqft_lot               7.4362       0.7414  10.030 < 0.0000000000000002 ***
-## floor_catregular  -72632.1095   17260.3554  -4.208  0.00002620834922966 ***
-## water_dum1        420985.0486   35676.1741  11.800 < 0.0000000000000002 ***
-## view_cat1          82280.9341   15276.7449   5.386  0.00000007530358013 ***
-## view_cat2          45195.4749    9450.8673   4.782  0.00000178369114896 ***
-## view_cat3         113852.5748   13025.6638   8.741 < 0.0000000000000002 ***
-## view_cat4         240859.0491   19843.6564  12.138 < 0.0000000000000002 ***
-## condition_cat2    197400.8788   53240.2920   3.708             0.000211 ***
-## condition_cat3    183128.9792   47935.7231   3.820             0.000135 ***
-## condition_cat4    206351.5368   48095.4166   4.290  0.00001816409555950 ***
-## condition_cat5    252082.5968   48376.9641   5.211  0.00000019552355326 ***
-## grade_dumhigh     377506.5821   13061.5689  28.902 < 0.0000000000000002 ***
-## white_share         2982.3812     243.7071  12.238 < 0.0000000000000002 ***
-## median_hh_income       0.9281       0.1262   7.352  0.00000000000022609 ***
-## sch_catDD2        119021.8830   10171.9663  11.701 < 0.0000000000000002 ***
-## sch_catDD3        143046.2622    9620.6192  14.869 < 0.0000000000000002 ***
-## sch_catDD4        225765.4148   12433.6697  18.158 < 0.0000000000000002 ***
-## sch_catDD5        211261.4901   10011.4475  21.102 < 0.0000000000000002 ***
-## sch_catDD6        -16522.9466    7826.1818  -2.111             0.034801 *  
-## sch_catDD7        108418.9372   13559.7108   7.996  0.00000000000000159 ***
-## park_cat1           9436.0524    5532.2012   1.706             0.088133 .  
-## park_cat2          28771.5397   10474.7415   2.747             0.006040 ** 
-## park_cat3          99089.3190   21725.6136   4.561  0.00000521310165426 ***
-## park_cat4         325864.1146   52989.6809   6.150  0.00000000083679575 ***
-## shop_dis1             -4.7866       0.6987  -6.850  0.00000000000824537 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 165200 on 5041 degrees of freedom
-## Multiple R-squared:  0.7974,	Adjusted R-squared:  0.7963 
-## F-statistic: 684.4 on 29 and 5041 DF,  p-value: < 0.00000000000000022
-```
-
-![](Midterm_files/figure-html/predict_plot-1.png)<!-- -->![](Midterm_files/figure-html/predict_plot-2.png)<!-- -->![](Midterm_files/figure-html/predict_plot-3.png)<!-- -->![](Midterm_files/figure-html/predict_plot-4.png)<!-- -->![](Midterm_files/figure-html/predict_plot-5.png)<!-- -->
+![](Midterm_files/figure-html/predict_plot-1.png)<!-- -->
 
 ### Map of Residuals
 
@@ -2985,16 +2938,16 @@ balabalbala
 
 # Appendix: Variable Selection Reference
 
-## Socio-economic characteristics
+## Socio-economic Characteristics
 
-### age structure
+### Age Structure
 - variable
 1)  
 2)  
 - reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
 
-### education level
-- variable: 
+### Education Level
+
 - reference: "The findings show that higher education does have a positive relationship to the house prices in Sweden."
 https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
 
@@ -3002,7 +2955,7 @@ https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
 
 Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-investors-find-good-properties  
 
-### subway station
+### Subway Station
 
 - variable  
 1) distance to the nearest station
@@ -3012,7 +2965,7 @@ Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seat
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
 
-### school district
+### School District
 
 - variable: the name of the school district
 
@@ -3020,7 +2973,7 @@ Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seat
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
 
-### parks
+### Parks
 
 - variable: 
 1) area of parks within 500 feet radius
@@ -3030,7 +2983,7 @@ Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seat
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
 
-### tree canopy
+### Tree Canopy
 
 - variable:
 1) percent of existing tree canopy (2016, hexagons)
@@ -3040,7 +2993,7 @@ https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
 
-### medical facilities
+### Medical Facilities
 
 - variable: 
 1) average distance to the nearest 1/2/3 medical facilities
@@ -3050,7 +3003,7 @@ https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
 
-### commercial
+### Commercial
 
 - variable:  
 1) average distance to the nearest 1/2/3 shops
@@ -3067,7 +3020,7 @@ while the proximity factor varies from housing estate to housing estate." https:
 Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb4709874b46cf8dbb284182ca0094/info/metadata/metadata.xml?format=default&output=html
 - 690 Shopping Centers
 
-### crime
+### Crime
 
 - variable:
 1) count of crimes within a 1/8 mi
