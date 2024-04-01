@@ -1,7 +1,7 @@
 ---
 title: "Property Value Prediction Model for Seattle"
 author: "Viva/Yaohan"
-date: "2024-03-31"
+date: "2024-04-01"
 output: 
   html_document:
     keep_md: yes
@@ -265,6 +265,7 @@ acsTractsSeattle.2015 <- get_acs(geography = "tract",
           employ_labor = B23025_004E,
           poverty = B17020_002E) %>%
   mutate(area = st_area(.)) %>%
+  mutate(area = set_units(x = area, value = "acres"))%>%
   mutate(pop_den = ifelse(as.numeric(area) > 0, total_pop / area, 0),
          white_share = round(ifelse(total_pop > 0, white_pop / total_pop, 0) * 100, digits = 2),
          pop_under14 = B01001_003E + B01001_004E + B01001_005E + B01001_027E +
@@ -353,7 +354,8 @@ house <- house %>%
 park <- park %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)%>%
-  mutate(park_area = st_area(.))
+  mutate(park_area = st_area(.))%>%
+  mutate(park_area = set_units(x = park_area, value = "acres"))
 
 ## area and count of parks within 500 feet
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
@@ -542,17 +544,17 @@ st_drop_geometry(house) %>%
 ![](Midterm_files/figure-html/continuous_clean-1.png)<!-- -->
 
 - Statistical summary
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
  <thead>
   <tr>
    <th style="text-align:left;"> variables </th>
    <th style="text-align:left;"> category </th>
    <th style="text-align:left;"> description </th>
    <th style="text-align:left;"> unit </th>
-   <th style="text-align:right;"> maximum </th>
-   <th style="text-align:right;"> minimum </th>
+   <th style="text-align:right;"> max </th>
+   <th style="text-align:right;"> min </th>
    <th style="text-align:right;"> mean </th>
-   <th style="text-align:right;"> standard_deviation </th>
+   <th style="text-align:right;"> st.dev. </th>
    <th style="text-align:right;"> n </th>
   </tr>
  </thead>
@@ -562,10 +564,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> dependent </td>
    <td style="text-align:left;"> Price: price of each unit </td>
    <td style="text-align:left;"> $ </td>
-   <td style="text-align:right;"> 3800000.00 </td>
-   <td style="text-align:right;"> 90000.00 </td>
-   <td style="text-align:right;"> 589144.15 </td>
-   <td style="text-align:right;"> 340388.11 </td>
+   <td style="text-align:right;"> 3800000 </td>
+   <td style="text-align:right;"> 90000 </td>
+   <td style="text-align:right;"> 589144 </td>
+   <td style="text-align:right;"> 340388 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -573,10 +575,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> internal </td>
    <td style="text-align:left;"> Year Used: years from built to 2015 </td>
    <td style="text-align:left;"> year </td>
-   <td style="text-align:right;"> 115.00 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 61.67 </td>
-   <td style="text-align:right;"> 35.10 </td>
+   <td style="text-align:right;"> 115 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 62 </td>
+   <td style="text-align:right;"> 35 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -584,10 +586,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> internal </td>
    <td style="text-align:left;"> No.bedrooms: the number of bedrooms in each unit </td>
    <td style="text-align:left;"> # </td>
-   <td style="text-align:right;"> 11.00 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 3.13 </td>
-   <td style="text-align:right;"> 1.00 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 1 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -595,10 +597,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> internal </td>
    <td style="text-align:left;"> No.bathrooms: the number of bathrooms in each unit </td>
    <td style="text-align:left;"> # </td>
-   <td style="text-align:right;"> 5.25 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 1.94 </td>
-   <td style="text-align:right;"> 0.80 </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 1 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -606,10 +608,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> internal </td>
    <td style="text-align:left;"> Living Area: the area of living of each unit </td>
    <td style="text-align:left;"> sqft </td>
-   <td style="text-align:right;"> 7880.00 </td>
-   <td style="text-align:right;"> 370.00 </td>
-   <td style="text-align:right;"> 1799.03 </td>
-   <td style="text-align:right;"> 798.66 </td>
+   <td style="text-align:right;"> 7880 </td>
+   <td style="text-align:right;"> 370 </td>
+   <td style="text-align:right;"> 1799 </td>
+   <td style="text-align:right;"> 799 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -617,21 +619,21 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> internal </td>
    <td style="text-align:left;"> Lot Area: the area of the lot of each unit </td>
    <td style="text-align:left;"> sqft </td>
-   <td style="text-align:right;"> 91681.00 </td>
-   <td style="text-align:right;"> 520.00 </td>
-   <td style="text-align:right;"> 5104.66 </td>
-   <td style="text-align:right;"> 3582.56 </td>
+   <td style="text-align:right;"> 91681 </td>
+   <td style="text-align:right;"> 520 </td>
+   <td style="text-align:right;"> 5105 </td>
+   <td style="text-align:right;"> 3583 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> pop_den </td>
    <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Population Density: the number of population per square feet in the census tract </td>
-   <td style="text-align:left;"> person / sqft </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 0.00 </td>
+   <td style="text-align:left;"> Population Density: the number of population per acre in the census tract </td>
+   <td style="text-align:left;"> person / acre </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -639,10 +641,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> White Population Share:the ratio of white people to total population in the census tract </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 94.29 </td>
-   <td style="text-align:right;"> 7.92 </td>
-   <td style="text-align:right;"> 72.40 </td>
-   <td style="text-align:right;"> 18.69 </td>
+   <td style="text-align:right;"> 94 </td>
+   <td style="text-align:right;"> 8 </td>
+   <td style="text-align:right;"> 72 </td>
+   <td style="text-align:right;"> 19 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -650,10 +652,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> Total Dependency Ratio: the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 72.95 </td>
-   <td style="text-align:right;"> 3.07 </td>
-   <td style="text-align:right;"> 39.02 </td>
-   <td style="text-align:right;"> 11.91 </td>
+   <td style="text-align:right;"> 73 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 39 </td>
+   <td style="text-align:right;"> 12 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -661,10 +663,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> Elderly Dependency Ratio: the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 48.86 </td>
-   <td style="text-align:right;"> 2.25 </td>
-   <td style="text-align:right;"> 16.86 </td>
-   <td style="text-align:right;"> 7.06 </td>
+   <td style="text-align:right;"> 49 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 17 </td>
+   <td style="text-align:right;"> 7 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -672,10 +674,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> Bachelor's Degree Rate: the percentage of with a bachelor's degree among adults age 25 and older in the census tract </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 52.70 </td>
-   <td style="text-align:right;"> 10.12 </td>
-   <td style="text-align:right;"> 35.07 </td>
-   <td style="text-align:right;"> 8.06 </td>
+   <td style="text-align:right;"> 53 </td>
+   <td style="text-align:right;"> 10 </td>
+   <td style="text-align:right;"> 35 </td>
+   <td style="text-align:right;"> 8 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -683,10 +685,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> Median Household Income: median househhold income in the census tract </td>
    <td style="text-align:left;"> $ </td>
-   <td style="text-align:right;"> 157292.00 </td>
-   <td style="text-align:right;"> 12269.00 </td>
-   <td style="text-align:right;"> 82291.90 </td>
-   <td style="text-align:right;"> 26470.52 </td>
+   <td style="text-align:right;"> 157292 </td>
+   <td style="text-align:right;"> 12269 </td>
+   <td style="text-align:right;"> 82292 </td>
+   <td style="text-align:right;"> 26471 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -694,10 +696,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> Employment Rate: the ratio of the employed to the working age population in the census tract </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 99.04 </td>
-   <td style="text-align:right;"> 81.23 </td>
-   <td style="text-align:right;"> 94.53 </td>
-   <td style="text-align:right;"> 2.87 </td>
+   <td style="text-align:right;"> 99 </td>
+   <td style="text-align:right;"> 81 </td>
+   <td style="text-align:right;"> 95 </td>
+   <td style="text-align:right;"> 3 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -705,10 +707,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> socio-economic </td>
    <td style="text-align:left;"> Poverty Rate: the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 43.42 </td>
-   <td style="text-align:right;"> 2.59 </td>
-   <td style="text-align:right;"> 10.82 </td>
-   <td style="text-align:right;"> 7.76 </td>
+   <td style="text-align:right;"> 43 </td>
+   <td style="text-align:right;"> 3 </td>
+   <td style="text-align:right;"> 11 </td>
+   <td style="text-align:right;"> 8 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -716,21 +718,21 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Nearest Subway Distance: the distance to the nearest subway station </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 27441.29 </td>
-   <td style="text-align:right;"> 26.70 </td>
-   <td style="text-align:right;"> 9497.27 </td>
-   <td style="text-align:right;"> 7439.24 </td>
+   <td style="text-align:right;"> 27441 </td>
+   <td style="text-align:right;"> 27 </td>
+   <td style="text-align:right;"> 9497 </td>
+   <td style="text-align:right;"> 7439 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> parks_area </td>
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Parks' Area 500ft: the total area of parks located within a 500-foot radius of each unit </td>
-   <td style="text-align:left;"> sqft </td>
-   <td style="text-align:right;"> 24096542.96 </td>
-   <td style="text-align:right;"> 0.00 </td>
-   <td style="text-align:right;"> 546304.72 </td>
-   <td style="text-align:right;"> 1951825.22 </td>
+   <td style="text-align:left;"> acre </td>
+   <td style="text-align:right;"> 24096543 </td>
+   <td style="text-align:right;"> 0 </td>
+   <td style="text-align:right;"> 546305 </td>
+   <td style="text-align:right;"> 1951825 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -738,10 +740,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Tree Canopy Ratio: the ratio of the area of tree canopy to the total area in the measuring space </td>
    <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 88.67 </td>
-   <td style="text-align:right;"> 4.89 </td>
-   <td style="text-align:right;"> 29.42 </td>
-   <td style="text-align:right;"> 9.13 </td>
+   <td style="text-align:right;"> 89 </td>
+   <td style="text-align:right;"> 5 </td>
+   <td style="text-align:right;"> 29 </td>
+   <td style="text-align:right;"> 9 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -749,10 +751,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Nearest Medical Distance: the distance to the nearest medical facility </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 13892.15 </td>
-   <td style="text-align:right;"> 9.03 </td>
-   <td style="text-align:right;"> 4384.72 </td>
-   <td style="text-align:right;"> 2558.07 </td>
+   <td style="text-align:right;"> 13892 </td>
+   <td style="text-align:right;"> 9 </td>
+   <td style="text-align:right;"> 4385 </td>
+   <td style="text-align:right;"> 2558 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -760,10 +762,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 2 Medicals: the average distance to the nearest 2 medical facilities </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 17742.25 </td>
-   <td style="text-align:right;"> 134.19 </td>
-   <td style="text-align:right;"> 5616.36 </td>
-   <td style="text-align:right;"> 2923.48 </td>
+   <td style="text-align:right;"> 17742 </td>
+   <td style="text-align:right;"> 134 </td>
+   <td style="text-align:right;"> 5616 </td>
+   <td style="text-align:right;"> 2923 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -771,10 +773,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 3 Medicals:the average distance to the nearest 3 medical facilities </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 20699.23 </td>
-   <td style="text-align:right;"> 355.16 </td>
-   <td style="text-align:right;"> 6726.12 </td>
-   <td style="text-align:right;"> 3691.35 </td>
+   <td style="text-align:right;"> 20699 </td>
+   <td style="text-align:right;"> 355 </td>
+   <td style="text-align:right;"> 6726 </td>
+   <td style="text-align:right;"> 3691 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -782,10 +784,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Nearest shopping Distance:the distance to the nearest shopping center </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 31506.59 </td>
-   <td style="text-align:right;"> 99.36 </td>
-   <td style="text-align:right;"> 9019.37 </td>
-   <td style="text-align:right;"> 5459.49 </td>
+   <td style="text-align:right;"> 31507 </td>
+   <td style="text-align:right;"> 99 </td>
+   <td style="text-align:right;"> 9019 </td>
+   <td style="text-align:right;"> 5459 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -793,10 +795,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 2 Shoppings:the average distance to the nearest 2 shopping center </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 34370.24 </td>
-   <td style="text-align:right;"> 1504.94 </td>
-   <td style="text-align:right;"> 10931.03 </td>
-   <td style="text-align:right;"> 5148.60 </td>
+   <td style="text-align:right;"> 34370 </td>
+   <td style="text-align:right;"> 1505 </td>
+   <td style="text-align:right;"> 10931 </td>
+   <td style="text-align:right;"> 5149 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -804,10 +806,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 3 Shoppings:the average distance to the nearest 3 shopping center </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 35466.16 </td>
-   <td style="text-align:right;"> 1780.90 </td>
-   <td style="text-align:right;"> 12166.22 </td>
-   <td style="text-align:right;"> 5218.47 </td>
+   <td style="text-align:right;"> 35466 </td>
+   <td style="text-align:right;"> 1781 </td>
+   <td style="text-align:right;"> 12166 </td>
+   <td style="text-align:right;"> 5218 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -815,10 +817,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> No.crime: the number of crimes within a 1/8-mile radius around each unit </td>
    <td style="text-align:left;"> - </td>
-   <td style="text-align:right;"> 1044.00 </td>
-   <td style="text-align:right;"> 2.00 </td>
-   <td style="text-align:right;"> 82.90 </td>
-   <td style="text-align:right;"> 71.92 </td>
+   <td style="text-align:right;"> 1044 </td>
+   <td style="text-align:right;"> 2 </td>
+   <td style="text-align:right;"> 83 </td>
+   <td style="text-align:right;"> 72 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -826,10 +828,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Nearest Crime Distance: the distance to the nearest crime </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 569.05 </td>
-   <td style="text-align:right;"> 3.96 </td>
-   <td style="text-align:right;"> 133.30 </td>
-   <td style="text-align:right;"> 66.67 </td>
+   <td style="text-align:right;"> 569 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 133 </td>
+   <td style="text-align:right;"> 67 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -837,10 +839,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 2 Crimes:the average distance to the nearest 2 crime </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 582.77 </td>
-   <td style="text-align:right;"> 3.96 </td>
-   <td style="text-align:right;"> 143.77 </td>
-   <td style="text-align:right;"> 68.83 </td>
+   <td style="text-align:right;"> 583 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 144 </td>
+   <td style="text-align:right;"> 69 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -848,10 +850,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 3 Crimes:the average distance to the nearest 3 crime </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 598.37 </td>
-   <td style="text-align:right;"> 3.96 </td>
-   <td style="text-align:right;"> 153.14 </td>
-   <td style="text-align:right;"> 71.83 </td>
+   <td style="text-align:right;"> 598 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 153 </td>
+   <td style="text-align:right;"> 72 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -859,10 +861,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 4 Crimes:the average distance to the nearest 4 crime </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 616.76 </td>
-   <td style="text-align:right;"> 3.99 </td>
-   <td style="text-align:right;"> 162.06 </td>
-   <td style="text-align:right;"> 74.75 </td>
+   <td style="text-align:right;"> 617 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 162 </td>
+   <td style="text-align:right;"> 75 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
   <tr>
@@ -870,10 +872,10 @@ st_drop_geometry(house) %>%
    <td style="text-align:left;"> amenities </td>
    <td style="text-align:left;"> Average Distance to 5 Crimes:the average distance to the nearest 5 crime </td>
    <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 687.85 </td>
-   <td style="text-align:right;"> 3.99 </td>
-   <td style="text-align:right;"> 170.93 </td>
-   <td style="text-align:right;"> 77.51 </td>
+   <td style="text-align:right;"> 688 </td>
+   <td style="text-align:right;"> 4 </td>
+   <td style="text-align:right;"> 171 </td>
+   <td style="text-align:right;"> 78 </td>
    <td style="text-align:right;"> 6734 </td>
   </tr>
 </tbody>
@@ -920,10 +922,12 @@ house %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
   kable(caption = "Renovation Status") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Renovation Status</caption>
  <thead>
   <tr>
@@ -963,10 +967,12 @@ house %>%
                          "the unit has 4-7 bedrooms",
                          "the unit has more than 8 bedrooms"))%>%
   kable(caption = "Category of Bedroom Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Category of Bedroom Count</caption>
  <thead>
   <tr>
@@ -1012,10 +1018,12 @@ house %>%
   mutate(description = c("the unit has 0-4 bathrooms", 
                          "the unit has more than 4 bedrooms"))%>%
   kable(caption = "Category of Bathroom Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Category of Bathroom Count</caption>
  <thead>
   <tr>
@@ -1054,10 +1062,12 @@ house %>%
   mutate(description = c("the unit has 2.5/3.5 floors",
                          "the unit has 1/1.5/2/3 floors"))%>%
   kable(caption = "Category by Floors") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Category by Floors</caption>
  <thead>
   <tr>
@@ -1094,10 +1104,12 @@ house %>%
          description = c("the unit isn't located at waterfront area", 
                          "the unit is located at waterfront area"))%>%
   kable(caption = "Waterfront Factor") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Waterfront Factor</caption>
  <thead>
   <tr>
@@ -1139,10 +1151,12 @@ house %>%
                          "the unit has a view scoring 3/4",
                          "the unit has a view scoring 4/4" ))%>%
   kable(caption = "View Quality") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>View Quality</caption>
  <thead>
   <tr>
@@ -1202,10 +1216,12 @@ house %>%
                          "the unit's condition scores 4/5",
                          "the unit's condition scores 5/5"))%>%
   kable(caption = "Condition Level") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Condition Level</caption>
  <thead>
   <tr>
@@ -1262,10 +1278,12 @@ house %>%
   mutate(description = c("the unit's grade is 4-9", 
                          "the unit's grade is 10-13"))%>%
   kable(caption = "Grade Level") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Grade Level</caption>
  <thead>
   <tr>
@@ -1304,10 +1322,12 @@ house %>%
   mutate(description = c("the unit is in a census tract with a bachelor's degree rate below the Seattle average", 
                          "the unit is in a census tract with a bachelor's degree rate above the Seattle average"))%>%
   kable(caption = "Bachelor's Degree Rate Level") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Bachelor's Degree Rate Level</caption>
  <thead>
   <tr>
@@ -1346,10 +1366,12 @@ house %>%
   mutate(description = c("the unit is in a census tract with a median household income below the Seattle average", 
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
   kable(caption = "Median Household Income Level") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Median Household Income Level</caption>
  <thead>
   <tr>
@@ -1388,10 +1410,12 @@ house %>%
   mutate(description = c("the unit is in a census tract with a employment rate below the Seattle average", 
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
   kable(caption = "Employment Rate Level") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Employment Rate Level</caption>
  <thead>
   <tr>
@@ -1430,10 +1454,12 @@ house %>%
   mutate(description = c("the unit is in a census tract with a poverty rate below the Seattle average", 
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
   kable(caption = "Poverty Rate Level") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Poverty Rate Level</caption>
  <thead>
   <tr>
@@ -1473,10 +1499,12 @@ house %>%
                          "the unit is within a 0.5-mile to 1-mile radius of a subway station",
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
   kable(caption = "Category by Subway Distance") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Category by Subway Distance</caption>
  <thead>
   <tr>
@@ -1526,10 +1554,12 @@ house %>%
                          "the unit is in school district six",
                          "the unit is in school district seven"))%>%
   kable(caption = "School District") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>School District</caption>
  <thead>
   <tr>
@@ -1601,10 +1631,12 @@ house %>%
                          "the unit is within a 500-feet radius of three park",
                          "the unit is within a 500-feet radius of four park"))%>%
   kable(caption = "Number of nearby Parks") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Number of nearby Parks</caption>
  <thead>
   <tr>
@@ -1662,10 +1694,12 @@ house %>%
                          "the unit is within a 0.5-mile to 1-mile radius of a shopping center",
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable(caption = "Category by Shopping Center Distance") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
 <caption>Category by Shopping Center Distance</caption>
  <thead>
   <tr>
@@ -2053,10 +2087,12 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   summarise(count = n())%>%
   mutate(percent = round(count/sum(count) * 100, digits = 2))%>%
   kable() %>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
  <thead>
   <tr>
    <th style="text-align:left;"> dataset </th>
@@ -2437,10 +2473,12 @@ data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv
   rename(model = "intercept")%>%
   select(-RMSESD, -RsquaredSD, -MAESD) %>%
   kable()%>%
-  kable_classic(full_width = T, html_font = "Cambria")
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T,
+                position = "float_left")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
  <thead>
   <tr>
    <th style="text-align:left;"> model </th>
