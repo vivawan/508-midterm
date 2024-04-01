@@ -1489,6 +1489,7 @@ moranTest.stats <- moranTest$statistic # 0.2198671
 ### Cross Validation
 
 - Without fixed effect  
+
 **Model results:**  
 RMSE: 156578.5  
 R-squared: 0.780399  
@@ -1511,7 +1512,23 @@ seattle.cv <-
 #156578.5  0.780399  105068.2
 ```
 
-- Choose between different scales of fixed effect
+- Choose between different scales of fixed effect  
+
+**Large neighborhoods:**  
+RMSE: 153034.2  
+R-squared: 0.7909463  
+MAE: 102264.7
+
+**Small neighborhoods:**  
+RMSE: 143720.6  
+R-squared: 0.8175728  
+MAE: 95373.4  
+
+**Census tracts:**  
+RMSE: 143009.4  
+R-squared: 0.8164543  
+MAE: 94772.01  
+
 ```{r cv with fixed effect}
 # with fixed effect
 set.seed(1)
@@ -1561,6 +1578,21 @@ seattle.train.lm <- seattle.train.lm %>%
 
 par(mfrow = c(2, 2))
 
+
+#with fixed effect
+lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
+                 floor_cat + water_dum + view_cat + condition_cat + grade_dum +
+                 white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
+                 T_NAME, data = seattle.train.lm)
+plot(lm.final.nhood)
+mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
+```
+
+## Visualize Model Results
+
+### Predicted Prices vs. Observed Prices
+
+```{r predict_plot, echo=FALSE}
 #without fixed effect
 lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
@@ -1572,26 +1604,6 @@ summary(lm.final)
 plot(lm.final)
 mtext("Diagnostic Plots for Linear Model without Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
 
-
-#with fixed effect
-lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
-                 floor_cat + water_dum + view_cat + condition_cat + grade_dum +
-                 white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
-                 T_NAME, data = seattle.train.lm)
-plot(lm.final.nhood)
-mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
-
-summary(lm.final.nhood)
-
-stargazer(lm.final, lm.final.nhood, type = "text",
-          star.cutoffs = c(0.05, 0.01, 0.001))
-```
-
-## Visualize Model Results
-
-### Predicted Prices vs. Observed Prices
-
-```{r predict_plot, echo=FALSE}
 ## final model without fixed effect
 reg.test <-
   seattle.test.lm %>%

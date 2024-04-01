@@ -1666,7 +1666,7 @@ house %>%
 
 # Exploratory Data Analysis
 
-## Correlation matrix
+## Correlation Matrix
 
 
 ```r
@@ -1864,14 +1864,14 @@ ggplot() +
 
 # Modeling
 
-**Process:**
-3) delete insignificant var. until all var at p < 0.05  
-4) delete var. with large p and examine R^2 & residual  
+**Process:**   
+3) Delete insignificant var. until all var at p < 0.05  
+4) Delete var. with large p and examine R^2 & residual  
 
 ## Initial Variables Selection
 
-- whole data set -> run lm -> select one var in each category 
-- selection rule: for each factor, choose only one variable with the significance
+- Whole data set -> run lm -> select one var in each category 
+- Selection rule: for each factor, choose only one variable with the significance
 
 ```r
 # finalize regression dataset
@@ -2000,7 +2000,7 @@ str(house_lm)
 
 ## Split Training and Testing Datasets
 
-2) split data set -> run lm on training data set 
+2) Split data set -> run lm on training data set
 
 ```r
 # split data 0.7/0.3
@@ -2048,13 +2048,13 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
 </tbody>
 </table>
 
-## Model diagnostics
+## Model Diagnostics
 
-### Address multicollinearity
+### Address Multicollinearity
 
-3) run vif and cor -> deal with multicollinearity  
+3) Run vif and cor -> deal with multicollinearity  
 -> decision rule: biggest vif -> run cor on continuous variables
-4) exclude insignificance until all varibles significant at P<0.1
+4) Exclude insignificance until all varibles significant at P < 0.1
 
 ```r
 # ignore neighborhood effect first
@@ -2126,7 +2126,7 @@ seattle.train <- seattle.train %>%
   select(-tree_canopy)
 ```
 
-### Trade off on accuracy and generalizabilit
+### Trade Off on Accuracy and Generalizability
 
 - all variables are already significant at p=0.1
 - delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError,APE
@@ -2308,7 +2308,7 @@ house.sf %>%
   geom_point(aes(x = lagPrice, y = price))+
   stat_smooth(aes(lagPrice, price), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Price as a function of the spatial lag of price")
+  labs(title="Price as a Function of the Spatial Lag of Price")
 ```
 
 ![](Midterm_files/figure-html/spatial autocorrelation-1.png)<!-- -->
@@ -2329,7 +2329,7 @@ seattle.test7 %>%
   geom_point(aes(x = lagPriceError, y = price.error))+
   stat_smooth(aes(lagPriceError, price.error), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Error as a function of the spatial lag of error")
+  labs(title="Error as a Function of the Spatial Lag of Error")
 ```
 
 ![](Midterm_files/figure-html/spatial autocorrelation-2.png)<!-- -->
@@ -2354,14 +2354,36 @@ ggplot(as.data.frame(moranTest$res[c(1:999)]), aes(moranTest$res[c(1:999)])) +
 ![](Midterm_files/figure-html/spatial autocorrelation-3.png)<!-- -->
 
 ```r
-moranTest.stats <- moranTest$statistic #0.2198671
+moranTest.stats <- moranTest$statistic # 0.2198671
 ```
 
 ### Cross Validation
 
+- Without fixed effect  
+
+**Model results:**  
+RMSE: 156578.5  
+R-squared: 0.780399  
+MAE: 105068.2
 
 
-- choose fixed effect
+- Choose between different scales of fixed effect  
+
+**Large neighborhoods:**  
+RMSE: 153034.2  
+R-squared: 0.7909463  
+MAE: 102264.7
+
+**Small neighborhoods:**  
+RMSE: 143720.6  
+R-squared: 0.8175728  
+MAE: 95373.4  
+
+**Census tracts:**  
+RMSE: 143009.4  
+R-squared: 0.8164543  
+MAE: 94772.01  
+
 
 ```r
 # with fixed effect
