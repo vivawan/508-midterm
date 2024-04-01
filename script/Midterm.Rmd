@@ -186,7 +186,7 @@ house <- hh %>%
 ## bed categories
 house$bed.factor <- factor(house$bedrooms, levels =sort(unique(house$bedrooms)))
 
-house %>%
+plotMean.bedrooms <- house %>%
   st_drop_geometry() %>%
   group_by(bed.factor)%>%
   summarize(price_m = mean(price))%>%
@@ -197,7 +197,7 @@ house %>%
 ## bathroom category
 house$bath.factor <- factor(house$bathrooms, levels =sort(unique(house$bathrooms)))
 
-house %>%
+plotMean.bathrooms<-house %>%
   st_drop_geometry() %>%
   group_by(bath.factor)%>%
   summarize(price_m = mean(price))%>%
@@ -208,7 +208,7 @@ house %>%
 ## floor category
 house$floor.factor <- factor(house$floors, levels =sort(unique(house$floors)))
 
-house %>%
+plotMean.floors <- house %>%
   st_drop_geometry() %>%
   group_by(floor.factor)%>%
   summarize(price_m = mean(price))%>%
@@ -217,7 +217,7 @@ house %>%
   plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
 
 ##reclassify grade
-house %>%
+plotMean.grade <- house %>%
   st_drop_geometry() %>%
   group_by(grade)%>%
   summarize(price_m = mean(price))%>%
