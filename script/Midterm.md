@@ -920,6 +920,7 @@ house %>%
 
 - Statistical summary
 
+
 ```r
 ### reno_dum
 house %>%
@@ -928,14 +929,14 @@ house %>%
   summarise(count = n()) %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
-  kable(caption = "Renovation Status", table.attr = 'id="myTable"') %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Renovation Status</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
   column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Renovation Status</caption>
+<caption><span style="font-weight: bold; color: black;">Renovation Status</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> reno_dum </th>
@@ -973,14 +974,14 @@ house %>%
   mutate(description = c("the unit has 0-3 bedrooms", 
                          "the unit has 4-7 bedrooms",
                          "the unit has more than 8 bedrooms"))%>%
-  kable(caption = "Category of Bedroom Count") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Category of Bedroom Count</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Category of Bedroom Count</caption>
+<caption><span style="font-weight: bold; color: black;">Category of Bedroom Count</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> bed_cat </th>
@@ -1012,7 +1013,6 @@ house %>%
 </table>
 
 
-
 ```r
 ### bath_dum, 0-4, 4+
 house %>%
@@ -1024,14 +1024,14 @@ house %>%
   arrange(bath_dum)%>%
   mutate(description = c("the unit has 0-4 bathrooms", 
                          "the unit has more than 4 bedrooms"))%>%
-  kable(caption = "Category of Bathroom Count") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Category of Bathroom Count</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Category of Bathroom Count</caption>
+<caption><span style="font-weight: bold; color: black;">Category of Bathroom Count</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> bath_dum </th>
@@ -1068,14 +1068,14 @@ house %>%
   arrange(floor_cat)%>%
   mutate(description = c("the unit has 2.5/3.5 floors",
                          "the unit has 1/1.5/2/3 floors"))%>%
-  kable(caption = "Category by Floors") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Category by Floors</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Category by Floors</caption>
+<caption><span style="font-weight: bold; color: black;">Category by Floors</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> floor_cat </th>
@@ -1110,14 +1110,14 @@ house %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("the unit isn't located at waterfront area", 
                          "the unit is located at waterfront area"))%>%
-  kable(caption = "Waterfront Factor") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Waterfront Factor</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Waterfront Factor</caption>
+<caption><span style="font-weight: bold; color: black;">Waterfront Factor</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> water_dum </th>
@@ -1157,14 +1157,14 @@ house %>%
                          "the unit has a view scoring 2/4", 
                          "the unit has a view scoring 3/4",
                          "the unit has a view scoring 4/4" ))%>%
-  kable(caption = "View Quality") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>View Quality</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>View Quality</caption>
+<caption><span style="font-weight: bold; color: black;">View Quality</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> view_cat </th>
@@ -1222,14 +1222,14 @@ house %>%
                          "the unit's condition scores 3/5",
                          "the unit's condition scores 4/5",
                          "the unit's condition scores 5/5"))%>%
-  kable(caption = "Condition Level") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Condition Level</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Condition Level</caption>
+<caption><span style="font-weight: bold; color: black;">Condition Level</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> condition_cat </th>
@@ -1284,14 +1284,14 @@ house %>%
   arrange(grade_dum)%>%
   mutate(description = c("the unit's grade is 4-9", 
                          "the unit's grade is 10-13"))%>%
-  kable(caption = "Grade Level") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Grade Level</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Grade Level</caption>
+<caption><span style="font-weight: bold; color: black;">Grade Level</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> grade_dum </th>
@@ -1328,14 +1328,14 @@ house %>%
   arrange(bach_dum)%>%
   mutate(description = c("the unit is in a census tract with a bachelor's degree rate below the Seattle average", 
                          "the unit is in a census tract with a bachelor's degree rate above the Seattle average"))%>%
-  kable(caption = "Bachelor's Degree Rate Level") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Bachelor's Degree Rate Level</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Bachelor's Degree Rate Level</caption>
+<caption><span style="font-weight: bold; color: black;">Bachelor's Degree Rate Level</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> bach_dum </th>
@@ -1372,14 +1372,14 @@ house %>%
   arrange(median_hh_dum)%>%
   mutate(description = c("the unit is in a census tract with a median household income below the Seattle average", 
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
-  kable(caption = "Median Household Income Level") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Median Household Income Level</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Median Household Income Level</caption>
+<caption><span style="font-weight: bold; color: black;">Median Household Income Level</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> median_hh_dum </th>
@@ -1416,14 +1416,14 @@ house %>%
   arrange(employ_dum)%>%
   mutate(description = c("the unit is in a census tract with a employment rate below the Seattle average", 
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
-  kable(caption = "Employment Rate Level") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Employment Rate Level</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Employment Rate Level</caption>
+<caption><span style="font-weight: bold; color: black;">Employment Rate Level</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> employ_dum </th>
@@ -1460,14 +1460,14 @@ house %>%
   arrange(pover_dum)%>%
   mutate(description = c("the unit is in a census tract with a poverty rate below the Seattle average", 
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
-  kable(caption = "Poverty Rate Level") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Poverty Rate Level</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Poverty Rate Level</caption>
+<caption><span style="font-weight: bold; color: black;">Poverty Rate Level</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> pover_dum </th>
@@ -1505,14 +1505,14 @@ house %>%
   mutate(description = c("the unit is within a 0.5-mile radius of a subway station", 
                          "the unit is within a 0.5-mile to 1-mile radius of a subway station",
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
-  kable(caption = "Category by Subway Distance") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Category by Subway Distance</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Category by Subway Distance</caption>
+<caption><span style="font-weight: bold; color: black;">Category by Subway Distance</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> sub_cat </th>
@@ -1560,14 +1560,14 @@ house %>%
                          "the unit is in school district five",
                          "the unit is in school district six",
                          "the unit is in school district seven"))%>%
-  kable(caption = "School District") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>School District</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>School District</caption>
+<caption><span style="font-weight: bold; color: black;">School District</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> sch_cat </th>
@@ -1637,14 +1637,14 @@ house %>%
                          "the unit is within a 500-feet radius of two parks",
                          "the unit is within a 500-feet radius of three park",
                          "the unit is within a 500-feet radius of four park"))%>%
-  kable(caption = "Number of nearby Parks") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Number of nearby Parks</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Number of nearby Parks</caption>
+<caption><span style="font-weight: bold; color: black;">Number of nearby Parks</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> park_cat </th>
@@ -1700,14 +1700,14 @@ house %>%
   mutate(description = c("the unit is within a 0.5-mile radius of a shopping center",
                          "the unit is within a 0.5-mile to 1-mile radius of a shopping center",
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
-  kable(caption = "Category by Shopping Center Distance") %>%
+  kable(caption = "<span style='font-weight: bold; color: black;'>Category by Shopping Center Distance</span>") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
                 full_width = T) %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 <table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Category by Shopping Center Distance</caption>
+<caption><span style="font-weight: bold; color: black;">Category by Shopping Center Distance</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> shop_cat </th>
