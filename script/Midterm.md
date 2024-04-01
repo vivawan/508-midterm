@@ -2421,22 +2421,22 @@ MAE: 94702.93
 House Price
 
 **Independent variables:**  
-1. reno_dum ()
-2. bedrooms ()
-3. bath_dum ()
-4. sqft_living ()
-5. sqft_lot ()
-6. floor_cat ()
-7. water_dum ()
-8. view_cat ()
-9. condition_cat ()
-10. grade_dum ()
-11. white_share ()
-12. median_hh_income ()
-13. sch_cat ()
-14. park_cat ()
-15. shop_dis1 ()
-16. T_NAME ()
+1. reno_dum (renovation status)  
+2. bedrooms (number of bedrooms)  
+3. bath_dum (category of bathroom count)  
+4. sqft_living (living area square feet)  
+5. sqft_lot (lot square feet)  
+6. floor_cat (category by floors)  
+7. water_dum (waterfront factor)  
+8. view_cat (view quality)  
+9. condition_cat (condition level)  
+10. grade_dum (grade level)  
+11. white_share (white population share)  
+12. median_hh_income (median household income)  
+13. sch_cat (school districts)  
+14. park_cat (number of nearby parks)  
+15. shop_dis1 (distance to the nearest shopping center)  
+16. T_NAME (census tracts)
 
 
 ```r
@@ -2941,9 +2941,10 @@ balabalbala
 ## Socio-economic Characteristics
 
 ### Age Structure
+
 - variable
-1)  
-2)  
+1)  total dependency ratio
+2)  elderly dependency ratio
 - reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
 
 ### Education Level
