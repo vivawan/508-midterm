@@ -611,7 +611,9 @@ continuous_description <- data.frame(
 continuous_description %>%
   left_join(continuous_summary, by = "variables")%>%
   kable() %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable_classic(full_width = F, html_font = "Cambria")%>%
+  kable_styling(position = "center")
+  
 ```
 
 ## Categorical Variable
