@@ -2098,16 +2098,11 @@ summary(lm14)
 vif(lm14) #sub_dis = 2.664951
 
 ## cor on continuous variable
-seattle.train %>% 
+cor.multi <- seattle.train %>% 
   select_if(is.numeric)%>%
   corrr::correlate() %>% 
   autoplot() +
   geom_text(aes(label = round(r,digits=2)),size = 1)
-```
-
-![](Midterm_files/figure-html/multiple_regression-1.png)<!-- -->
-
-```r
 ## result:
 ## sub_dis have low correlation with other numeric variables
 ## high correlation: white share & bachelor degree
@@ -2394,17 +2389,16 @@ moranTest.stats <- moranTest$statistic # 0.2198671
 - Without fixed effect  
 
 **Model results:**  
-RMSE: 156578.5  
-R-squared: 0.780399  
-MAE: 105068.2
-
+RMSE: 156295.9  
+R-squared: 0.7848814  
+MAE: 105016.8
 
 - Choose between different scales of fixed effect  
 
 **Large neighborhoods:**  
-RMSE: 153034.2  
-R-squared: 0.7909463  
-MAE: 102264.7
+RMSE: 153985.8  
+R-squared: 0.789073  
+MAE: 102216
 
 **Small neighborhoods:**  
 RMSE: 143720.6  
@@ -2412,51 +2406,12 @@ R-squared: 0.8175728
 MAE: 95373.4  
 
 **Census tracts:**  
-RMSE: 143009.4  
-R-squared: 0.8164543  
-MAE: 94772.01  
+RMSE: 143074.6  
+R-squared: 0.8202731  
+MAE: 94702.93  
 
 
-```r
-# with fixed effect
-set.seed(1)
-fitControl <- trainControl(method = "cv", number = 100)
 
-### tract: T_NAME
-seattle.neighT.cv <- 
-  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
-                                              sqft_living, sqft_lot, floor_cat,
-                                              water_dum, view_cat, condition_cat,
-                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, T_NAME),
-     method = "lm", trControl = fitControl, na.action = na.pass)
-
-#RMSE      Rsquared   MAE     
-#143009.4  0.8164543  94772.01
-
-### Large: L_NAME
-seattle.neighL.cv <- 
-  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
-                                              sqft_living, sqft_lot, floor_cat,
-                                              water_dum, view_cat, condition_cat,
-                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, L_NAME),
-     method = "lm", trControl = fitControl, na.action = na.pass)
-
-#RMSE      Rsquared   MAE     
-#153034.2  0.7909463  102264.7
-
-### Small: S_NAME
-seattle.neighS.cv <- 
-  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
-                                              sqft_living, sqft_lot, floor_cat,
-                                              water_dum, view_cat, condition_cat,
-                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, S_NAME),
-     method = "lm", trControl = fitControl, na.action = na.pass)
-
-#RMSE      Rsquared   MAE    
-#143720.6  0.8175728  95373.4
-
-#-> census tract as the fixed effect improves the model most
-```
 
 ## Final Model
 
@@ -2464,22 +2419,22 @@ seattle.neighS.cv <-
 House Price
 
 **Independent variables:**  
-1. reno_dum ()
-2. bedrooms ()
-3. bath_dum ()
-4. sqft_living ()
-5. sqft_lot ()
-6. floor_cat ()
-7. water_dum ()
-8. view_cat ()
-9. condition_cat ()
-10. grade_dum ()
-11. white_share ()
-12. median_hh_income ()
-13. sch_cat ()
-14. park_cat ()
-15. shop_dis1 ()
-16. T_NAME ()
+1. reno_dum (renovation status)  
+2. bedrooms (number of bedrooms)  
+3. bath_dum (category of bathroom count)  
+4. sqft_living (living area square feet)  
+5. sqft_lot (lot square feet)  
+6. floor_cat (category by floors)  
+7. water_dum (waterfront factor)  
+8. view_cat (view quality)  
+9. condition_cat (condition level)  
+10. grade_dum (grade level)  
+11. white_share (white population share)  
+12. median_hh_income (median household income)  
+13. sch_cat (school districts)  
+14. park_cat (number of nearby parks)  
+15. shop_dis1 (distance to the nearest shopping center)  
+16. T_NAME (census tracts)
 
 
 ```r
@@ -2519,9 +2474,10 @@ balabalbala
 ## Socio-economic Characteristics
 
 ### Age Structure
+
 - variable
-1)  
-2)  
+1)  total dependency ratio
+2)  elderly dependency ratio
 - reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
 
 ### Education Level
