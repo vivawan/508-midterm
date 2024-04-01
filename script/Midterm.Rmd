@@ -323,17 +323,6 @@ table(house$bach_dum)
 table(house$median_hh_dum)
 table(house$employ_dum)
 table(house$pover_dum)
-
-## plot all the mean of dummy variables
-house %>% 
-  st_drop_geometry()%>%
-  dplyr::select(price, bach_dum, median_hh_dum, employ_dum, pover_dum) %>%
-  gather(Variable, Value, -price) %>% 
-   ggplot(aes(Value, price)) +
-     geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 2, scales = "free") +
-     labs(title = "Price as a function of dummy variables", y = "Mean_Price") +
-     plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 **3. Amenities Services**  
@@ -555,6 +544,7 @@ st_drop_geometry(house) %>%
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of continuous variables") +
+  theme_void() +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 8, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
@@ -1611,14 +1601,34 @@ seattle.neighS.cv <-
 
 ## Final Model
 
+**Dependent variable:**  
+House Price
+
+**Independent variable:**  
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+10.
+11.
+12.
+13.
+14.
+15.
+16.
+
 ```{r final model, echo=TRUE}
 seattle.train.lm <- seattle.train.lm %>%
   mutate(T_NAME = as.factor(T_NAME))
 
 par(mfrow = c(2, 2))
 
-
-#with fixed effect
+# with fixed effect
 lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
