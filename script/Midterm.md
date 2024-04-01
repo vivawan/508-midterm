@@ -543,7 +543,7 @@ st_drop_geometry(house) %>%
 ![](Midterm_files/figure-html/continuous_clean-1.png)<!-- -->
 
 - Statistical summary
-<table class=" lightable-classic" style="color: black; font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> variables </th>
@@ -921,7 +921,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Renovation Status</caption>
  <thead>
   <tr>
@@ -964,7 +964,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category of Bedroom Count</caption>
  <thead>
   <tr>
@@ -1013,7 +1013,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category of Bathroom Count</caption>
  <thead>
   <tr>
@@ -1055,7 +1055,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Floors</caption>
  <thead>
   <tr>
@@ -1095,7 +1095,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Waterfront Factor</caption>
  <thead>
   <tr>
@@ -1140,7 +1140,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>View Quality</caption>
  <thead>
   <tr>
@@ -1203,7 +1203,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Condition Level</caption>
  <thead>
   <tr>
@@ -1263,7 +1263,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Grade Level</caption>
  <thead>
   <tr>
@@ -1305,7 +1305,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Bachelor's Degree Rate Level</caption>
  <thead>
   <tr>
@@ -1347,7 +1347,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Median Household Income Level</caption>
  <thead>
   <tr>
@@ -1389,7 +1389,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Employment Rate Level</caption>
  <thead>
   <tr>
@@ -1431,7 +1431,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Poverty Rate Level</caption>
  <thead>
   <tr>
@@ -1474,7 +1474,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Subway Distance</caption>
  <thead>
   <tr>
@@ -1527,7 +1527,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>School District</caption>
  <thead>
   <tr>
@@ -1602,7 +1602,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Number of nearby Parks</caption>
  <thead>
   <tr>
@@ -1663,7 +1663,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Shopping Center Distance</caption>
  <thead>
   <tr>
@@ -2054,7 +2054,7 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> dataset </th>
@@ -2151,8 +2151,10 @@ seattle.train <- seattle.train %>%
 
 ### Trade Off on Accuracy and Generalizability
 
+
 - All variables are already significant at p=0.1
 - Delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError, APE
+
 
 ```r
 # make predictions on the test set and evaluate model performance
@@ -2453,6 +2455,471 @@ mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2
 ```
 
 ![](Midterm_files/figure-html/final model-1.png)<!-- -->
+
+```r
+stargazer(lm.final.nhood, type = "text")
+```
+
+```
+## 
+## ==============================================================================
+##                                                        Dependent variable:    
+##                                                    ---------------------------
+##                                                               price           
+## ------------------------------------------------------------------------------
+## reno_dum1                                                 33,003.620***       
+##                                                            (8,383.231)        
+##                                                                               
+## bedrooms                                                 -13,850.570***       
+##                                                            (2,865.708)        
+##                                                                               
+## bath_dummany                                             142,024.800***       
+##                                                           (22,259.890)        
+##                                                                               
+## sqft_living                                                201.400***         
+##                                                              (4.397)          
+##                                                                               
+## sqft_lot                                                    9.560***          
+##                                                              (0.721)          
+##                                                                               
+## floor_catregular                                         -60,624.410***       
+##                                                           (16,031.390)        
+##                                                                               
+## water_dum1                                               428,379.700***       
+##                                                           (33,419.850)        
+##                                                                               
+## view_cat1                                                 88,418.890***       
+##                                                           (14,403.920)        
+##                                                                               
+## view_cat2                                                 52,595.160***       
+##                                                            (8,971.100)        
+##                                                                               
+## view_cat3                                                126,378.700***       
+##                                                           (12,363.630)        
+##                                                                               
+## view_cat4                                                262,936.000***       
+##                                                           (18,838.260)        
+##                                                                               
+## condition_cat2                                           190,662.300***       
+##                                                           (49,244.550)        
+##                                                                               
+## condition_cat3                                           187,322.000***       
+##                                                           (44,341.560)        
+##                                                                               
+## condition_cat4                                           211,291.900***       
+##                                                           (44,489.770)        
+##                                                                               
+## condition_cat5                                           254,588.000***       
+##                                                           (44,749.200)        
+##                                                                               
+## grade_dumhigh                                            330,564.000***       
+##                                                           (12,208.280)        
+##                                                                               
+## white_share                                               6,799.405***        
+##                                                            (1,885.406)        
+##                                                                               
+## median_hh_income                                             -0.462           
+##                                                              (0.743)          
+##                                                                               
+## sch_catDD2                                                89,972.350***       
+##                                                           (29,670.540)        
+##                                                                               
+## sch_catDD3                                                 17,019.810         
+##                                                           (28,070.270)        
+##                                                                               
+## sch_catDD4                                                79,941.560**        
+##                                                           (40,071.700)        
+##                                                                               
+## sch_catDD5                                                90,855.350**        
+##                                                           (45,450.620)        
+##                                                                               
+## sch_catDD6                                                 -31,665.940        
+##                                                           (42,953.640)        
+##                                                                               
+## sch_catDD7                                               151,240.600***       
+##                                                           (38,066.460)        
+##                                                                               
+## park_cat1                                                  10,464.880*        
+##                                                            (5,359.159)        
+##                                                                               
+## park_cat2                                                 21,941.780**        
+##                                                           (10,273.070)        
+##                                                                               
+## park_cat3                                                113,025.000***       
+##                                                           (20,876.600)        
+##                                                                               
+## park_cat4                                                312,572.700***       
+##                                                           (49,455.190)        
+##                                                                               
+## shop_dis1                                                    -0.733           
+##                                                              (1.778)          
+##                                                                               
+## T_NAMECensus Tract 10, King County, Washington             88,345.270*        
+##                                                           (49,997.430)        
+##                                                                               
+## T_NAMECensus Tract 100.01, King County, Washington         20,469.560         
+##                                                           (63,999.490)        
+##                                                                               
+## T_NAMECensus Tract 100.02, King County, Washington         -51,616.130        
+##                                                           (37,928.100)        
+##                                                                               
+## T_NAMECensus Tract 101, King County, Washington            44,106.100         
+##                                                           (39,202.930)        
+##                                                                               
+## T_NAMECensus Tract 102, King County, Washington           -66,106.730**       
+##                                                           (29,528.450)        
+##                                                                               
+## T_NAMECensus Tract 103, King County, Washington            46,780.060         
+##                                                           (42,355.330)        
+##                                                                               
+## T_NAMECensus Tract 104.01, King County, Washington         114,924.200        
+##                                                           (88,853.000)        
+##                                                                               
+## T_NAMECensus Tract 104.02, King County, Washington         89,441.220         
+##                                                           (77,112.960)        
+##                                                                               
+## T_NAMECensus Tract 105, King County, Washington            -17,113.320        
+##                                                           (25,007.500)        
+##                                                                               
+## T_NAMECensus Tract 106, King County, Washington            17,419.860         
+##                                                           (21,365.870)        
+##                                                                               
+## T_NAMECensus Tract 107.01, King County, Washington         87,428.820         
+##                                                           (58,420.770)        
+##                                                                               
+## T_NAMECensus Tract 107.02, King County, Washington       250,551.200***       
+##                                                           (83,765.370)        
+##                                                                               
+## T_NAMECensus Tract 108, King County, Washington            63,776.480         
+##                                                           (60,307.450)        
+##                                                                               
+## T_NAMECensus Tract 109, King County, Washington          -117,085.800**       
+##                                                           (56,937.780)        
+##                                                                               
+## T_NAMECensus Tract 11, King County, Washington             -30,176.910        
+##                                                           (43,961.010)        
+##                                                                               
+## T_NAMECensus Tract 110.01, King County, Washington         105,682.700        
+##                                                           (82,274.930)        
+##                                                                               
+## T_NAMECensus Tract 110.02, King County, Washington        176,155.100*        
+##                                                           (99,808.460)        
+##                                                                               
+## T_NAMECensus Tract 111.01, King County, Washington         51,146.260         
+##                                                           (72,335.710)        
+##                                                                               
+## T_NAMECensus Tract 111.02, King County, Washington         -33,397.240        
+##                                                           (42,981.740)        
+##                                                                               
+## T_NAMECensus Tract 112, King County, Washington            -68,282.920        
+##                                                           (49,115.380)        
+##                                                                               
+## T_NAMECensus Tract 113, King County, Washington            -3,097.622         
+##                                                           (47,178.750)        
+##                                                                               
+## T_NAMECensus Tract 114.01, King County, Washington         49,506.800         
+##                                                           (47,710.560)        
+##                                                                               
+## T_NAMECensus Tract 114.02, King County, Washington         49,288.230         
+##                                                           (47,844.900)        
+##                                                                               
+## T_NAMECensus Tract 115, King County, Washington            -9,094.443         
+##                                                           (25,156.280)        
+##                                                                               
+## T_NAMECensus Tract 116, King County, Washington           -36,138.390*        
+##                                                           (21,856.550)        
+##                                                                               
+## T_NAMECensus Tract 117, King County, Washington            66,747.000         
+##                                                           (88,581.960)        
+##                                                                               
+## T_NAMECensus Tract 118, King County, Washington            -32,725.910        
+##                                                           (56,483.390)        
+##                                                                               
+## T_NAMECensus Tract 119, King County, Washington            -33,353.150        
+##                                                           (77,993.480)        
+##                                                                               
+## T_NAMECensus Tract 12, King County, Washington             18,047.160         
+##                                                           (44,364.160)        
+##                                                                               
+## T_NAMECensus Tract 120, King County, Washington          -93,597.320***       
+##                                                           (24,377.480)        
+##                                                                               
+## T_NAMECensus Tract 121, King County, Washington          -101,856.400***      
+##                                                           (38,751.040)        
+##                                                                               
+## T_NAMECensus Tract 13, King County, Washington             22,468.260         
+##                                                           (36,749.230)        
+##                                                                               
+## T_NAMECensus Tract 14, King County, Washington             -54,987.830        
+##                                                           (50,444.160)        
+##                                                                               
+## T_NAMECensus Tract 15, King County, Washington           -173,757.500***      
+##                                                           (66,641.780)        
+##                                                                               
+## T_NAMECensus Tract 16, King County, Washington             -12,244.500        
+##                                                           (49,993.750)        
+##                                                                               
+## T_NAMECensus Tract 17.01, King County, Washington          40,991.700         
+##                                                           (41,011.810)        
+##                                                                               
+## T_NAMECensus Tract 17.02, King County, Washington           6,744.200         
+##                                                           (42,767.210)        
+##                                                                               
+## T_NAMECensus Tract 18, King County, Washington             10,596.520         
+##                                                           (41,661.750)        
+##                                                                               
+## T_NAMECensus Tract 19, King County, Washington             41,136.740         
+##                                                           (39,213.000)        
+##                                                                               
+## T_NAMECensus Tract 2, King County, Washington               5,989.388         
+##                                                           (31,771.860)        
+##                                                                               
+## T_NAMECensus Tract 20, King County, Washington             -31,156.970        
+##                                                           (48,632.570)        
+##                                                                               
+## T_NAMECensus Tract 21, King County, Washington             19,190.680         
+##                                                           (48,019.340)        
+##                                                                               
+## T_NAMECensus Tract 22, King County, Washington             54,222.120         
+##                                                           (61,900.800)        
+##                                                                               
+## T_NAMECensus Tract 24, King County, Washington             50,621.800         
+##                                                           (59,323.080)        
+##                                                                               
+## T_NAMECensus Tract 25, King County, Washington              8,345.229         
+##                                                           (61,595.660)        
+##                                                                               
+## T_NAMECensus Tract 26, King County, Washington             39,715.910         
+##                                                           (54,622.360)        
+##                                                                               
+## T_NAMECensus Tract 260.01, King County, Washington         29,181.200         
+##                                                           (163,586.700)       
+##                                                                               
+## T_NAMECensus Tract 27, King County, Washington             57,655.960         
+##                                                           (56,590.290)        
+##                                                                               
+## T_NAMECensus Tract 28, King County, Washington             -71,256.840        
+##                                                           (59,313.780)        
+##                                                                               
+## T_NAMECensus Tract 29, King County, Washington             -46,203.370        
+##                                                           (63,160.370)        
+##                                                                               
+## T_NAMECensus Tract 3, King County, Washington              -48,903.990        
+##                                                           (41,666.040)        
+##                                                                               
+## T_NAMECensus Tract 30, King County, Washington             -65,786.970        
+##                                                           (58,012.130)        
+##                                                                               
+## T_NAMECensus Tract 31, King County, Washington             -99,171.540        
+##                                                           (63,908.620)        
+##                                                                               
+## T_NAMECensus Tract 32, King County, Washington             -15,787.820        
+##                                                           (60,005.510)        
+##                                                                               
+## T_NAMECensus Tract 33, King County, Washington             -31,503.320        
+##                                                           (56,863.080)        
+##                                                                               
+## T_NAMECensus Tract 34, King County, Washington             -49,003.760        
+##                                                           (59,776.800)        
+##                                                                               
+## T_NAMECensus Tract 35, King County, Washington             -9,397.730         
+##                                                           (57,298.280)        
+##                                                                               
+## T_NAMECensus Tract 36, King County, Washington            120,678.000**       
+##                                                           (49,076.060)        
+##                                                                               
+## T_NAMECensus Tract 38, King County, Washington             76,185.250         
+##                                                           (62,392.270)        
+##                                                                               
+## T_NAMECensus Tract 39, King County, Washington             27,112.240         
+##                                                           (61,676.770)        
+##                                                                               
+## T_NAMECensus Tract 4.01, King County, Washington           55,207.110         
+##                                                           (42,240.550)        
+##                                                                               
+## T_NAMECensus Tract 4.02, King County, Washington          -95,082.130**       
+##                                                           (46,811.970)        
+##                                                                               
+## T_NAMECensus Tract 40, King County, Washington           157,157.800***       
+##                                                           (55,906.440)        
+##                                                                               
+## T_NAMECensus Tract 41, King County, Washington           379,497.300***       
+##                                                           (65,930.360)        
+##                                                                               
+## T_NAMECensus Tract 42, King County, Washington             99,487.940*        
+##                                                           (58,345.740)        
+##                                                                               
+## T_NAMECensus Tract 43.01, King County, Washington          96,006.370*        
+##                                                           (52,073.720)        
+##                                                                               
+## T_NAMECensus Tract 43.02, King County, Washington         202,502.500*        
+##                                                           (115,645.100)       
+##                                                                               
+## T_NAMECensus Tract 44, King County, Washington            107,897.700*        
+##                                                           (61,135.150)        
+##                                                                               
+## T_NAMECensus Tract 45, King County, Washington             63,574.180         
+##                                                           (57,055.720)        
+##                                                                               
+## T_NAMECensus Tract 46, King County, Washington             78,515.430         
+##                                                           (64,092.880)        
+##                                                                               
+## T_NAMECensus Tract 47, King County, Washington              3,565.125         
+##                                                           (57,575.570)        
+##                                                                               
+## T_NAMECensus Tract 48, King County, Washington             -60,977.630        
+##                                                           (63,501.960)        
+##                                                                               
+## T_NAMECensus Tract 49, King County, Washington              -320.582          
+##                                                           (62,355.860)        
+##                                                                               
+## T_NAMECensus Tract 5, King County, Washington             -104,445.900*       
+##                                                           (59,290.990)        
+##                                                                               
+## T_NAMECensus Tract 50, King County, Washington             49,065.890         
+##                                                           (65,314.480)        
+##                                                                               
+## T_NAMECensus Tract 51, King County, Washington           166,373.900***       
+##                                                           (61,072.850)        
+##                                                                               
+## T_NAMECensus Tract 52, King County, Washington           221,694.900***       
+##                                                           (49,497.250)        
+##                                                                               
+## T_NAMECensus Tract 53.01, King County, Washington        368,285.100***       
+##                                                           (115,150.000)       
+##                                                                               
+## T_NAMECensus Tract 54, King County, Washington             95,765.720*        
+##                                                           (55,357.970)        
+##                                                                               
+## T_NAMECensus Tract 56, King County, Washington             84,919.440         
+##                                                           (76,907.760)        
+##                                                                               
+## T_NAMECensus Tract 57, King County, Washington             -32,957.390        
+##                                                           (56,109.730)        
+##                                                                               
+## T_NAMECensus Tract 58.01, King County, Washington          -10,813.350        
+##                                                           (52,089.760)        
+##                                                                               
+## T_NAMECensus Tract 58.02, King County, Washington           9,196.485         
+##                                                           (52,332.120)        
+##                                                                               
+## T_NAMECensus Tract 59, King County, Washington             72,483.450         
+##                                                           (59,891.820)        
+##                                                                               
+## T_NAMECensus Tract 6, King County, Washington               -575.046          
+##                                                           (33,225.240)        
+##                                                                               
+## T_NAMECensus Tract 60, King County, Washington             88,273.580         
+##                                                           (64,936.400)        
+##                                                                               
+## T_NAMECensus Tract 61, King County, Washington             93,149.630*        
+##                                                           (55,690.480)        
+##                                                                               
+## T_NAMECensus Tract 62, King County, Washington            125,020.000**       
+##                                                           (50,753.100)        
+##                                                                               
+## T_NAMECensus Tract 63, King County, Washington           552,700.500***       
+##                                                           (50,801.220)        
+##                                                                               
+## T_NAMECensus Tract 64, King County, Washington           163,131.600***       
+##                                                           (59,495.030)        
+##                                                                               
+## T_NAMECensus Tract 65, King County, Washington           259,695.500***       
+##                                                           (62,096.680)        
+##                                                                               
+## T_NAMECensus Tract 66, King County, Washington             33,277.250         
+##                                                           (54,080.770)        
+##                                                                               
+## T_NAMECensus Tract 67, King County, Washington           193,003.300***       
+##                                                           (62,281.300)        
+##                                                                               
+## T_NAMECensus Tract 68, King County, Washington           211,949.400***       
+##                                                           (68,931.160)        
+##                                                                               
+## T_NAMECensus Tract 69, King County, Washington           173,353.200***       
+##                                                           (65,902.210)        
+##                                                                               
+## T_NAMECensus Tract 7, King County, Washington               4,372.451         
+##                                                           (39,673.590)        
+##                                                                               
+## T_NAMECensus Tract 70, King County, Washington           368,079.700***       
+##                                                           (65,423.960)        
+##                                                                               
+## T_NAMECensus Tract 74.01, King County, Washington          41,873.000         
+##                                                           (82,756.540)        
+##                                                                               
+## T_NAMECensus Tract 75, King County, Washington            115,526.400*        
+##                                                           (61,700.200)        
+##                                                                               
+## T_NAMECensus Tract 76, King County, Washington           173,538.400***       
+##                                                           (56,767.610)        
+##                                                                               
+## T_NAMECensus Tract 77, King County, Washington             73,675.140*        
+##                                                           (38,528.140)        
+##                                                                               
+## T_NAMECensus Tract 78, King County, Washington           274,743.200***       
+##                                                           (51,414.900)        
+##                                                                               
+## T_NAMECensus Tract 79, King County, Washington             54,155.720         
+##                                                           (53,842.320)        
+##                                                                               
+## T_NAMECensus Tract 8, King County, Washington              -73,753.020        
+##                                                           (48,779.850)        
+##                                                                               
+## T_NAMECensus Tract 86, King County, Washington             92,800.170         
+##                                                           (58,933.470)        
+##                                                                               
+## T_NAMECensus Tract 87, King County, Washington            84,998.460**        
+##                                                           (41,774.840)        
+##                                                                               
+## T_NAMECensus Tract 88, King County, Washington             59,664.970         
+##                                                           (38,556.420)        
+##                                                                               
+## T_NAMECensus Tract 89, King County, Washington           173,710.300***       
+##                                                           (44,174.880)        
+##                                                                               
+## T_NAMECensus Tract 9, King County, Washington              -99,130.160        
+##                                                           (62,969.420)        
+##                                                                               
+## T_NAMECensus Tract 90, King County, Washington            154,976.400**       
+##                                                           (64,354.740)        
+##                                                                               
+## T_NAMECensus Tract 93, King County, Washington             -91,635.720        
+##                                                           (57,553.820)        
+##                                                                               
+## T_NAMECensus Tract 94, King County, Washington            129,101.000**       
+##                                                           (55,232.380)        
+##                                                                               
+## T_NAMECensus Tract 95, King County, Washington                                
+##                                                                               
+##                                                                               
+## T_NAMECensus Tract 96, King County, Washington            63,605.920**        
+##                                                           (25,186.470)        
+##                                                                               
+## T_NAMECensus Tract 97.01, King County, Washington           8,755.763         
+##                                                           (25,095.130)        
+##                                                                               
+## T_NAMECensus Tract 97.02, King County, Washington                             
+##                                                                               
+##                                                                               
+## T_NAMECensus Tract 98, King County, Washington                                
+##                                                                               
+##                                                                               
+## T_NAMECensus Tract 99, King County, Washington                                
+##                                                                               
+##                                                                               
+## Constant                                                 -491,475.300***      
+##                                                           (112,554.200)       
+##                                                                               
+## ------------------------------------------------------------------------------
+## Observations                                                  5,071           
+## R2                                                            0.835           
+## Adjusted R2                                                   0.830           
+## Residual Std. Error                                  150,746.500 (df = 4927)  
+## F Statistic                                        174.615*** (df = 143; 4927)
+## ==============================================================================
+## Note:                                              *p<0.1; **p<0.05; ***p<0.01
+```
 
 ## Visualize Model Results
 
