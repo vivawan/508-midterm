@@ -172,7 +172,7 @@ ggplot() +
 - Condition (category)  
 - Grade (category)
 
-```{r internal, echo=TRUE, message=FALSE, warning=FALSE}
+```{r internal, results='hide'}
 # add year_used and renovation and ensure categorical data are factor
 house <- hh %>% 
   mutate(year_used = 2015 - yr_built, # used year
@@ -182,7 +182,50 @@ house <- hh %>%
          condition_cat = as.factor(condition),
          grade_cat = as.factor(grade))
 
-# set categories
+# create categorical data by the mean of price
+## bed categories
+house$bed.factor <- factor(house$bedrooms, levels =sort(unique(house$bedrooms)))
+
+house %>%
+  st_drop_geometry() %>%
+  group_by(bed.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = bed.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-7,8+
+
+## bathroom category
+house$bath.factor <- factor(house$bathrooms, levels =sort(unique(house$bathrooms)))
+
+house %>%
+  st_drop_geometry() %>%
+  group_by(bath.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = bath.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-4, 4+
+
+## floor category
+house$floor.factor <- factor(house$floors, levels =sort(unique(house$floors)))
+
+house %>%
+  st_drop_geometry() %>%
+  group_by(floor.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = floor.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
+
+##reclassify grade
+house %>%
+  st_drop_geometry() %>%
+  group_by(grade)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = grade, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))#4-9, 10-14
+
+# add categories
 house <- house %>%
   mutate(
     bed_cat = factor(case_when(
@@ -1032,10 +1075,6 @@ ggplot() +
 
 
 # Modeling
-
-**Process:**   
-3) Delete insignificant var. until all var at p < 0.05  
-4) Delete var. with large p and examine R^2 & residual  
 
 ## Initial Variables Selection
 
