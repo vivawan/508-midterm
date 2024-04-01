@@ -1542,7 +1542,7 @@ R-squared: 0.8202731
 MAE: 94702.93  
 
 
-```{r cv, include=FALSE}
+```{r cv, echo=TRUE}
 # without fixed effect
 set.seed(1)
 fitControl <- trainControl(method = "cv", number = 100)
