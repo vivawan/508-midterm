@@ -540,7 +540,7 @@ st_drop_geometry(house) %>%
    ggplot(aes(Value, price)) +
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
-     labs(title = "Price as a function of continuous variables") +
+     labs(title = "Price as a Function of Continuous Variables") +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 12, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
@@ -907,7 +907,7 @@ house %>%
    ggplot(aes(Value, price)) +
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
      facet_wrap(~Variable, ncol = 3, scales = "free") +
-     labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
+     labs(title = "Price as a Function of Categorical Variables", y = "Mean_Price") +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 12, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
@@ -919,7 +919,6 @@ house %>%
 
 
 - Statistical summary
-
 
 ```r
 ### reno_dum
