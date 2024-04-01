@@ -1220,7 +1220,6 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   mutate(percent = round(count/sum(count) * 100, digits = 2))%>%
   kable() %>%
   kable_classic(full_width = T, html_font = "Cambria")
-
 ```
 
 ## Model Diagnostics
@@ -1297,8 +1296,8 @@ seattle.train <- seattle.train %>%
 
 ### Trade Off on Accuracy and Generalizability
 
-- all variables are already significant at p=0.1
-- delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError, APE
+- All variables are already significant at p=0.1
+- Delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError, APE
 ```{r testing, results='hide'}
 # make predictions on the test set and evaluate model performance
 lm19 <- lm(price ~ ., data = seattle.train)
@@ -1473,10 +1472,12 @@ spatialWeights <- nb2listw(neighborList, style="W")
 house.sf %>%
   mutate(lagPrice = lag.listw(spatialWeights, price))%>%
   ggplot()+
-  geom_point(aes(x = lagPrice, y = price))+
+  geom_point(aes(x = lagPrice, y = price), color = "black", pch = 16, size = 1.6)+
   stat_smooth(aes(lagPrice, price), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Price as a Function of the Spatial Lag of Price")
+  labs(title="Price as a Function of the Spatial Lag of Price") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 
 # spatial lag of price error
@@ -1491,10 +1492,12 @@ spatialWeights.test <- nb2listw(neighborList.test, style="W")
 seattle.test7 %>% 
   mutate(lagPriceError = lag.listw(spatialWeights.test, price.error)) %>%
   ggplot()+
-  geom_point(aes(x = lagPriceError, y = price.error))+
+  geom_point(aes(x = lagPriceError, y = price.error), color = "black", pch = 16, size = 1.6)+
   stat_smooth(aes(lagPriceError, price.error), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Error as a Function of the Spatial Lag of Error")
+  labs(title="Error as a Function of the Spatial Lag of Error")+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 
 # moran's I test
@@ -1604,23 +1607,23 @@ seattle.neighS.cv <-
 **Dependent variable:**  
 House Price
 
-**Independent variable:**  
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-9.
-10.
-11.
-12.
-13.
-14.
-15.
-16.
+**Independent variables:**  
+1. reno_dum (renovation status)  
+2. bedrooms (number of bedrooms)  
+3. bath_dum (category of bathroom count)  
+4. sqft_living (living area square feet)  
+5. sqft_lot (lot square feet)  
+6. floor_cat (category by floors)  
+7. water_dum (waterfront factor)  
+8. view_cat (view quality)  
+9. condition_cat (condition level)  
+10. grade_dum (grade level)  
+11. white_share (white population share)  
+12. median_hh_income (median household income)  
+13. sch_cat (school districts)  
+14. park_cat (number of nearby parks)  
+15. shop_dis1 (distance to the nearest shopping center)  
+16. T_NAME (census tracts)
 
 ```{r final model, echo=TRUE}
 seattle.train.lm <- seattle.train.lm %>%
@@ -1642,18 +1645,13 @@ mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2
 ### Predicted Prices vs. Observed Prices
 
 ```{r predict_plot, echo=FALSE}
-#without fixed effect
+# without fixed effect
 lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1,
                data = seattle.train.lm)
 
-summary(lm.final)
-
-plot(lm.final)
-mtext("Diagnostic Plots for Linear Model without Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
-
-## final model without fixed effect
+## model without fixed effect
 reg.test <-
   seattle.test.lm %>%
   mutate(regression = "Baseline Regression", # add a column indicating the type of regression model used
@@ -1692,9 +1690,9 @@ bothregressions %>%
   ggplot(aes(price, price.predict)) +
   geom_point() +
   stat_smooth(aes(price, price), 
-             method = "lm", se = FALSE, size = 1, color="#b2182b") + 
+             method = "lm", se = FALSE, size = 0.8, color="#b2182b") + 
   stat_smooth(aes(price, price.predict), 
-              method = "lm", se = FALSE, size = 1, color="#2166ac") +
+              method = "lm", se = FALSE, size = 0.8, color="#2166ac") +
   facet_wrap(~regression) +
   labs(title="Predicted House Price as a Function of Observed Price",
        subtitle="Red line represents a perfect prediction; Blue line represents prediction",
@@ -1723,7 +1721,7 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 ggplot() +
   geom_sf(data = st_intersection(acsTractsSeattle.2015, seattle), fill = "#ECECEC", color = "#2166ac", linewidth = 0.2) +
     geom_sf(data = st_as_sf(bothregressions.error),
-          aes(color = cut(price.AbsError, breaks = breaks_quantiles$brks, include.lowest = TRUE))) +
+          aes(color = cut(price.AbsError, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 0.5) +
   scale_color_manual(values = colors,
                     labels = labels,
                     name = "Absolute Errors (Quantile)") +
@@ -1758,16 +1756,16 @@ balabalbala
 
 # Appendix: Variable Selection Reference
 
-## Socio-economic characteristics
+## Socio-economic Characteristics
 
-### age structure
+### Age Structure
 - variable
 1)  
 2)  
 - reference: "total dependency ratio and elderly dependency ratio are on an inverse relationship towards ordinary residence price." https://www.scirp.org/journal/paperinformation?paperid=74919
 
-### education level
-- variable: 
+### Education Level
+
 - reference: "The findings show that higher education does have a positive relationship to the house prices in Sweden."
 https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
 
@@ -1775,7 +1773,7 @@ https://www.diva-portal.org/smash/get/diva2:1346009/FULLTEXT01.pdf
 
 Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seattle-investors-find-good-properties  
 
-### subway station
+### Subway Station
 
 - variable  
 1) distance to the nearest station
@@ -1785,7 +1783,7 @@ Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seat
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/7fb1b64925db450e8f024940f697823e_390/explore?location=47.584121%2C-122.115870%2C10.45
 
-### school district
+### School District
 
 - variable: the name of the school district
 
@@ -1793,7 +1791,7 @@ Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seat
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/94eb521c71f2401586c6ce6a34d68166_406/explore?location=47.672575%2C-122.604064%2C18.86
 
-### parks
+### Parks
 
 - variable: 
 1) area of parks within 500 feet radius
@@ -1803,7 +1801,7 @@ Amenities impact: https://www.rentseattle.com/blog/how-local-amenities-help-seat
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/a0c94c33228146c5ad95a1dff3b6963d_228/explore?location=47.557674%2C-122.213839%2C11.45
 
-### tree canopy
+### Tree Canopy
 
 - variable:
 1) percent of existing tree canopy (2016, hexagons)
@@ -1813,7 +1811,7 @@ https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::seattle-tree-canopy-2016-2021-50-acre-hexagons/explore?layer=1&location=47.580733%2C-122.309741%2C11.26
 
-### medical facilities
+### Medical Facilities
 
 - variable: 
 1) average distance to the nearest 1/2/3 medical facilities
@@ -1823,7 +1821,7 @@ https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
 
-### commercial
+### Commercial
 
 - variable:  
 1) average distance to the nearest 1/2/3 shops
@@ -1840,7 +1838,7 @@ while the proximity factor varies from housing estate to housing estate." https:
 Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb4709874b46cf8dbb284182ca0094/info/metadata/metadata.xml?format=default&output=html
 - 690 Shopping Centers
 
-### crime
+### Crime
 
 - variable:
 1) count of crimes within a 1/8 mi
