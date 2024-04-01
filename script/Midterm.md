@@ -18,19 +18,23 @@ output:
 
 
 
-
-
 # Introduction
 
-- goal
-- methods of data collection
-- data source
-- analysis area: housing unit in Seattle, exclude one housing unit with an extremely high price over 7 million.
-- show house location
+**Viva and Yaohan work together on the scripts, and then finish the write-up separately.**
 
+- Analysis goal:
+
+- Methods for data collection:
+
+- Data source:
+
+- Study area:  
+Housing unit in Seattle, exclude one housing unit with an extremely high price over 7 million.
+
+- Import all datasets
 
 ```r
-## read Seattle boundary
+# read Seattle boundary
 seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
   st_union() %>%
   st_as_sf() 
@@ -38,7 +42,7 @@ seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
 # import house data
 kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
-## load census tract data
+# load census tract data
 census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
 
 acs_variable_list.2015 <- load_variables(2015, # year
@@ -72,7 +76,7 @@ acs_vars <- c("B01003_001E", # total population
               "B23025_003E", # total labor force
               "B17020_002E") # income below poverty level
 
-#read amenities data
+# read amenities data
 sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))
 
 sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))
@@ -85,13 +89,13 @@ med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospi
 
 mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))
 
-#read spatial data
+# read spatial data
 neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) 
 
 neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson"))
 ```
 
-
+- Plot house locations in Seattle
 
 ```r
 # create house location
@@ -103,22 +107,13 @@ kc_hh <- kc_hh %>%
 hh <- kc_hh %>%
   st_intersection(seattle)
 
-# plot Seattle house location
-# ggplot() + 
-#     geom_sf(data = seattle, aes(color = "Seattle Boundary"), linewidth = 0.5) +  # add Seattle boundary
-#     geom_sf(data = hh, aes(color = "House Locations"), size = 0.5, pch = 16) +  # add house location
-#     labs(title = "Seattle House Location",
-#          color = "Legend") +  # set plot title
-#   scale_color_manual(values = c("Seattle Boundary" = "#b2182b", "House Locations" = "#2166ac")) +
-#     theme_void() +
-#     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-
-#examine house id
+# examine house id
 hh.id<-length(unique(hh$id))#6691 < 6740
-#add an unique key
+
+# add an unique key
 hh$key <- 1:nrow(hh)
 
-#exclude outliers with extremely high price
+# exclude outliers with extremely high price
 hh <- hh %>%
   filter(!price > 5000000)
 
@@ -143,21 +138,21 @@ ggplot() +
 # Data Description
 
 ## Variable Selection
-- four categories
-- first selection based on literature theory
-- category reclassification based on plot
+- Four categories
+- First selection based on literature theory
+- Category reclassification based on plot
 
-**1. Internal Characteristics**
-- Year used (continuous)
-- Renovation (dummy)
-- Bedroom (continuous + category)
-- Bathroom (continuous + category)
-- Floors (continuous + category)
-- Living area (continuous)
-- Lot area (continuous)
-- Waterfront (dummy)
-- View (category)
-- Condition (category)
+**1. Internal Characteristics**  
+- Year used (continuous)  
+- Renovation (dummy)  
+- Bedroom (continuous + category)  
+- Bathroom (continuous + category)  
+- Floors (continuous + category)  
+- Living area (continuous)  
+- Lot area (continuous)  
+- Waterfront (dummy)  
+- View (category)  
+- Condition (category)  
 - Grade (category)
 
 
@@ -171,10 +166,7 @@ house <- hh %>%
          condition_cat = as.factor(condition),
          grade_cat = as.factor(grade))
 
-#data set for appendix
-house0 <- house
-
-#set categories
+# set categories
 house <- house %>%
   mutate(
     bed_cat = factor(case_when(
@@ -201,14 +193,14 @@ house <- house %>%
          "water_dum", "view_cat", "condition_cat", "grade_dum")
 ```
 
-**2. Socio-economic Characteristics**
-- Population density (continuous)
-- White population share (continuous)
-- Age structure (continuous)
-- Education level (continuous + dummy)
-- Median household income (continuous + dummy)
-- Employment rate (continuous + dummy)
-- Poverty rate (continuous + dummy)
+**2. Socio-economic Characteristics**  
+- Population density (continuous)  
+- White population share (continuous)  
+- Age structure (continuous)  
+- Education level (continuous + dummy)  
+- Median household income (continuous + dummy)  
+- Employment rate (continuous + dummy)  
+- Poverty rate (continuous + dummy)  
 
 
 ```r
@@ -288,52 +280,52 @@ house %>%
 
 ![](Midterm_files/figure-html/socio-economic variable-1.png)<!-- -->
 
-**3. Amenities Services**
-- Subway Station (distance + category)
-- School District (category)
-- Park (area + count)
-- Medical Facilities (distance + category)
-- Commercial center (distance + count)
+**3. Amenities Services**  
+- Subway Station (distance + category)  
+- School District (category)  
+- Park (area + count)  
+- Medical Facilities (distance + category)  
+- Commercial center (distance + count)  
 - Crime rate (distance + )
 
 
 ```r
+# subway station
 sub <- sub %>%
   st_transform(st_crs(house))
 
-# the distance to the nearest station 
+## the distance to the nearest station 
 house <-  house %>%
       mutate(sub_dis = nn_function(st_coordinates(house),
                                       st_coordinates(sub), k = 1))
 
-# categories based on distance
+## categories based on distance
 house <- house %>%
   mutate(sub_cat = factor(case_when(
     sub_dis <= 2640 ~ "within0.5mile",
     sub_dis > 2640 & sub_dis <= 5280 ~ "0.5-1mile",
     sub_dis > 5280 ~ "1+mile"
   ),levels = c("within0.5mile","0.5-1mile","1+mile")))
-```
 
 
-```r
+# school district
 sch <- sch %>%
   st_transform(st_crs(house))
-# add the school district variable
+
+## add the school district variable
 house <- house %>% 
   st_join(sch%>%select(DIRDST), join = st_within)%>%
   rename(sch_cat = "DIRDST")%>%
   mutate(sch_cat = factor(sch_cat, levels = c("DD1","DD2","DD3","DD4","DD5","DD6","DD7"))) 
-```
 
 
-```r
+# park
 park <- park %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)%>%
   mutate(park_area = st_area(.))
 
-# area and count of parks within 500 feet
+## area and count of parks within 500 feet
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
   group_by(key) %>% 
   summarise(park_c = n_distinct(SITENAME, na.rm = TRUE),
@@ -346,10 +338,8 @@ house <- house %>%
                 st_drop_geometry()%>%
                 select(key,park_cat, all_park_area), by = "key")%>%
   rename(parks_area = all_park_area)
-```
 
-
-```r
+# tree canopy
 tree_canopy_2016 <- tree_canopy_2016 %>%
   st_transform(st_crs(house)) %>%
   mutate(tree_canopy = round(TreeCanopy_2016_Percent, digits = 2)) %>%
@@ -357,15 +347,14 @@ tree_canopy_2016 <- tree_canopy_2016 %>%
 
 house <- house %>%
   st_join(., tree_canopy_2016)
-```
 
 
-```r
+# medical facilities
 med <- med %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-# calculate the distance to the nearest medical facilities 
+## calculate the distance to the nearest medical facilities 
 house <-  house %>%
       mutate(med_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(med), k = 1),
@@ -374,26 +363,24 @@ house <-  house %>%
              med_dis3 = nn_function(st_coordinates(house),
                                       st_coordinates(med), k = 3))
 
-# categories based on distance
+## categories based on distance
 house <- house %>%
   mutate(med_cat = case_when(
     med_dis1 <= 2640 ~ "within0.5mile",
     med_dis1 > 2640 & med_dis1 <= 5280 ~ "0.5-1mile",
-    med_dis1 > 5280 ~ "1+mile"
-  ))
-```
+    med_dis1 > 5280 ~ "1+mile"))
 
 
-```r
+# commercial
 mark <- mark %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-#select shopping center from landmrak dataset
+## select shopping center from landmrak dataset
 mark_shop <- mark%>%
   filter(CODE == 690)
 
-# calculate the distance to the nearest 1/2/3 shopping center(s) 
+## calculate the distance to the nearest 1/2/3 shopping center(s) 
 house <- house %>%
       mutate(shop_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(mark_shop), k = 1),
@@ -402,20 +389,18 @@ house <- house %>%
              shop_dis3 = nn_function(st_coordinates(house),
                                       st_coordinates(mark_shop), k = 3))
 
-# categories based on distance
+## categories based on distance
 house <- house %>%
   mutate(shop_cat = factor(case_when(
     shop_dis1 <= 2640 ~ "within0.5mile",
     shop_dis1 > 2640 & shop_dis1 <= 5280 ~ "0.5-1mile",
     shop_dis1 > 5280 ~ "1+mile"
   ),levels = c("within0.5mile","0.5-1mile","1+mile")))
-```
 
 
+# crime
 
-```r
 # crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
-
 # get the target crime
 # crime_clean <- crime %>%
 #   mutate(year = str_sub(Report.Number, 1, 4)) %>%
@@ -448,18 +433,18 @@ house <- house %>%
 #
 # write.csv(crime_clean , here::here("data/processed/crime_clean.csv"), row.names = FALSE)
 
-# read the cleaned data set
+## read the cleaned data set
 crime <- read.csv(here::here("data/processed/crime_clean.csv")) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)%>%
   st_transform(st_crs(house))
 
-# count of crime within 1/8 mi
+## count of crime within 1/8 mi
 house$crime_c <- house %>%
     st_buffer(660) %>%
     aggregate(mutate(crime, counter = 1)%>%select(counter),., sum) %>%
     pull(counter)
 
-# calculate the distance to the nearest 1/2/3/4/5 crime locations
+## calculate the distance to the nearest 1/2/3/4/5 crime locations
 house <-  house %>%
       mutate(crime_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(crime), k = 1),
@@ -473,9 +458,9 @@ house <-  house %>%
                                       st_coordinates(crime), k = 5))
 ```
 
-**4. Spatial Structure**
-- Large District
-- Small Neighborhood
+**4. Spatial Structure**  
+- Large District  
+- Small Neighborhood  
 - Census Tract
 
 
@@ -500,7 +485,8 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 ```
 
 ## Continuous Variable
-- exclude outliers based on scatter plots
+
+- Exclude outliers based on scatter plots
 
 ```r
 # exclude outlier
@@ -514,7 +500,7 @@ st_drop_geometry(house) %>%
   gather(Variable, Value, -price) %>% 
    ggplot(aes(Value, price)) +
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
-     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of continuous variables") +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 8, face = "bold"), # Title
@@ -525,8 +511,8 @@ st_drop_geometry(house) %>%
 
 ![](Midterm_files/figure-html/continuous_clean-1.png)<!-- -->
 
-- statistical summary
-<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
+- Statistical summary
+<table class=" lightable-classic" style="color: black; font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> variables </th>
@@ -864,7 +850,8 @@ st_drop_geometry(house) %>%
 </table>
 
 ## Categorical Variable
-- make sure all category variables have significant difference between the means of housing price in different groups
+
+- Make sure all category variables have significant difference between the means of housing price in different groups
 
 ```r
 # exclude useless variable
@@ -880,7 +867,7 @@ house %>%
   gather(Variable, Value, -price) %>% 
    ggplot(aes(Value, price)) +
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -888,8 +875,7 @@ house %>%
 ![](Midterm_files/figure-html/category mean plot-1.png)<!-- -->
 
 
-- statistical summary
-
+- Statistical summary
 
 ```r
 ### reno_dum
@@ -903,7 +889,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Renovation Status</caption>
  <thead>
   <tr>
@@ -946,7 +932,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category of Bedroom Count</caption>
  <thead>
   <tr>
@@ -995,7 +981,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category of Bathroom Count</caption>
  <thead>
   <tr>
@@ -1037,7 +1023,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Floors</caption>
  <thead>
   <tr>
@@ -1077,7 +1063,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Waterfront Factor</caption>
  <thead>
   <tr>
@@ -1122,7 +1108,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>View Quality</caption>
  <thead>
   <tr>
@@ -1185,7 +1171,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Condition Level</caption>
  <thead>
   <tr>
@@ -1245,7 +1231,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Grade Level</caption>
  <thead>
   <tr>
@@ -1287,7 +1273,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Bachelor's Degree Rate Level</caption>
  <thead>
   <tr>
@@ -1329,7 +1315,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Median Household Income Level</caption>
  <thead>
   <tr>
@@ -1371,7 +1357,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Employment Rate Level</caption>
  <thead>
   <tr>
@@ -1413,7 +1399,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Poverty Rate Level</caption>
  <thead>
   <tr>
@@ -1456,7 +1442,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Subway Distance</caption>
  <thead>
   <tr>
@@ -1509,7 +1495,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>School District</caption>
  <thead>
   <tr>
@@ -1584,7 +1570,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Number of nearby Parks</caption>
  <thead>
   <tr>
@@ -1645,7 +1631,7 @@ house %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
 <caption>Category by Shopping Center Distance</caption>
  <thead>
   <tr>
@@ -1678,9 +1664,8 @@ house %>%
 </table>
 
 
-
-
 # Exploratory Data Analysis
+
 ## Correlation matrix
 
 
@@ -1711,9 +1696,6 @@ house_numeric %>%
 
 ![](Midterm_files/figure-html/correlation-1.png)<!-- -->
 
-
-
-
 ## Four Home Price Correlation Scatterplots
 
 **Living Area Square Feet**
@@ -1721,7 +1703,7 @@ house_numeric %>%
 
 ```r
 ggplot(house) +
-  geom_point(aes(x = sqft_living, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = sqft_living, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Living Area Square Feet",
        x = "Living Sqft",
        y = "House Price") +
@@ -1736,7 +1718,7 @@ ggplot(house) +
 
 ```r
 ggplot(house) +
-  geom_point(aes(x = median_hh_income, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = median_hh_income, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Median Household Income (Census Tract)",
        x = "Income",
        y = "House Price") +
@@ -1751,7 +1733,7 @@ ggplot(house) +
 
 ```r
 ggplot(house) +
-  geom_point(aes(x = shop_dis1, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = shop_dis1, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Distance to the Nearest Shopping Center",
        x = "Distance",
        y = "House Price") +
@@ -1766,7 +1748,7 @@ ggplot(house) +
 
 ```r
 ggplot(house) +
-  geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Crime Count within 1/8 mile of Each House",
        x = "Crime Count",
        y = "House Price") +
@@ -1789,9 +1771,9 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 
 # plot house price
 ggplot() +
-  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.3) +
   geom_sf(data = house,
-          aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+          aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 0.3) +
   scale_color_manual(values = colors,
                     labels = labels,
                     name = "House Price (Quantile)") +
@@ -1817,9 +1799,9 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 
 # plot lot square feet
 ggplot() +
-  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.3) +
   geom_sf(data = house, aes(color = cut(sqft_lot, breaks = breaks_quantiles$brks,
-                                        include.lowest = TRUE)), size = 1) +
+                                        include.lowest = TRUE)), size = 0.3) +
   scale_color_manual(values = colors,
                     labels = labels,
                     name = "Lot Square Feet (Quantile)") +
@@ -1841,8 +1823,8 @@ labels <- c("District One", "District Two", "District Three", "District Four",
 
 # plot school district
 ggplot() +
-  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = house, aes(color = sch_cat), size = 1) +
+  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.3) +
+  geom_sf(data = house, aes(color = sch_cat), size = 0.3) +
   scale_color_manual(values = colors,
                      labels = labels,
                     name = "School District") +
@@ -1871,24 +1853,23 @@ ggplot() +
           color = "#ECECEC") +
   scale_fill_manual(values = colors,
                     labels = labels,
-                    name = "White Population Share (Quantile)") +
-  labs(title = "White Population Share of Different Census Tracts in Seattle, 2015") +
+                    name = "White Share (Quantile)") +
+  labs(title = "White Population Share of Census Tracts in Seattle, 2015") +
   theme_void() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
-![](Midterm_files/figure-html/white_share-1.png)<!-- -->
+![](Midterm_files/figure-html/white_pop-1.png)<!-- -->
 
 
 # Modeling
 
-Process:
- 
-  
+**Process:**
 3) delete insignificant var. until all var at p < 0.05  
 4) delete var. with large p and examine R^2 & residual  
 
 ## Initial Variables Selection
+
 - whole data set -> run lm -> select one var in each category 
 - selection rule: for each factor, choose only one variable with the significance
 
@@ -2018,6 +1999,7 @@ str(house_lm)
 ```
 
 ## Split Training and Testing Datasets
+
 2) split data set -> run lm on training data set 
 
 ```r
@@ -2044,7 +2026,7 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="color: black; font-family: Cambria; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> dataset </th>
@@ -2067,7 +2049,9 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
 </table>
 
 ## Model diagnostics
+
 ### Address multicollinearity
+
 3) run vif and cor -> deal with multicollinearity  
 -> decision rule: biggest vif -> run cor on continuous variables
 4) exclude insignificance until all varibles significant at P<0.1
@@ -2143,6 +2127,7 @@ seattle.train <- seattle.train %>%
 ```
 
 ### Trade off on accuracy and generalizabilit
+
 - all variables are already significant at p=0.1
 - delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError,APE
 
@@ -2306,6 +2291,7 @@ seattle.train <- seattle.train %>%
 
 ### Spatial Autocorrelation
 
+
 ```r
 # spatial lag of price
 house.sf <- hh %>%
@@ -2370,7 +2356,6 @@ ggplot(as.data.frame(moranTest$res[c(1:999)]), aes(moranTest$res[c(1:999)])) +
 ```r
 moranTest.stats <- moranTest$statistic #0.2198671
 ```
-
 
 ### Cross Validation
 
@@ -3462,203 +3447,7 @@ stargazer(lm.final, lm.final.nhood, type = "text",
 balabalbala
 
 
-# Appendix1: Variable Selection Reference
-
-## Internal Characteristic
-
-```r
-# bed categories
-house0$bed.factor <- factor(house0$bedrooms, levels =sort(unique(house0$bedrooms)))
-
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(bed.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = bed.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-7,8+
-```
-
-![](Midterm_files/figure-html/appendix-internal-1.png)<!-- -->
-
-```r
-## group by mean
-house0 <- house0 %>%
-  mutate(bed_cat = factor(case_when(
-    bedrooms <=3 ~ "few",
-    bedrooms >3 & bedrooms <= 7 ~ "medium",
-    bedrooms >=8 ~ "many"
-  )))
-
-## check the numbers of each category
-table(house0$bed_cat)%>%
-  kable(caption = "Category by Bedroom Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-```
-
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
-<caption>Category by Bedroom Count</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;"> Var1 </th>
-   <th style="text-align:right;"> Freq </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> few </td>
-   <td style="text-align:right;"> 4696 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> many </td>
-   <td style="text-align:right;"> 16 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> medium </td>
-   <td style="text-align:right;"> 2027 </td>
-  </tr>
-</tbody>
-</table>
-
-```r
-# bathroom category
-house0$bath.factor <- factor(house0$bathrooms, levels =sort(unique(house0$bathrooms)))
-
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(bath.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = bath.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-4, 4+
-```
-
-![](Midterm_files/figure-html/appendix-internal-2.png)<!-- -->
-
-```r
-house0 <- house0 %>%
-  mutate(bath_dum = factor(case_when(
-    bathrooms <= 4 ~ "few",
-    bathrooms > 4 ~ "many"
-  )))
-
-## check the numbers of each category
-table(house0$bath_dum)%>%
-  kable(caption = "Category by Bathroom Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-```
-
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
-<caption>Category by Bathroom Count</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;"> Var1 </th>
-   <th style="text-align:right;"> Freq </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> few </td>
-   <td style="text-align:right;"> 6683 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> many </td>
-   <td style="text-align:right;"> 56 </td>
-  </tr>
-</tbody>
-</table>
-
-```r
-# floor category
-house0$floor.factor <- factor(house0$floors, levels =sort(unique(house0$floors)))
-
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(floor.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = floor.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
-```
-
-![](Midterm_files/figure-html/appendix-internal-3.png)<!-- -->
-
-```r
-house0 <- house0 %>%
-  mutate(floor_cat = factor(case_when(
-    floors <= 2 | floors == 3 ~ "regular",
-    floors %in% c(2.5, 3.5) ~ "irregular"
-  )))
-## check the numbers of each category
-table(house0$floor_cat)%>%
-  kable(caption = "Category by Floor Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-```
-
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
-<caption>Category by Floor Count</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;"> Var1 </th>
-   <th style="text-align:right;"> Freq </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> irregular </td>
-   <td style="text-align:right;"> 104 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> regular </td>
-   <td style="text-align:right;"> 6635 </td>
-  </tr>
-</tbody>
-</table>
-
-```r
-#reclassify grade
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(grade)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = grade, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-![](Midterm_files/figure-html/appendix-internal-4.png)<!-- -->
-
-```r
-house0 <- house0%>%
-  mutate(grade_dum = factor(ifelse(grade <= 9, "low","high"),
-                            levels = c("low","high")))
-
-## check the numbers of each category
-table(house0$grade_dum)%>%
-  kable(caption = "Category by Grade") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-```
-
-<table class=" lightable-classic" style="font-family: Cambria; margin-left: auto; margin-right: auto;">
-<caption>Category by Grade</caption>
- <thead>
-  <tr>
-   <th style="text-align:left;"> Var1 </th>
-   <th style="text-align:right;"> Freq </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> low </td>
-   <td style="text-align:right;"> 6480 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> high </td>
-   <td style="text-align:right;"> 259 </td>
-  </tr>
-</tbody>
-</table>
-
+# Appendix: Variable Selection Reference
 
 ## Socio-economic characteristics
 
@@ -3725,7 +3514,6 @@ https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
 
-
 ### commercial
 
 - variable:  
@@ -3753,4 +3541,3 @@ Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb470
 "The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
 
 - source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
-

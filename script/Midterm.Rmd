@@ -20,7 +20,8 @@ knitr::opts_chunk$set(
   echo = TRUE,
   message = FALSE,
   warning = FALSE,
-  cache = TRUE
+  cache = TRUE,
+  dpi = 150
   )
 options(scipen = 999)
 
@@ -35,82 +36,25 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 
 source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
-
-```
-
-```{r read, include=FALSE}
-## read Seattle boundary
-seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
-  st_union() %>%
-  st_as_sf() 
-
-# import house data
-kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
-
-## load census tract data
-census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
-
-acs_variable_list.2015 <- load_variables(2015, # year
-                                         "acs5", # five year ACS estimates
-                                         cache = TRUE)
-
-acs_vars <- c("B01003_001E", # total population
-              "B01001A_001E", # white alone
-              "B01001_003E", # male under 5
-              "B01001_004E", # male 5-9
-              "B01001_005E", # male 10-14
-              "B01001_020E", # male 65-66
-              "B01001_021E", # male 67-69
-              "B01001_022E", # male 70-74
-              "B01001_023E", # male 75-79
-              "B01001_024E", # male 80-84
-              "B01001_025E", # male over 85
-              "B01001_027E", # female under 5
-              "B01001_028E", # female 5-9
-              "B01001_029E", # female 10-14
-              "B01001_044E", # female 65-66
-              "B01001_045E", # female 67-69
-              "B01001_046E", # female 70-74
-              "B01001_047E", # female 75-79
-              "B01001_048E", # female 80-84
-              "B01001_049E", # female over 85
-              "B15003_001E", # educational attainment over 25
-              "B15003_022E", # bachelor's degree
-              "B19013_001E", # median household income
-              "B23025_004E", # employed labor force
-              "B23025_003E", # total labor force
-              "B17020_002E") # income below poverty level
-
-#read amenities data
-sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))
-
-sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))
-
-park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))
-
-tree_canopy_2016 <- st_read(here::here("data/raw/Amenities/Tree_Canopy.geojson"))
-
-med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospitals___medical_facilities_point.geojson"))
-
-mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))
-
-#read spatial data
-neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) 
-
-neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson"))
 ```
 
 
 # Introduction
 
-- goal
-- methods of data collection
-- data source
-- analysis area: housing unit in Seattle, exclude one housing unit with an extremely high price over 7 million.
-- show house location
+**Viva and Yaohan work together on the scripts, and then finish the write-up separately.**
 
-```{r read_show,cache=TRUE, eval=FALSE}
-## read Seattle boundary
+- Analysis goal:
+
+- Methods for data collection:
+
+- Data source:
+
+- Study area:  
+Housing unit in Seattle, exclude one housing unit with an extremely high price over 7 million.
+
+- Import all datasets
+```{r read_show,cache=TRUE, results='hide', message=FALSE, warning=FALSE}
+# read Seattle boundary
 seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
   st_union() %>%
   st_as_sf() 
@@ -118,7 +62,7 @@ seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
 # import house data
 kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
-## load census tract data
+# load census tract data
 census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
 
 acs_variable_list.2015 <- load_variables(2015, # year
@@ -152,7 +96,7 @@ acs_vars <- c("B01003_001E", # total population
               "B23025_003E", # total labor force
               "B17020_002E") # income below poverty level
 
-#read amenities data
+# read amenities data
 sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))
 
 sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))
@@ -165,13 +109,13 @@ med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospi
 
 mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))
 
-#read spatial data
+# read spatial data
 neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) 
 
 neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson"))
 ```
 
-
+- Plot house locations in Seattle
 ```{r house_location, echo=TRUE, message=FALSE, warning=FALSE}
 # create house location
 kc_hh <- kc_hh %>%
@@ -182,22 +126,13 @@ kc_hh <- kc_hh %>%
 hh <- kc_hh %>%
   st_intersection(seattle)
 
-# plot Seattle house location
-# ggplot() + 
-#     geom_sf(data = seattle, aes(color = "Seattle Boundary"), linewidth = 0.5) +  # add Seattle boundary
-#     geom_sf(data = hh, aes(color = "House Locations"), size = 0.5, pch = 16) +  # add house location
-#     labs(title = "Seattle House Location",
-#          color = "Legend") +  # set plot title
-#   scale_color_manual(values = c("Seattle Boundary" = "#b2182b", "House Locations" = "#2166ac")) +
-#     theme_void() +
-#     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
-
-#examine house id
+# examine house id
 hh.id<-length(unique(hh$id))#6691 < 6740
-#add an unique key
+
+# add an unique key
 hh$key <- 1:nrow(hh)
 
-#exclude outliers with extremely high price
+# exclude outliers with extremely high price
 hh <- hh %>%
   filter(!price > 5000000)
 
@@ -220,21 +155,21 @@ ggplot() +
 # Data Description
 
 ## Variable Selection
-- four categories
-- first selection based on literature theory
-- category reclassification based on plot
+- Four categories
+- First selection based on literature theory
+- Category reclassification based on plot
 
-**1. Internal Characteristics**
-- Year used (continuous)
-- Renovation (dummy)
-- Bedroom (continuous + category)
-- Bathroom (continuous + category)
-- Floors (continuous + category)
-- Living area (continuous)
-- Lot area (continuous)
-- Waterfront (dummy)
-- View (category)
-- Condition (category)
+**1. Internal Characteristics**  
+- Year used (continuous)  
+- Renovation (dummy)  
+- Bedroom (continuous + category)  
+- Bathroom (continuous + category)  
+- Floors (continuous + category)  
+- Living area (continuous)  
+- Lot area (continuous)  
+- Waterfront (dummy)  
+- View (category)  
+- Condition (category)  
 - Grade (category)
 
 ```{r internal, echo=TRUE, message=FALSE, warning=FALSE}
@@ -247,10 +182,7 @@ house <- hh %>%
          condition_cat = as.factor(condition),
          grade_cat = as.factor(grade))
 
-#data set for appendix
-house0 <- house
-
-#set categories
+# set categories
 house <- house %>%
   mutate(
     bed_cat = factor(case_when(
@@ -277,16 +209,16 @@ house <- house %>%
          "water_dum", "view_cat", "condition_cat", "grade_dum")
 ```
 
-**2. Socio-economic Characteristics**
-- Population density (continuous)
-- White population share (continuous)
-- Age structure (continuous)
-- Education level (continuous + dummy)
-- Median household income (continuous + dummy)
-- Employment rate (continuous + dummy)
-- Poverty rate (continuous + dummy)
+**2. Socio-economic Characteristics**  
+- Population density (continuous)  
+- White population share (continuous)  
+- Age structure (continuous)  
+- Education level (continuous + dummy)  
+- Median household income (continuous + dummy)  
+- Employment rate (continuous + dummy)  
+- Poverty rate (continuous + dummy)  
 
-```{r socio-economic variable, results='hide'}
+```{r socio-economic variable, results='hide', message=FALSE, warning=FALSE}
 acsTractsSeattle.2015 <- get_acs(geography = "tract",
                              year = 2015, 
                              variables = acs_vars,
@@ -361,24 +293,25 @@ house %>%
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-**3. Amenities Services**
-- Subway Station (distance + category)
-- School District (category)
-- Park (area + count)
-- Medical Facilities (distance + category)
-- Commercial center (distance + count)
+**3. Amenities Services**  
+- Subway Station (distance + category)  
+- School District (category)  
+- Park (area + count)  
+- Medical Facilities (distance + category)  
+- Commercial center (distance + count)  
 - Crime rate (distance + )
 
-```{r subway, echo=TRUE, message=FALSE, warning=FALSE}
+```{r amenities, echo=TRUE, message=FALSE, warning=FALSE}
+# subway station
 sub <- sub %>%
   st_transform(st_crs(house))
 
-# the distance to the nearest station 
+## the distance to the nearest station 
 house <-  house %>%
       mutate(sub_dis = nn_function(st_coordinates(house),
                                       st_coordinates(sub), k = 1))
 
-# categories based on distance
+## categories based on distance
 house <- house %>%
   mutate(sub_cat = factor(case_when(
     sub_dis <= 2640 ~ "within0.5mile",
@@ -386,25 +319,25 @@ house <- house %>%
     sub_dis > 5280 ~ "1+mile"
   ),levels = c("within0.5mile","0.5-1mile","1+mile")))
 
-```
 
-```{r school, echo=TRUE, message=FALSE, warning=FALSE}
+# school district
 sch <- sch %>%
   st_transform(st_crs(house))
-# add the school district variable
+
+## add the school district variable
 house <- house %>% 
   st_join(sch%>%select(DIRDST), join = st_within)%>%
   rename(sch_cat = "DIRDST")%>%
   mutate(sch_cat = factor(sch_cat, levels = c("DD1","DD2","DD3","DD4","DD5","DD6","DD7"))) 
-```
 
-```{r park, echo=TRUE, message=FALSE, warning=FALSE}
+
+# park
 park <- park %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)%>%
   mutate(park_area = st_area(.))
 
-# area and count of parks within 500 feet
+## area and count of parks within 500 feet
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
   group_by(key) %>% 
   summarise(park_c = n_distinct(SITENAME, na.rm = TRUE),
@@ -417,9 +350,8 @@ house <- house %>%
                 st_drop_geometry()%>%
                 select(key,park_cat, all_park_area), by = "key")%>%
   rename(parks_area = all_park_area)
-```
 
-```{r tree_canopy, echo=TRUE, message=FALSE, warning=FALSE}
+# tree canopy
 tree_canopy_2016 <- tree_canopy_2016 %>%
   st_transform(st_crs(house)) %>%
   mutate(tree_canopy = round(TreeCanopy_2016_Percent, digits = 2)) %>%
@@ -427,14 +359,14 @@ tree_canopy_2016 <- tree_canopy_2016 %>%
 
 house <- house %>%
   st_join(., tree_canopy_2016)
-```
 
-```{r medical, echo=TRUE, message=FALSE, warning=FALSE}
+
+# medical facilities
 med <- med %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-# calculate the distance to the nearest medical facilities 
+## calculate the distance to the nearest medical facilities 
 house <-  house %>%
       mutate(med_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(med), k = 1),
@@ -443,25 +375,24 @@ house <-  house %>%
              med_dis3 = nn_function(st_coordinates(house),
                                       st_coordinates(med), k = 3))
 
-# categories based on distance
+## categories based on distance
 house <- house %>%
   mutate(med_cat = case_when(
     med_dis1 <= 2640 ~ "within0.5mile",
     med_dis1 > 2640 & med_dis1 <= 5280 ~ "0.5-1mile",
-    med_dis1 > 5280 ~ "1+mile"
-  ))
-```
+    med_dis1 > 5280 ~ "1+mile"))
 
-```{r commercial, echo=TRUE, message=FALSE, warning=FALSE}
+
+# commercial
 mark <- mark %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-#select shopping center from landmrak dataset
+## select shopping center from landmrak dataset
 mark_shop <- mark%>%
   filter(CODE == 690)
 
-# calculate the distance to the nearest 1/2/3 shopping center(s) 
+## calculate the distance to the nearest 1/2/3 shopping center(s) 
 house <- house %>%
       mutate(shop_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(mark_shop), k = 1),
@@ -470,19 +401,18 @@ house <- house %>%
              shop_dis3 = nn_function(st_coordinates(house),
                                       st_coordinates(mark_shop), k = 3))
 
-# categories based on distance
+## categories based on distance
 house <- house %>%
   mutate(shop_cat = factor(case_when(
     shop_dis1 <= 2640 ~ "within0.5mile",
     shop_dis1 > 2640 & shop_dis1 <= 5280 ~ "0.5-1mile",
     shop_dis1 > 5280 ~ "1+mile"
   ),levels = c("within0.5mile","0.5-1mile","1+mile")))
-```
 
 
-```{r crime_clean, echo=TRUE, message=FALSE, warning=FALSE}
+# crime
+
 # crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
-
 # get the target crime
 # crime_clean <- crime %>%
 #   mutate(year = str_sub(Report.Number, 1, 4)) %>%
@@ -515,18 +445,18 @@ house <- house %>%
 #
 # write.csv(crime_clean , here::here("data/processed/crime_clean.csv"), row.names = FALSE)
 
-# read the cleaned data set
+## read the cleaned data set
 crime <- read.csv(here::here("data/processed/crime_clean.csv")) %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)%>%
   st_transform(st_crs(house))
 
-# count of crime within 1/8 mi
+## count of crime within 1/8 mi
 house$crime_c <- house %>%
     st_buffer(660) %>%
     aggregate(mutate(crime, counter = 1)%>%select(counter),., sum) %>%
     pull(counter)
 
-# calculate the distance to the nearest 1/2/3/4/5 crime locations
+## calculate the distance to the nearest 1/2/3/4/5 crime locations
 house <-  house %>%
       mutate(crime_dis1 = nn_function(st_coordinates(house),
                                       st_coordinates(crime), k = 1),
@@ -540,9 +470,9 @@ house <-  house %>%
                                       st_coordinates(crime), k = 5))
 ```
 
-**4. Spatial Structure**
-- Large District
-- Small Neighborhood
+**4. Spatial Structure**  
+- Large District  
+- Small Neighborhood  
 - Census Tract
 
 ```{r fixed_effect, echo=TRUE, message=FALSE, warning=FALSE}
@@ -566,8 +496,9 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 ```
 
 ## Continuous Variable
-- exclude outliers based on scatter plots
-```{r continuous_clean, echo=TRUE, message=FALSE, warning=FALSE}
+
+- Exclude outliers based on scatter plots
+```{r continuous_clean, echo=TRUE, message=FALSE, warning=FALSE, fig.height=15}
 # exclude outlier
 house <- house%>%
   filter(bedrooms<30 & crime_dis1 < 750 & bathrooms < 6)
@@ -579,17 +510,16 @@ st_drop_geometry(house) %>%
   gather(Variable, Value, -price) %>% 
    ggplot(aes(Value, price)) +
      geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
-     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of continuous variables") +
   theme(text = element_text(size = 12), # Default text size for all text
           plot.title = element_text(size = 8, face = "bold"), # Title
           axis.text = element_text(size = 8), # Axis text
           axis.title = element_text(size = 8), # Axis titles
           strip.text = element_text(size = 8)) # Facet label text
-     
 ```
 
-- statistical summary
+- Statistical summary
 ```{r continuous_summary, echo=FALSE}
 # continuous variables
 continuous_summary <- house %>%
@@ -606,7 +536,6 @@ continuous_summary <- house %>%
                names_sep = ":", values_to = "value") %>%
   mutate(value = round(value, digits = 2)) %>%
   pivot_wider(names_from = statistic, values_from = value)
-
 
 continuous_description <- data.frame(
   variables = continuous_summary$variables,
@@ -654,8 +583,9 @@ continuous_description %>%
 ```
 
 ## Categorical Variable
-- make sure all category variables have significant difference between the means of housing price in different groups
-```{r category mean plot, echo=TRUE, message=FALSE, warning=FALSE}
+
+- Make sure all category variables have significant difference between the means of housing price in different groups
+```{r category mean plot, echo=TRUE, message=FALSE, warning=FALSE, fig.height=15}
 # exclude useless variable
 house <- house %>%
   select(-med_cat)
@@ -669,15 +599,13 @@ house %>%
   gather(Variable, Value, -price) %>% 
    ggplot(aes(Value, price)) +
      geom_bar(position = "dodge", stat = "summary", fun.y = "mean") +
-     facet_wrap(~Variable, ncol = 4, scales = "free") +
+     facet_wrap(~Variable, ncol = 3, scales = "free") +
      labs(title = "Price as a function of categorical variables", y = "Mean_Price") +
      plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 ```
 
 
-- statistical summary
-
+- Statistical summary
 ```{r reno_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### reno_dum
 house %>%
@@ -932,10 +860,9 @@ house %>%
 ```
 
 
-
-
 # Exploratory Data Analysis
-## Correlation matrix
+
+## Correlation Matrix
 
 ```{r correlation, message=FALSE}
 # Select only numeric variables and remove rows with missing values
@@ -962,16 +889,13 @@ house_numeric %>%
   geom_text(aes(label = round(r,digits=2)),size = 1)
 ```
 
-
-
-
 ## Four Home Price Correlation Scatterplots
 
 **Living Area Square Feet**
 
 ```{r sqft_living}
 ggplot(house) +
-  geom_point(aes(x = sqft_living, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = sqft_living, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Living Area Square Feet",
        x = "Living Sqft",
        y = "House Price") +
@@ -983,7 +907,7 @@ ggplot(house) +
 
 ```{r median_hh_income}
 ggplot(house) +
-  geom_point(aes(x = median_hh_income, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = median_hh_income, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Median Household Income (Census Tract)",
        x = "Income",
        y = "House Price") +
@@ -995,7 +919,7 @@ ggplot(house) +
 
 ```{r shop_dis1}
 ggplot(house) +
-  geom_point(aes(x = shop_dis1, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = shop_dis1, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Distance to the Nearest Shopping Center",
        x = "Distance",
        y = "House Price") +
@@ -1007,7 +931,7 @@ ggplot(house) +
 
 ```{r crime_c}
 ggplot(house) +
-  geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 2) +
+  geom_point(aes(x = crime_c, y = price), color = "black", pch = 16, size = 1.6) +
   labs(title = "Seattle House Price vs. Crime Count within 1/8 mile of Each House",
        x = "Crime Count",
        y = "House Price") +
@@ -1027,9 +951,9 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 
 # plot house price
 ggplot() +
-  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.3) +
   geom_sf(data = house,
-          aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 1) +
+          aes(color = cut(price, breaks = breaks_quantiles$brks, include.lowest = TRUE)), size = 0.3) +
   scale_color_manual(values = colors,
                     labels = labels,
                     name = "House Price (Quantile)") +
@@ -1052,9 +976,9 @@ labels <- paste0(formatC(breaks_quantiles$brks[-length(breaks_quantiles$brks)], 
 
 # plot lot square feet
 ggplot() +
-  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
+  geom_sf(data = seattle, fill = "#ECECEC", color = "#2166ac", linewidth = 0.3) +
   geom_sf(data = house, aes(color = cut(sqft_lot, breaks = breaks_quantiles$brks,
-                                        include.lowest = TRUE)), size = 1) +
+                                        include.lowest = TRUE)), size = 0.3) +
   scale_color_manual(values = colors,
                     labels = labels,
                     name = "Lot Square Feet (Quantile)") +
@@ -1073,8 +997,8 @@ labels <- c("District One", "District Two", "District Three", "District Four",
 
 # plot school district
 ggplot() +
-  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.5) +
-  geom_sf(data = house, aes(color = sch_cat), size = 1) +
+  geom_sf(data = sch, fill = "#ECECEC", color = "#2166ac", linewidth = 0.3) +
+  geom_sf(data = house, aes(color = sch_cat), size = 0.3) +
   scale_color_manual(values = colors,
                      labels = labels,
                     name = "School District") +
@@ -1085,7 +1009,7 @@ ggplot() +
 
 **White Population Share**
 
-```{r white_share}
+```{r white_pop}
 # quantile break and color palette
 breaks_quantiles <- classIntervals(acsTractsSeattle.2015$white_share, n = 5, style = "quantile")
 colors <- brewer.pal(n = 5, name = "Blues")
@@ -1100,8 +1024,8 @@ ggplot() +
           color = "#ECECEC") +
   scale_fill_manual(values = colors,
                     labels = labels,
-                    name = "White Population Share (Quantile)") +
-  labs(title = "White Population Share of Different Census Tracts in Seattle, 2015") +
+                    name = "White Share (Quantile)") +
+  labs(title = "White Population Share of Census Tracts in Seattle, 2015") +
   theme_void() +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
@@ -1109,15 +1033,14 @@ ggplot() +
 
 # Modeling
 
-Process:
- 
-  
-3) delete insignificant var. until all var at p < 0.05  
-4) delete var. with large p and examine R^2 & residual  
+**Process:**   
+3) Delete insignificant var. until all var at p < 0.05  
+4) Delete var. with large p and examine R^2 & residual  
 
 ## Initial Variables Selection
-- whole data set -> run lm -> select one var in each category 
-- selection rule: for each factor, choose only one variable with the significance
+
+- Whole data set -> run lm -> select one var in each category 
+- Selection rule: for each factor, choose only one variable with the significance
 ```{r selection, results='hide'}
 # finalize regression dataset
 house <- house %>%
@@ -1244,7 +1167,8 @@ str(house_lm)
 ```
 
 ## Split Training and Testing Datasets
-2) split data set -> run lm on training data set 
+
+2) Split data set -> run lm on training data set
 ```{r traintest}
 # split data 0.7/0.3
 set.seed(1)
@@ -1270,11 +1194,13 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
 
 ```
 
-## Model diagnostics
-### Address multicollinearity
-3) run vif and cor -> deal with multicollinearity  
+## Model Diagnostics
+
+### Address Multicollinearity
+
+3) Run vif and cor -> deal with multicollinearity  
 -> decision rule: biggest vif -> run cor on continuous variables
-4) exclude insignificance until all varibles significant at P<0.1
+4) Exclude insignificance until all varibles significant at P < 0.1
 ```{r multiple_regression, results='hide'}
 # ignore neighborhood effect first
 seattle.train <- seattle.train.lm %>%
@@ -1340,7 +1266,8 @@ seattle.train <- seattle.train %>%
   select(-tree_canopy)
 ```
 
-### Trade off on accuracy and generalizabilit
+### Trade Off on Accuracy and Generalizability
+
 - all variables are already significant at p=0.1
 - delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError,APE
 ```{r testing, results='hide'}
@@ -1503,6 +1430,7 @@ seattle.train <- seattle.train %>%
 ```
 
 ### Spatial Autocorrelation
+
 ```{r spatial autocorrelation}
 # spatial lag of price
 house.sf <- hh %>%
@@ -1519,7 +1447,7 @@ house.sf %>%
   geom_point(aes(x = lagPrice, y = price))+
   stat_smooth(aes(lagPrice, price), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Price as a function of the spatial lag of price")
+  labs(title="Price as a Function of the Spatial Lag of Price")
 
 
 # spatial lag of price error
@@ -1537,7 +1465,7 @@ seattle.test7 %>%
   geom_point(aes(x = lagPriceError, y = price.error))+
   stat_smooth(aes(lagPriceError, price.error), 
              method = "lm", se = FALSE, size = 1, color="#b2182b")+
-  labs(title="Error as a function of the spatial lag of error")
+  labs(title="Error as a Function of the Spatial Lag of Error")
 
 
 # moran's I test
@@ -1555,12 +1483,16 @@ ggplot(as.data.frame(moranTest$res[c(1:999)]), aes(moranTest$res[c(1:999)])) +
        y="Count") +
   theme_minimal()
 
-moranTest.stats <- moranTest$statistic #0.2198671
+moranTest.stats <- moranTest$statistic # 0.2198671
 ```
-
 
 ### Cross Validation
 
+- Without fixed effect  
+**Model results:**  
+RMSE: 156578.5  
+R-squared: 0.780399  
+MAE: 105068.2
 ```{r cv, include=FALSE}
 # without fixed effect
 set.seed(1)
@@ -1575,11 +1507,11 @@ seattle.cv <-
                                               grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
-#RMSE      Rsquared  MAE     
+#RMSE      R-squared  MAE     
 #156578.5  0.780399  105068.2
 ```
 
-- choose fixed effect
+- Choose between different scales of fixed effect
 ```{r cv with fixed effect}
 # with fixed effect
 set.seed(1)
@@ -1763,98 +1695,7 @@ ggplot() +
 balabalbala
 
 
-# Appendix1: Variable Selection Reference
-
-## Internal Characteristic
-```{r appendix-internal}
-# bed categories
-house0$bed.factor <- factor(house0$bedrooms, levels =sort(unique(house0$bedrooms)))
-
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(bed.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = bed.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-7,8+
-
-## group by mean
-house0 <- house0 %>%
-  mutate(bed_cat = factor(case_when(
-    bedrooms <=3 ~ "few",
-    bedrooms >3 & bedrooms <= 7 ~ "medium",
-    bedrooms >=8 ~ "many"
-  )))
-
-## check the numbers of each category
-table(house0$bed_cat)%>%
-  kable(caption = "Category by Bedroom Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-
-# bathroom category
-house0$bath.factor <- factor(house0$bathrooms, levels =sort(unique(house0$bathrooms)))
-
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(bath.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = bath.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-4, 4+
-
-house0 <- house0 %>%
-  mutate(bath_dum = factor(case_when(
-    bathrooms <= 4 ~ "few",
-    bathrooms > 4 ~ "many"
-  )))
-
-## check the numbers of each category
-table(house0$bath_dum)%>%
-  kable(caption = "Category by Bathroom Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-
-# floor category
-house0$floor.factor <- factor(house0$floors, levels =sort(unique(house0$floors)))
-
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(floor.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = floor.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
-
-house0 <- house0 %>%
-  mutate(floor_cat = factor(case_when(
-    floors <= 2 | floors == 3 ~ "regular",
-    floors %in% c(2.5, 3.5) ~ "irregular"
-  )))
-## check the numbers of each category
-table(house0$floor_cat)%>%
-  kable(caption = "Category by Floor Count") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-
-#reclassify grade
-house0 %>%
-  st_drop_geometry() %>%
-  group_by(grade)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = grade, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-house0 <- house0%>%
-  mutate(grade_dum = factor(ifelse(grade <= 9, "low","high"),
-                            levels = c("low","high")))
-
-## check the numbers of each category
-table(house0$grade_dum)%>%
-  kable(caption = "Category by Grade") %>%
-  kable_classic(full_width = T, html_font = "Cambria")
-
-
-```
-
+# Appendix: Variable Selection Reference
 
 ## Socio-economic characteristics
 
@@ -1921,7 +1762,6 @@ https://www.vibrantcitieslab.com/resources/urban-trees-increase-home-values/
 
 - source: https://gis-kingcounty.opendata.arcgis.com/datasets/1b7f0fb5179a400f91a35c0b6bfd77c9_733/explore
 
-
 ### commercial
 
 - variable:  
@@ -1949,4 +1789,3 @@ Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb470
 "The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
 
 - source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
-
