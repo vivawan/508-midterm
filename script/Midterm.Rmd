@@ -10,6 +10,7 @@ output:
     toc_float: yes
     code_folding: hide
     number_sections: no
+    font: 12pt
   pdf_document:
     toc: yes
 ---
@@ -42,6 +43,9 @@ source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-L
 seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
   st_union() %>%
   st_as_sf() 
+
+# import house data
+kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
 ## load census tract data
 census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
@@ -76,6 +80,24 @@ acs_vars <- c("B01003_001E", # total population
               "B23025_004E", # employed labor force
               "B23025_003E", # total labor force
               "B17020_002E") # income below poverty level
+
+#read amenities data
+sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))
+
+sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))
+
+park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))
+
+tree_canopy_2016 <- st_read(here::here("data/raw/Amenities/Tree_Canopy.geojson"))
+
+med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospitals___medical_facilities_point.geojson"))
+
+mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))
+
+#read spatial data
+neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) 
+
+neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson"))
 ```
 
 
@@ -83,18 +105,74 @@ acs_vars <- c("B01003_001E", # total population
 
 - goal
 - methods of data collection
+- data source
 - analysis area: housing unit in Seattle, exclude one housing unit with an extremely high price over 7 million.
 - show house location
 
-```{r house_location, echo=FALSE, message=FALSE}
+```{r read_show,cache=TRUE, eval=FALSE}
+## read Seattle boundary
+seattle <- st_read(here::here("data/raw/Boundary/Seattle_City.geojson")) %>%
+  st_union() %>%
+  st_as_sf() 
+
 # import house data
 kc_hh<- read_csv(here::here("data/raw/kc_house_data.csv"))
 
-# quick check of house data
-str(kc_hh)
-anyNA(kc_hh$lat)
-anyNA(kc_hh$long)
+## load census tract data
+census_api_key("3ec2bee8c227ff3f9df970d0ffbb11ee1384076e", install = TRUE, overwrite = TRUE)
 
+acs_variable_list.2015 <- load_variables(2015, # year
+                                         "acs5", # five year ACS estimates
+                                         cache = TRUE)
+
+acs_vars <- c("B01003_001E", # total population
+              "B01001A_001E", # white alone
+              "B01001_003E", # male under 5
+              "B01001_004E", # male 5-9
+              "B01001_005E", # male 10-14
+              "B01001_020E", # male 65-66
+              "B01001_021E", # male 67-69
+              "B01001_022E", # male 70-74
+              "B01001_023E", # male 75-79
+              "B01001_024E", # male 80-84
+              "B01001_025E", # male over 85
+              "B01001_027E", # female under 5
+              "B01001_028E", # female 5-9
+              "B01001_029E", # female 10-14
+              "B01001_044E", # female 65-66
+              "B01001_045E", # female 67-69
+              "B01001_046E", # female 70-74
+              "B01001_047E", # female 75-79
+              "B01001_048E", # female 80-84
+              "B01001_049E", # female over 85
+              "B15003_001E", # educational attainment over 25
+              "B15003_022E", # bachelor's degree
+              "B19013_001E", # median household income
+              "B23025_004E", # employed labor force
+              "B23025_003E", # total labor force
+              "B17020_002E") # income below poverty level
+
+#read amenities data
+sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))
+
+sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))
+
+park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))
+
+tree_canopy_2016 <- st_read(here::here("data/raw/Amenities/Tree_Canopy.geojson"))
+
+med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospitals___medical_facilities_point.geojson"))
+
+mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))
+
+#read spatial data
+neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) 
+
+neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson"))
+```
+
+
+```{r house_location, echo=TRUE, message=FALSE, warning=FALSE}
 # create house location
 kc_hh <- kc_hh %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326, agr = "constant") %>%  # convert to sf object with specified CRS
@@ -159,7 +237,7 @@ ggplot() +
 - Condition (category)
 - Grade (category)
 
-```{r internal, message=FALSE, warning=FALSE, include=FALSE}
+```{r internal, echo=TRUE, message=FALSE, warning=FALSE}
 # add year_used and renovation and ensure categorical data are factor
 house <- hh %>% 
   mutate(year_used = 2015 - yr_built, # used year
@@ -169,65 +247,27 @@ house <- hh %>%
          condition_cat = as.factor(condition),
          grade_cat = as.factor(grade))
 
-# bed categories
-house$bed.factor <- factor(house$bedrooms, levels =sort(unique(house$bedrooms)))
-house %>%
-  st_drop_geometry() %>%
-  group_by(bed.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = bed.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-7,8+
-# group by mean
+#data set for appendix
+house0 <- house
+
+#set categories
 house <- house %>%
-  mutate(bed_cat = factor(case_when(
+  mutate(
+    bed_cat = factor(case_when(
     bedrooms <=3 ~ "few",
     bedrooms >3 & bedrooms <= 7 ~ "medium",
     bedrooms >=8 ~ "many"
-  )))%>%
-  select(-bed.factor)
-# check the numbers of each category
-table(house$bed_cat)
-
-# bathroom category
-house$bath.factor <- factor(house$bathrooms, levels =sort(unique(house$bathrooms)))
-house %>%
-  st_drop_geometry() %>%
-  group_by(bath.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = bath.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-4, 4+
-house <- house %>%
-  mutate(bath_dum = factor(case_when(
+    )),
+    bath_dum = factor(case_when(
     bathrooms <= 4 ~ "few",
     bathrooms > 4 ~ "many"
-  )))%>%
-  select(-bath.factor)
-# check the numbers of each category
-table(house$bath_dum)
-
-# floor category
-house$floor.factor <- factor(house$floors, levels =sort(unique(house$floors)))
-house %>%
-  st_drop_geometry() %>%
-  group_by(floor.factor)%>%
-  summarize(price_m = mean(price))%>%
-  ggplot(aes(x = floor.factor, y = price_m)) +
-  geom_col(position = "dodge")+
-  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
-house <- house %>%
-  mutate(floor_cat = factor(case_when(
+    )),
+    floor_cat = factor(case_when(
     floors <= 2 | floors == 3 ~ "regular",
     floors %in% c(2.5, 3.5) ~ "irregular"
-  )))%>%
-  select(-floor.factor)
-# check the numbers of each category
-table(house$floor_cat)
-
-#reclassify
-house <- house%>%
-  mutate(grade_dum = factor(ifelse(grade <= 9, "low","high"), levels = c("low","high")))
+    )),
+    grade_dum = factor(ifelse(grade <= 9, "low","high"), 
+                       levels = c("low","high")))
 
 # select variables
 house <- house %>%
@@ -246,7 +286,7 @@ house <- house %>%
 - Employment rate (continuous + dummy)
 - Poverty rate (continuous + dummy)
 
-```{r socio-economic variable, results='hide', include=FALSE}
+```{r socio-economic variable, results='hide'}
 acsTractsSeattle.2015 <- get_acs(geography = "tract",
                              year = 2015, 
                              variables = acs_vars,
@@ -329,9 +369,8 @@ house %>%
 - Commercial center (distance + count)
 - Crime rate (distance + )
 
-```{r subway, include=FALSE}
-#read station point data
-sub <- st_read(here::here("data/raw/Amenities/Metro_Sub_Stations_in_King_County___sub_stations_point.geojson"))%>%
+```{r subway, echo=TRUE, message=FALSE, warning=FALSE}
+sub <- sub %>%
   st_transform(st_crs(house))
 
 # the distance to the nearest station 
@@ -349,10 +388,9 @@ house <- house %>%
 
 ```
 
-```{r school, include=FALSE}
-sch <- st_read(here::here("data/raw/Amenities/Seattle_School_Board_Director_Districts___dirdst_area.geojson"))%>%
+```{r school, echo=TRUE, message=FALSE, warning=FALSE}
+sch <- sch %>%
   st_transform(st_crs(house))
-
 # add the school district variable
 house <- house %>% 
   st_join(sch%>%select(DIRDST), join = st_within)%>%
@@ -360,12 +398,12 @@ house <- house %>%
   mutate(sch_cat = factor(sch_cat, levels = c("DD1","DD2","DD3","DD4","DD5","DD6","DD7"))) 
 ```
 
-```{r park, include=FALSE}
-park<-st_read(here::here("data/raw/Amenities/Parks_in_King_County___park_area.geojson"))%>%
+```{r park, echo=TRUE, message=FALSE, warning=FALSE}
+park <- park %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)%>%
   mutate(park_area = st_area(.))
-  
+
 # area and count of parks within 500 feet
 house_parks <- st_join(st_buffer(house, dist = 500), park, join = st_intersects)%>%
   group_by(key) %>% 
@@ -381,8 +419,8 @@ house <- house %>%
   rename(parks_area = all_park_area)
 ```
 
-```{r tree_canopy, include=FALSE}
-tree_canopy_2016 <- st_read(here::here("data/raw/Amenities/Tree_Canopy.geojson"))%>%
+```{r tree_canopy, echo=TRUE, message=FALSE, warning=FALSE}
+tree_canopy_2016 <- tree_canopy_2016 %>%
   st_transform(st_crs(house)) %>%
   mutate(tree_canopy = round(TreeCanopy_2016_Percent, digits = 2)) %>%
   select(tree_canopy)
@@ -391,8 +429,8 @@ house <- house %>%
   st_join(., tree_canopy_2016)
 ```
 
-```{r medical, echo=FALSE}
-med <- st_read(here::here("data/raw/Amenities/Medical_Facilities_including_Hospitals___medical_facilities_point.geojson"))%>%
+```{r medical, echo=TRUE, message=FALSE, warning=FALSE}
+med <- med %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
@@ -414,12 +452,12 @@ house <- house %>%
   ))
 ```
 
-```{r commercial, include=FALSE}
-mark<- st_read(here::here("data/raw/Amenities/King_County_Landmarks___landmark_point.geojson"))%>%
+```{r commercial, echo=TRUE, message=FALSE, warning=FALSE}
+mark <- mark %>%
   st_transform(st_crs(house))%>%
   st_intersection(seattle)
 
-#select shopping center
+#select shopping center from landmrak dataset
 mark_shop <- mark%>%
   filter(CODE == 690)
 
@@ -442,7 +480,7 @@ house <- house %>%
 ```
 
 
-```{r crime_clean, eval}
+```{r crime_clean, echo=TRUE, message=FALSE, warning=FALSE}
 # crime <- read.csv(here::here("data/raw/Amenities/SPD_Crime_Data__2008-Present_20240328.csv"))
 
 # get the target crime
@@ -504,18 +542,18 @@ house <-  house %>%
 
 **4. Spatial Structure**
 - Large District
-- Small District
+- Small Neighborhood
 - Census Tract
 
-```{r fixed_effect, include=FALSE}
-# large neighborhoods
-neigh_large <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Districts.geojson")) %>%
+```{r fixed_effect, echo=TRUE, message=FALSE, warning=FALSE}
+# large District
+neigh_large <- neigh_large%>%
   st_transform(st_crs(house)) %>%
   rename(L_NAME = L_HOOD) %>%
   select(L_NAME)
 
 # small neighborhoods
-neigh_small <- st_read(here::here("data/raw/Boundary/Neighborhood_Map_Atlas_Neighborhoods.geojson")) %>%
+neigh_small<- neigh_small%>%
   st_transform(st_crs(house)) %>%
   rename(S_NAME = S_HOOD) %>%
   select(S_NAME)
@@ -529,7 +567,7 @@ neigh_tract <- acsTractsSeattle.2015 %>%
 
 ## Continuous Variable
 - exclude outliers based on scatter plots
-```{r continuous_clean, echo=FALSE}
+```{r continuous_clean, echo=TRUE, message=FALSE, warning=FALSE}
 # exclude outlier
 house <- house%>%
   filter(bedrooms<30 & crime_dis1 < 750 & bathrooms < 6)
@@ -617,7 +655,7 @@ continuous_description %>%
 
 ## Categorical Variable
 - make sure all category variables have significant difference between the means of housing price in different groups
-```{r category mean plot, echo=FALSE}
+```{r category mean plot, echo=TRUE, message=FALSE, warning=FALSE}
 # exclude useless variable
 house <- house %>%
   select(-med_cat)
@@ -640,8 +678,7 @@ house %>%
 
 - statistical summary
 
-**Renovation Status**
-```{r reno_dum_sum, echo=FALSE}
+```{r reno_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### reno_dum
 house %>%
   st_drop_geometry() %>%
@@ -649,12 +686,11 @@ house %>%
   summarise(count = n()) %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
-  kable() %>%
+  kable(caption = "Renovation Status") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Category of Bedroom Count**
-```{r bed_cat_sum, echo=FALSE}
+```{r bed_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### bed_cat, 0-3,4-7,8+
 house %>%
   st_drop_geometry() %>%
@@ -666,12 +702,12 @@ house %>%
   mutate(description = c("the unit has 0-3 bedrooms", 
                          "the unit has 4-7 bedrooms",
                          "the unit has more than 8 bedrooms"))%>%
-  kable() %>%
+  kable(caption = "Category of Bedroom Count") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Category of Bathroom Count**
-```{r bath_dum_sum, echo=FALSE}
+
+```{r bath_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### bath_dum, 0-4, 4+
 house %>%
   st_drop_geometry() %>%
@@ -682,11 +718,11 @@ house %>%
   arrange(bath_dum)%>%
   mutate(description = c("the unit has 0-4 bathrooms", 
                          "the unit has more than 4 bedrooms"))%>%
-  kable() %>%
+  kable(caption = "Category of Bathroom Count") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
-**Category by Floors**
-```{r floor_cat_sum, echo=FALSE}
+
+```{r floor_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### floor_cat, 1-2+3, 2.5+3.5
 house %>%
   st_drop_geometry() %>%
@@ -697,12 +733,11 @@ house %>%
   arrange(floor_cat)%>%
   mutate(description = c("the unit has 2.5/3.5 floors",
                          "the unit has 1/1.5/2/3 floors"))%>%
-  kable() %>%
+  kable(caption = "Category by Floors") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Location by Waterfront **
-```{r water_dum_sum,echo=FALSE}
+```{r water_dum_sum,echo=TRUE, message=FALSE, warning=FALSE}
 ### water_dum 
 house %>%
   st_drop_geometry() %>%
@@ -711,12 +746,11 @@ house %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("the unit isn't located at waterfront area", 
                          "the unit is located at waterfront area"))%>%
-  kable() %>%
+  kable(caption = "Waterfront Factor") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**View Quality**
-```{r view_cat_sum}
+```{r view_cat_sum,echo=TRUE, message=FALSE, warning=FALSE}
 ### view_cat, 0,1,2,3,4
 house %>%
   st_drop_geometry() %>%
@@ -730,12 +764,11 @@ house %>%
                          "the unit has a view scoring 2/4", 
                          "the unit has a view scoring 3/4",
                          "the unit has a view scoring 4/4" ))%>%
-  kable() %>%
+  kable(caption = "View Quality") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Condition Level**
-```{r condition_cat_sum}
+```{r condition_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### condition_cat
 house %>%
   st_drop_geometry() %>%
@@ -749,12 +782,11 @@ house %>%
                          "the unit's condition scores 3/5",
                          "the unit's condition scores 4/5",
                          "the unit's condition scores 5/5"))%>%
-  kable() %>%
+  kable(caption = "Condition Level") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Grade Level**
-```{r grade_dum_sum, echo=FALSE}
+```{r grade_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### grade_dum
 house %>%
   st_drop_geometry() %>%
@@ -765,12 +797,11 @@ house %>%
   arrange(grade_dum)%>%
   mutate(description = c("the unit's grade is 4-9", 
                          "the unit's grade is 10-13"))%>%
-  kable() %>%
+  kable(caption = "Grade Level") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Bachelor's Degree Rate Level**
-```{r bach_dum_sum, echo=FALSE}
+```{r bach_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### bach_dum
 house %>%
   st_drop_geometry() %>%
@@ -781,12 +812,11 @@ house %>%
   arrange(bach_dum)%>%
   mutate(description = c("the unit is in a census tract with a bachelor's degree rate below the Seattle average", 
                          "the unit is in a census tract with a bachelor's degree rate above the Seattle average"))%>%
-  kable() %>%
+  kable(caption = "Bachelor's Degree Rate Level") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Median Household Income Level**
-```{r median_hh_dum_sum, echo=FALSE}
+```{r median_hh_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### median_hh_dum
 house %>%
   st_drop_geometry() %>%
@@ -797,12 +827,11 @@ house %>%
   arrange(median_hh_dum)%>%
   mutate(description = c("the unit is in a census tract with a median household income below the Seattle average", 
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
-  kable() %>%
+  kable(caption = "Median Household Income Level") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Employment Rate Level**
-```{r employ_dum_sum, echo=FALSE}
+```{r employ_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### employ_dum
 house %>%
   st_drop_geometry() %>%
@@ -813,12 +842,11 @@ house %>%
   arrange(employ_dum)%>%
   mutate(description = c("the unit is in a census tract with a employment rate below the Seattle average", 
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
-  kable() %>%
+  kable(caption = "Employment Rate Level") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Poverty Rate Level**
-```{r pover_dum_sum, echo=FALSE}
+```{r pover_dum_sum,echo=TRUE, message=FALSE, warning=FALSE}
 ### pover_dum
 house %>%
   st_drop_geometry() %>%
@@ -829,12 +857,11 @@ house %>%
   arrange(pover_dum)%>%
   mutate(description = c("the unit is in a census tract with a poverty rate below the Seattle average", 
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
-  kable() %>%
+  kable(caption = "Poverty Rate Level") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Category by Subway Distance**
-```{r sub_cat_sum, echo=FALSE}
+```{r sub_cat_sum,echo=TRUE, message=FALSE, warning=FALSE}
 ### sub_cat
 house %>%
   st_drop_geometry() %>%
@@ -846,12 +873,11 @@ house %>%
   mutate(description = c("the unit is within a 0.5-mile radius of a subway station", 
                          "the unit is within a 0.5-mile to 1-mile radius of a subway station",
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
-  kable() %>%
+  kable(caption = "Category by Subway Distance") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**School District**
-```{r sch_cat_sum, echo=FALSE}
+```{r sch_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### sch_cat
 house %>%
   st_drop_geometry() %>%
@@ -867,12 +893,11 @@ house %>%
                          "the unit is in school district five",
                          "the unit is in school district six",
                          "the unit is in school district seven"))%>%
-  kable() %>%
+  kable(caption = "School District") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Number of nearby Parks**
-```{r park_cat_sum, echo=FALSE}
+```{r park_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### park_cat
 house %>%
   st_drop_geometry() %>%
@@ -886,12 +911,11 @@ house %>%
                          "the unit is within a 500-feet radius of two parks",
                          "the unit is within a 500-feet radius of three park",
                          "the unit is within a 500-feet radius of four park"))%>%
-  kable() %>%
+  kable(caption = "Number of nearby Parks") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-**Category by Shopping Center Distance**
-```{r shop_cat_sum, echo=FALSE}
+```{r shop_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
 ### shop_cat
 house %>%
   st_drop_geometry() %>%
@@ -903,14 +927,10 @@ house %>%
   mutate(description = c("the unit is within a 0.5-mile radius of a shopping center",
                          "the unit is within a 0.5-mile to 1-mile radius of a shopping center",
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
-  kable() %>%
+  kable(caption = "Category by Shopping Center Distance") %>%
   kable_classic(full_width = T, html_font = "Cambria")
 ```
 
-
-```{r}
-
-```
 
 
 
@@ -1091,14 +1111,14 @@ ggplot() +
 
 Process:
  
-2) split data set -> run lm on training data set -> run vif and cor -> deal with multicollinearity  
+  
 3) delete insignificant var. until all var at p < 0.05  
 4) delete var. with large p and examine R^2 & residual  
 
 ## Initial Variables Selection
 - whole data set -> run lm -> select one var in each category 
 - selection rule: for each factor, choose only one variable with the significance
-```{r selection, include=FALSE}
+```{r selection, results='hide'}
 # finalize regression dataset
 house <- house %>%
   select(-GEOID, -NAME) %>%
@@ -1106,7 +1126,7 @@ house <- house %>%
 
 # select continuous or categorical variable
 lm1 <- lm(price ~ .-key, data = house)
-summary(lm1)
+lm1.sum <- summary(lm1)
 
 ## bedroom
 lm2 <- lm(price ~ .-bed_cat-key, data = house)
@@ -1199,24 +1219,17 @@ stargazer(lm12,lm12.2,lm12.3,lm12.4, type="text")
 house <- house %>%
   select(-shop_dis2, -shop_dis3,-shop_cat)
 
-
 ## crime
-lm14 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
-lm14.2 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
-lm14.3 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
-lm14.4 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
-lm14.5 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
-lm14.6 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
-summary(lm14)
+lm13 <- lm(price ~ .-crime_dis1-crime_dis2-crime_dis3-crime_dis4-crime_dis5-key, data = house)
+lm13.2 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis5-crime_c-key, data = house)
+lm13.3 <- lm(price ~ .-crime_dis1-crime_dis3-crime_dis4-crime_dis5-crime_c-key, data = house)
+lm13.4 <- lm(price ~ .-crime_dis2-crime_dis1-crime_dis4-crime_dis5-crime_c-key, data = house)
+lm13.5 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis1-crime_dis5-crime_c-key, data = house)
+lm13.6 <- lm(price ~ .-crime_dis2-crime_dis3-crime_dis4-crime_dis1-crime_c-key, data = house)
+stargazer(lm13,lm13.2,lm13.3,lm13.4,lm13.5,lm13.6, type="text")
 
 house <- house %>%
-  select(-crime_dis2, -crime_dis3, -crime_dis4, -crime_dis5)
-
-lm15 <- lm(price ~ .-crime_dis1-key, data = house)
-summary(lm15)
-
-house <- house %>%
-  select(-crime_dis1)
+  select(-crime_dis1,-crime_dis2, -crime_dis3, -crime_dis4, -crime_dis5)
 
 ## add fixed effect
 house_lm <- house %>%
@@ -1231,20 +1244,8 @@ str(house_lm)
 ```
 
 ## Split Training and Testing Datasets
-
+2) split data set -> run lm on training data set 
 ```{r traintest}
-# check frequency of categorical variables
-table(house_lm$reno_dum)
-table(house_lm$bath_dum)
-table(house_lm$floor_cat)
-table(house_lm$water_dum)
-table(house_lm$view_cat)
-table(house_lm$condition_cat)
-table(house_lm$grade_dum)
-table(house_lm$sch_cat)
-table(house_lm$park_cat)
-table(house_lm$L_NAME)
-
 # split data 0.7/0.3
 set.seed(1)
 inTrain <- createDataPartition(
@@ -1258,11 +1259,23 @@ seattle.train.lm <- house_lm[inTrain,] # training set
 
 # subset the dataset to create the testing set
 seattle.test.lm <- house_lm[-inTrain,] # testing set
+
+rbind(seattle.train.lm%>%mutate(dataset = "training"),
+      seattle.test.lm %>% mutate(dataset = "testing"))%>%
+  group_by(dataset)%>%
+  summarise(count = n())%>%
+  mutate(percent = round(count/sum(count) * 100, digits = 2))%>%
+  kable() %>%
+  kable_classic(full_width = T, html_font = "Cambria")
+
 ```
 
-## Build Multiple Linear Regression Model
-
-```{r multiple_regression}
+## Model diagnostics
+### Address multicollinearity
+3) run vif and cor -> deal with multicollinearity  
+-> decision rule: biggest vif -> run cor on continuous variables
+4) exclude insignificance until all varibles significant at P<0.1
+```{r multiple_regression, results='hide'}
 # ignore neighborhood effect first
 seattle.train <- seattle.train.lm %>%
   select(-L_NAME, -S_NAME, -T_NAME)
@@ -1271,64 +1284,134 @@ seattle.test <- seattle.test.lm %>%
   select(-L_NAME, -S_NAME, -T_NAME)
 
 # build regression model on training dataset
-lm16 <- lm(price ~ ., data = seattle.train)
-summary(lm16)
-vif(lm16)
-str(seattle.train)
-cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
-                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
+lm14 <- lm(price ~ ., data = seattle.train)
+summary(lm14)
+vif(lm14) #sub_dis = 2.664951
 
-## sub_dis
-lm17 <- lm(sub_dis ~ reno_dum + bath_dum + floor_cat + water_dum + view_cat +
-             condition_cat + grade_dum + sch_cat + park_cat, data = seattle.train)
-summary(lm17)
-vif(lm17)
+## cor on continuous variable
+seattle.train %>% 
+  select_if(is.numeric)%>%
+  corrr::correlate() %>% 
+  autoplot() +
+  geom_text(aes(label = round(r,digits=2)),size = 1)
+## result:
+## sub_dis have low correlation with other numeric variables
+## high correlation: white share & bachelor degree
+## high correlation: white share & poverty rate
 
-lm18 <- lm(price ~ .-sub_dis, data = seattle.train)
-summary(lm18)
-vif(lm18)
+## lm on sub_dis
+lm.sub <- lm(sub_dis ~ ., data = seattle.train)
+summary(lm.sub) # R^2 = 0.8597 -> highly correlated with other category variables
+vif(lm.sub)
+
+lm15 <- lm(price ~ .-sub_dis, data = seattle.train)
+stargazer(lm14,lm15, type = "text") #R^2: 0.805->0.803
+
+vif(lm15) #white_share = 2.452959
 
 seattle.train <- seattle.train %>%
   select(-sub_dis)
 
 ## high correlation: white share & bachelor degree
-lm19 <- lm(price ~ .-bach_share, data = seattle.train)
-summary(lm19)
-vif(lm19)
+lm16 <- lm(price ~ .-bach_share, data = seattle.train)
+lm16.2 <- lm(price ~ .-white_share, data = seattle.train)
+stargazer(lm16, lm16.2, type="text")
+vif(lm16)
 
 seattle.train <- seattle.train %>%
   select(-bach_share)
-cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
-                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
 
 ## high correlation: white share & poverty rate
-lm20 <- lm(price ~ .-pover_rate, data = seattle.train)
-summary(lm20)
-vif(lm20)
+lm17 <- lm(price ~ .-pover_rate, data = seattle.train)
+lm17.2 <- lm(price ~ .-white_share, data = seattle.train)
+stargazer(lm17, lm17.2, type="text")
+
+vif(lm17)
 
 seattle.train <- seattle.train %>%
   select(-pover_rate)
-cor(seattle.train%>%select(-price, -reno_dum, -bath_dum, -floor_cat, -water_dum,
-                           -view_cat, -condition_cat, -grade_dum, -sch_cat, -park_cat))
 
 ## insignificance: tree canopy
-lm21 <- lm(price ~ .-tree_canopy, data = seattle.train)
-summary(lm21)
-vif(lm21)
+lm18 <- lm(price ~ .-tree_canopy, data = seattle.train)
+summary(lm18)
+vif(lm18)
 
 seattle.train <- seattle.train %>%
   select(-tree_canopy)
 ```
 
-## Test on testing dataset
-
-``` {r modify_model}
+### Trade off on accuracy and generalizabilit
+- all variables are already significant at p=0.1
+- delete var. one by one to balance the accuracy and generalizability: adjusted R^2 and AbsError,APE
+```{r testing, results='hide'}
 # make predictions on the test set and evaluate model performance
-lm22 <- lm(price ~ ., data = seattle.train)
-summary(lm22) # adjusted R-squared = 0.802
+lm19 <- lm(price ~ ., data = seattle.train)
+summary(lm19) 
+# adjusted R-squared = 0.8013
 
 ## first regression model from last step
 seattle.test1 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm19, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+mean(seattle.test1$price.AbsError) # 93754.08
+mean(seattle.test1$price.APE) # 18.97%
+
+## "year_used" p = 0.051837 -> remove
+lm20 <- lm(price ~ .-year_used, data = seattle.train)
+
+seattle.test2 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm20, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+summary(lm20) # adjusted R-squared = 0.8012 (-0.0001)
+mean(seattle.test2$price.AbsError) # 93637.18 (-116.9)
+mean(seattle.test2$price.APE) # 18.93% (-0.04%)
+#-> accuracy worse but generalizability better
+
+seattle.train <- seattle.train %>%
+  select(-year_used)
+
+## "crime_c" p = 0.002917 -> remove
+lm21 <- lm(price ~ .-crime_c, data = seattle.train)
+
+seattle.test3 <-
+  seattle.test %>%
+  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
+         price.predict = predict(lm21, seattle.test), # predict house prices using the trained regression model
+         # calculate the difference between predicted and actual house prices
+         price.error = price.predict - price,
+         # calculate the absolute difference between predicted and actual house prices
+         price.AbsError = abs(price.predict - price),
+         # calculate the absolute percentage error
+         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
+
+summary(lm21) # adjusted R-squared = 0.8009 (-0.003)
+mean(seattle.test3$price.AbsError) # 93507.13 (-130.05)
+mean(seattle.test3$price.APE) # 18.89% (-0.04)
+#-> accuracy worse but generalizability better
+
+seattle.train <- seattle.train %>%
+  select(-crime_c)
+
+## "employ_rate" -> remove
+lm22 <- lm(price ~ .-employ_rate, data = seattle.train)
+
+seattle.test4 <-
   seattle.test %>%
   mutate(regression = "baseline regression", # add a column indicating the type of regression model used
          price.predict = predict(lm22, seattle.test), # predict house prices using the trained regression model
@@ -1339,14 +1422,18 @@ seattle.test1 <-
          # calculate the absolute percentage error
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-mean(seattle.test1$price.AbsError) # 94490.7
-mean(seattle.test1$price.APE) # 19.10%
+summary(lm22) # adjusted R-squared = 0.8004 (-0.0005)
+mean(seattle.test4$price.AbsError) # 93339.94 (-167.19)
+mean(seattle.test4$price.APE) # 18.85% (-0.04%)
+#-> accuracy worse but generalizability better
 
-## remove "year_used"
-lm23 <- lm(price ~ .-year_used, data = seattle.train)
-summary(lm23) # adjusted R-squared = 0.8019
+seattle.train <- seattle.train %>%
+  select(-employ_rate)
 
-seattle.test2 <-
+## "med_dis1" -> remove
+lm23 <- lm(price ~ .-med_dis1, data = seattle.train)
+
+seattle.test5 <-
   seattle.test %>%
   mutate(regression = "baseline regression", # add a column indicating the type of regression model used
          price.predict = predict(lm23, seattle.test), # predict house prices using the trained regression model
@@ -1357,17 +1444,18 @@ seattle.test2 <-
          # calculate the absolute percentage error
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-mean(seattle.test2$price.AbsError) # 94371.65
-mean(seattle.test2$price.APE) # 19.05%
+summary(lm23) # adjusted R-squared = 0.7995 (-0.0009)
+mean(seattle.test5$price.AbsError) # 93014.7 (-325.24)
+mean(seattle.test5$price.APE) # 18.72% (-0.13%)
+#-> accuracy worse but generalizability better
 
 seattle.train <- seattle.train %>%
-  select(-year_used)
+  select(-med_dis1)
 
-## remove "crime_c"
-lm24 <- lm(price ~ .-crime_c, data = seattle.train)
-summary(lm24) # adjusted R-squared = 0.8015
+## "elder_dep" -> remove
+lm24 <- lm(price ~ .-elder_dep, data = seattle.train)
 
-seattle.test3 <-
+seattle.test6 <-
   seattle.test %>%
   mutate(regression = "baseline regression", # add a column indicating the type of regression model used
          price.predict = predict(lm24, seattle.test), # predict house prices using the trained regression model
@@ -1378,17 +1466,18 @@ seattle.test3 <-
          # calculate the absolute percentage error
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-mean(seattle.test3$price.AbsError) # 94189.17
-mean(seattle.test3$price.APE) # 19.00%
+summary(lm24) # adjusted R-squared = 0.7962 (-0.0033)
+mean(seattle.test6$price.AbsError) # 92474.93 (-539.77)
+mean(seattle.test6$price.APE) # 18.50% (-0.22%)
+#-> accuracy worse but generalizability better
 
 seattle.train <- seattle.train %>%
-  select(-crime_c)
+  select(-elder_dep)
 
-## remove "employ_rate"
-lm25 <- lm(price ~ .-employ_rate, data = seattle.train)
-summary(lm25) # adjusted R-squared = 0.8005
+## "pop_den" -> remove
+lm25 <- lm(price ~ .-pop_den, data = seattle.train)
 
-seattle.test4 <-
+seattle.test7 <-
   seattle.test %>%
   mutate(regression = "baseline regression", # add a column indicating the type of regression model used
          price.predict = predict(lm25, seattle.test), # predict house prices using the trained regression model
@@ -1399,134 +1488,178 @@ seattle.test4 <-
          # calculate the absolute percentage error
          price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
 
-mean(seattle.test4$price.AbsError) # 93891.87
-mean(seattle.test4$price.APE) # 18.93%
-
-seattle.train <- seattle.train %>%
-  select(-employ_rate)
-
-## remove "med_dis1"
-lm26 <- lm(price ~ .-med_dis1, data = seattle.train)
-summary(lm26) # adjusted R-squared = 0.7995
-
-seattle.test5 <-
-  seattle.test %>%
-  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
-         price.predict = predict(lm26, seattle.test), # predict house prices using the trained regression model
-         # calculate the difference between predicted and actual house prices
-         price.error = price.predict - price,
-         # calculate the absolute difference between predicted and actual house prices
-         price.AbsError = abs(price.predict - price),
-         # calculate the absolute percentage error
-         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
-
-mean(seattle.test5$price.AbsError) # 93529.29
-mean(seattle.test5$price.APE) # 18.79%
-
-seattle.train <- seattle.train %>%
-  select(-med_dis1)
-
-## remove "elder_dep"
-lm27 <- lm(price ~ .-elder_dep, data = seattle.train)
-summary(lm27) # adjusted R-squared = 0.7965
-
-seattle.test6 <-
-  seattle.test %>%
-  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
-         price.predict = predict(lm27, seattle.test), # predict house prices using the trained regression model
-         # calculate the difference between predicted and actual house prices
-         price.error = price.predict - price,
-         # calculate the absolute difference between predicted and actual house prices
-         price.AbsError = abs(price.predict - price),
-         # calculate the absolute percentage error
-         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
-
-mean(seattle.test6$price.AbsError) # 93115.74
-mean(seattle.test6$price.APE) # 18.59%
-
-seattle.train <- seattle.train %>%
-  select(-elder_dep)
-
-## remove "pop_den"
-lm28 <- lm(price ~ .-pop_den, data = seattle.train)
-summary(lm28) # adjusted R-squared = 0.7965
-
-seattle.test7 <-
-  seattle.test %>%
-  mutate(regression = "baseline regression", # add a column indicating the type of regression model used
-         price.predict = predict(lm28, seattle.test), # predict house prices using the trained regression model
-         # calculate the difference between predicted and actual house prices
-         price.error = price.predict - price,
-         # calculate the absolute difference between predicted and actual house prices
-         price.AbsError = abs(price.predict - price),
-         # calculate the absolute percentage error
-         price.APE = round((abs(price.predict - price)) / price * 100, digits = 2))
-
-mean(seattle.test7$price.AbsError) # 93073.76
-mean(seattle.test7$price.APE) # 18.57%
+summary(lm25) # adjusted R-squared = 0.7963 (-0.0001)
+mean(seattle.test7$price.AbsError) # 92440.65 (-34.28)
+mean(seattle.test7$price.APE) # 18.49% (-0.01)
+#-> accuracy worse but generalizability better
 
 seattle.train <- seattle.train %>%
   select(-pop_den)
+
+## "reno_dum","bedrooms","bath_dum", "sqft_living", "sqft_lot", "floor_cat", "water_dum", "view_cat", "condition_cat", "grade_dum", "white_share", "median_hh_income", "sch_cat", "park_cat", "shop_dis1" -> keep
+
+#-> both worse
+
 ```
 
-## Cross Validation
+### Spatial Autocorrelation
+```{r spatial autocorrelation}
+# spatial lag of price
+house.sf <- hh %>%
+  select(geometry,key)%>%
+  right_join(house, by = "key")
 
-```{r cv}
+coords <- st_coordinates(house.sf)
+neighborList <- knn2nb(knearneigh(coords, 5))
+spatialWeights <- nb2listw(neighborList, style="W")
+
+house.sf %>%
+  mutate(lagPrice = lag.listw(spatialWeights, price))%>%
+  ggplot()+
+  geom_point(aes(x = lagPrice, y = price))+
+  stat_smooth(aes(lagPrice, price), 
+             method = "lm", se = FALSE, size = 1, color="#b2182b")+
+  labs(title="Price as a function of the spatial lag of price")
+
+
+# spatial lag of price error
+house.test.sf <- hh %>%
+  select(geometry,key)%>%
+  right_join(house[-inTrain,], by = "key")
+
+coords.test <- sf::st_coordinates(house.test.sf)
+neighborList.test <- knn2nb(knearneigh(coords.test, 5))
+spatialWeights.test <- nb2listw(neighborList.test, style="W")
+
+seattle.test7 %>% 
+  mutate(lagPriceError = lag.listw(spatialWeights.test, price.error)) %>%
+  ggplot()+
+  geom_point(aes(x = lagPriceError, y = price.error))+
+  stat_smooth(aes(lagPriceError, price.error), 
+             method = "lm", se = FALSE, size = 1, color="#b2182b")+
+  labs(title="Error as a function of the spatial lag of error")
+
+
+# moran's I test
+moranTest <- moran.mc(seattle.test7$price.error, 
+                      spatialWeights.test, nsim = 999)
+#p-value = 0.001, pattern is slight 0.09
+
+ggplot(as.data.frame(moranTest$res[c(1:999)]), aes(moranTest$res[c(1:999)])) +
+  geom_histogram(binwidth = 0.01) +
+  geom_vline(aes(xintercept = moranTest$statistic), colour = "#FA7800",size=1) +
+  scale_x_continuous(limits = c(-1, 1)) +
+  labs(title="Observed and permuted Moran's I",
+       subtitle= "Observed Moran's I in orange",
+       x="Moran's I",
+       y="Count") +
+  theme_minimal()
+
+moranTest.stats <- moranTest$statistic #0.2198671
+```
+
+
+### Cross Validation
+
+```{r cv, include=FALSE}
 # without fixed effect
 set.seed(1)
 fitControl <- trainControl(method = "cv", number = 100)
+
+## "reno_dum","bedrooms","bath_dum", "sqft_living", "sqft_lot", "floor_cat", "water_dum", "view_cat", "condition_cat", "grade_dum", "white_share", "median_hh_income", "sch_cat", "park_cat", "shop_dis1" 
 
 seattle.cv <- 
   train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
                                               sqft_living, sqft_lot, floor_cat,
                                               water_dum, view_cat, condition_cat,
-                                              grade_dum, white_share, median_hh_income,
-                                              sch_cat, park_cat, shop_dis1),
+                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
-seattle.cv
+#RMSE      Rsquared  MAE     
+#156578.5  0.780399  105068.2
+```
 
+- choose fixed effect
+```{r cv with fixed effect}
 # with fixed effect
 set.seed(1)
 fitControl <- trainControl(method = "cv", number = 100)
 
-seattle.neigh.cv <- 
+### tract: T_NAME
+seattle.neighT.cv <- 
   train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
                                               sqft_living, sqft_lot, floor_cat,
                                               water_dum, view_cat, condition_cat,
-                                              grade_dum, white_share, median_hh_income,
-                                              sch_cat, park_cat, shop_dis1, T_NAME),
+                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, T_NAME),
      method = "lm", trControl = fitControl, na.action = na.pass)
 
-seattle.neigh.cv
+#RMSE      Rsquared   MAE     
+#143009.4  0.8164543  94772.01
+
+### Large: L_NAME
+seattle.neighL.cv <- 
+  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
+                                              sqft_living, sqft_lot, floor_cat,
+                                              water_dum, view_cat, condition_cat,
+                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, L_NAME),
+     method = "lm", trControl = fitControl, na.action = na.pass)
+
+#RMSE      Rsquared   MAE     
+#153034.2  0.7909463  102264.7
+
+### Small: S_NAME
+seattle.neighS.cv <- 
+  train(price ~ ., data = house_lm %>% select(price, reno_dum, bedrooms, bath_dum,
+                                              sqft_living, sqft_lot, floor_cat,
+                                              water_dum, view_cat, condition_cat,
+                                              grade_dum, white_share, median_hh_income, sch_cat, park_cat, shop_dis1, S_NAME),
+     method = "lm", trControl = fitControl, na.action = na.pass)
+
+#RMSE      Rsquared   MAE    
+#143720.6  0.8175728  95373.4
+
+#-> census tract as the fixed effect improves the model most
 ```
 
 ## Final Model
 
-```{r}
+```{r final model, echo=TRUE}
 seattle.train.lm <- seattle.train.lm %>%
   mutate(T_NAME = as.factor(T_NAME))
 
+par(mfrow = c(2, 2))
+
+#without fixed effect
 lm.final <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1,
                data = seattle.train.lm)
-summary(lm.final)
-plot(lm.final)
 
+summary(lm.final)
+
+plot(lm.final)
+mtext("Diagnostic Plots for Linear Model without Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
+
+
+#with fixed effect
 lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft_lot +
                  floor_cat + water_dum + view_cat + condition_cat + grade_dum +
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
                  T_NAME, data = seattle.train.lm)
-summary(lm.final.nhood)
 plot(lm.final.nhood)
+mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.5)
+
+summary(lm.final.nhood)
+
+stargazer(lm.final, lm.final.nhood, type = "text",
+          star.cutoffs = c(0.05, 0.01, 0.001))
 ```
 
 ## Visualize Model Results
 
 ### Predicted Prices vs. Observed Prices
 
-```{r predict_plot}
+```{r predict_plot, echo=FALSE}
 ## final model without fixed effect
 reg.test <-
   seattle.test.lm %>%
@@ -1580,7 +1713,7 @@ bothregressions %>%
 
 ### Map of Residuals
 
-```{r residual_map}
+```{r residual_map, echo=FALSE}
 # test set error for both regressions
 bothregressions.error <- bothregressions %>%
   left_join(.,hh%>%select(price, bedrooms, sqft_living, sqft_lot),
@@ -1627,10 +1760,101 @@ ggplot() +
 
 
 # Conclusion
+balabalbala
 
 
+# Appendix1: Variable Selection Reference
 
-#Appendix1: Variable Selection Reference
+## Internal Characteristic
+```{r appendix-internal}
+# bed categories
+house0$bed.factor <- factor(house0$bedrooms, levels =sort(unique(house0$bedrooms)))
+
+house0 %>%
+  st_drop_geometry() %>%
+  group_by(bed.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = bed.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-3,4-7,8+
+
+## group by mean
+house0 <- house0 %>%
+  mutate(bed_cat = factor(case_when(
+    bedrooms <=3 ~ "few",
+    bedrooms >3 & bedrooms <= 7 ~ "medium",
+    bedrooms >=8 ~ "many"
+  )))
+
+## check the numbers of each category
+table(house0$bed_cat)%>%
+  kable(caption = "Category by Bedroom Count") %>%
+  kable_classic(full_width = T, html_font = "Cambria")
+
+# bathroom category
+house0$bath.factor <- factor(house0$bathrooms, levels =sort(unique(house0$bathrooms)))
+
+house0 %>%
+  st_drop_geometry() %>%
+  group_by(bath.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = bath.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #0-4, 4+
+
+house0 <- house0 %>%
+  mutate(bath_dum = factor(case_when(
+    bathrooms <= 4 ~ "few",
+    bathrooms > 4 ~ "many"
+  )))
+
+## check the numbers of each category
+table(house0$bath_dum)%>%
+  kable(caption = "Category by Bathroom Count") %>%
+  kable_classic(full_width = T, html_font = "Cambria")
+
+# floor category
+house0$floor.factor <- factor(house0$floors, levels =sort(unique(house0$floors)))
+
+house0 %>%
+  st_drop_geometry() %>%
+  group_by(floor.factor)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = floor.factor, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) #1-2+3, 2.5+3.5
+
+house0 <- house0 %>%
+  mutate(floor_cat = factor(case_when(
+    floors <= 2 | floors == 3 ~ "regular",
+    floors %in% c(2.5, 3.5) ~ "irregular"
+  )))
+## check the numbers of each category
+table(house0$floor_cat)%>%
+  kable(caption = "Category by Floor Count") %>%
+  kable_classic(full_width = T, html_font = "Cambria")
+
+#reclassify grade
+house0 %>%
+  st_drop_geometry() %>%
+  group_by(grade)%>%
+  summarize(price_m = mean(price))%>%
+  ggplot(aes(x = grade, y = price_m)) +
+  geom_col(position = "dodge")+
+  plotTheme() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+house0 <- house0%>%
+  mutate(grade_dum = factor(ifelse(grade <= 9, "low","high"),
+                            levels = c("low","high")))
+
+## check the numbers of each category
+table(house0$grade_dum)%>%
+  kable(caption = "Category by Grade") %>%
+  kable_classic(full_width = T, html_font = "Cambria")
+
+
+```
+
 
 ## Socio-economic characteristics
 
