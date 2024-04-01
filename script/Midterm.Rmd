@@ -15,6 +15,13 @@ output:
     toc: yes
 ---
 
+<style>
+.kable thead tr th, .table thead tr th {
+  text-align: left !important;}
+table.kable, table.table {
+  width: 100% !important;}
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -614,8 +621,8 @@ continuous_description %>%
   left_join(continuous_summary, by = "variables")%>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:9, extra_css = "text-align: left;")
 ```
 
 ## Categorical Variable
@@ -654,10 +661,10 @@ house %>%
   summarise(count = n()) %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
-  kable(caption = "Renovation Status") %>%
+  kable(caption = "Renovation Status", table.attr = 'id="myTable"') %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+  column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r bed_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -674,8 +681,8 @@ house %>%
                          "the unit has more than 8 bedrooms"))%>%
   kable(caption = "Category of Bedroom Count") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 
@@ -692,8 +699,8 @@ house %>%
                          "the unit has more than 4 bedrooms"))%>%
   kable(caption = "Category of Bathroom Count") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r floor_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -709,8 +716,8 @@ house %>%
                          "the unit has 1/1.5/2/3 floors"))%>%
   kable(caption = "Category by Floors") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r water_dum_sum,echo=TRUE, message=FALSE, warning=FALSE}
@@ -724,8 +731,8 @@ house %>%
                          "the unit is located at waterfront area"))%>%
   kable(caption = "Waterfront Factor") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r view_cat_sum,echo=TRUE, message=FALSE, warning=FALSE}
@@ -744,8 +751,8 @@ house %>%
                          "the unit has a view scoring 4/4" ))%>%
   kable(caption = "View Quality") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r condition_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -764,8 +771,8 @@ house %>%
                          "the unit's condition scores 5/5"))%>%
   kable(caption = "Condition Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r grade_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -781,8 +788,8 @@ house %>%
                          "the unit's grade is 10-13"))%>%
   kable(caption = "Grade Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r bach_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -798,8 +805,8 @@ house %>%
                          "the unit is in a census tract with a bachelor's degree rate above the Seattle average"))%>%
   kable(caption = "Bachelor's Degree Rate Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r median_hh_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -815,8 +822,8 @@ house %>%
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
   kable(caption = "Median Household Income Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r employ_dum_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -832,8 +839,8 @@ house %>%
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
   kable(caption = "Employment Rate Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r pover_dum_sum,echo=TRUE, message=FALSE, warning=FALSE}
@@ -849,8 +856,8 @@ house %>%
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
   kable(caption = "Poverty Rate Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r sub_cat_sum,echo=TRUE, message=FALSE, warning=FALSE}
@@ -867,8 +874,8 @@ house %>%
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
   kable(caption = "Category by Subway Distance") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r sch_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -889,8 +896,8 @@ house %>%
                          "the unit is in school district seven"))%>%
   kable(caption = "School District") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r park_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -909,8 +916,8 @@ house %>%
                          "the unit is within a 500-feet radius of four park"))%>%
   kable(caption = "Number of nearby Parks") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ```{r shop_cat_sum, echo=TRUE, message=FALSE, warning=FALSE}
@@ -927,8 +934,8 @@ house %>%
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable(caption = "Category by Shopping Center Distance") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 
@@ -1259,8 +1266,8 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   mutate(percent = round(count/sum(count) * 100, digits = 2))%>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:3, extra_css = "text-align: left;")
 ```
 
 ## Model Diagnostics
@@ -1553,7 +1560,9 @@ ggplot(as.data.frame(moranTest$res[c(1:999)]), aes(moranTest$res[c(1:999)])) +
        subtitle= "Observed Moran's I in orange",
        x="Moran's I",
        y="Count") +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5))
 
 moranTest.stats <- moranTest$statistic # 0.2198671
 ```
@@ -1609,8 +1618,8 @@ data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv
   select(-RMSESD, -RsquaredSD, -MAESD) %>%
   kable()%>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+  column_spec(1:4, extra_css = "text-align: left;")
 ```
 
 ## Final Model
@@ -1648,7 +1657,7 @@ lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
                  T_NAME, data = seattle.train.lm)
 plot(lm.final.nhood)
-mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1)
+mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.1, font = 2)
 ```
 
 ## Visualize Model Results
@@ -1709,7 +1718,8 @@ bothregressions %>%
        subtitle="Red line represents a perfect prediction; Blue line represents prediction",
        x = "Observed Price", y = "Predicted Price") +
   theme_minimal() +
-  theme(plot.title = element_text(face = "bold")) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5)) +
   scale_y_continuous(breaks = seq(0, 2500000, by = 500000))
 ```
 
@@ -1739,7 +1749,7 @@ ggplot() +
   facet_wrap(~regression) +
   labs(title = "Test Set Errors (Residuals) for Both Regressions") +
   theme_void() +
-  theme(plot.title = element_text(face = "bold"))
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 # test set MAPE by neighborhood
 bothregressions.nhood <- bothregressions %>%
@@ -1757,7 +1767,7 @@ ggplot() +
   facet_wrap(~regression) +
   labs(title = "Test Set Mean Absolute Percent Errors (MAPE) for Census Tracts") +
   theme_void() +
-  theme(plot.title = element_text(face = "bold"))
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
 
 

@@ -15,6 +15,13 @@ output:
     toc: yes
 ---
 
+<style>
+.kable thead tr th, .table thead tr th {
+  text-align: left !important;}
+table.kable, table.table {
+  width: 100% !important;}
+</style>
+
 
 
 
@@ -544,7 +551,7 @@ st_drop_geometry(house) %>%
 ![](Midterm_files/figure-html/continuous_clean-1.png)<!-- -->
 
 - Statistical summary
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> variables </th>
@@ -560,323 +567,323 @@ st_drop_geometry(house) %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> price </td>
-   <td style="text-align:left;"> dependent </td>
-   <td style="text-align:left;"> Price: price of each unit </td>
-   <td style="text-align:left;"> $ </td>
-   <td style="text-align:right;"> 3800000 </td>
-   <td style="text-align:right;"> 90000 </td>
-   <td style="text-align:right;"> 589144 </td>
-   <td style="text-align:right;"> 340388 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> price </td>
+   <td style="text-align:left;text-align: left;"> dependent </td>
+   <td style="text-align:left;text-align: left;"> Price: price of each unit </td>
+   <td style="text-align:left;text-align: left;"> $ </td>
+   <td style="text-align:right;text-align: left;"> 3800000 </td>
+   <td style="text-align:right;text-align: left;"> 90000 </td>
+   <td style="text-align:right;text-align: left;"> 589144 </td>
+   <td style="text-align:right;text-align: left;"> 340388 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> year_used </td>
-   <td style="text-align:left;"> internal </td>
-   <td style="text-align:left;"> Year Used: years from built to 2015 </td>
-   <td style="text-align:left;"> year </td>
-   <td style="text-align:right;"> 115 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 62 </td>
-   <td style="text-align:right;"> 35 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> year_used </td>
+   <td style="text-align:left;text-align: left;"> internal </td>
+   <td style="text-align:left;text-align: left;"> Year Used: years from built to 2015 </td>
+   <td style="text-align:left;text-align: left;"> year </td>
+   <td style="text-align:right;text-align: left;"> 115 </td>
+   <td style="text-align:right;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 62 </td>
+   <td style="text-align:right;text-align: left;"> 35 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> bedrooms </td>
-   <td style="text-align:left;"> internal </td>
-   <td style="text-align:left;"> No.bedrooms: the number of bedrooms in each unit </td>
-   <td style="text-align:left;"> # </td>
-   <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> bedrooms </td>
+   <td style="text-align:left;text-align: left;"> internal </td>
+   <td style="text-align:left;text-align: left;"> No.bedrooms: the number of bedrooms in each unit </td>
+   <td style="text-align:left;text-align: left;"> # </td>
+   <td style="text-align:right;text-align: left;"> 11 </td>
+   <td style="text-align:right;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> bathrooms </td>
-   <td style="text-align:left;"> internal </td>
-   <td style="text-align:left;"> No.bathrooms: the number of bathrooms in each unit </td>
-   <td style="text-align:left;"> # </td>
-   <td style="text-align:right;"> 5 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 1 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> bathrooms </td>
+   <td style="text-align:left;text-align: left;"> internal </td>
+   <td style="text-align:left;text-align: left;"> No.bathrooms: the number of bathrooms in each unit </td>
+   <td style="text-align:left;text-align: left;"> # </td>
+   <td style="text-align:right;text-align: left;"> 5 </td>
+   <td style="text-align:right;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 2 </td>
+   <td style="text-align:right;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> sqft_living </td>
-   <td style="text-align:left;"> internal </td>
-   <td style="text-align:left;"> Living Area: the area of living of each unit </td>
-   <td style="text-align:left;"> sqft </td>
-   <td style="text-align:right;"> 7880 </td>
-   <td style="text-align:right;"> 370 </td>
-   <td style="text-align:right;"> 1799 </td>
-   <td style="text-align:right;"> 799 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> sqft_living </td>
+   <td style="text-align:left;text-align: left;"> internal </td>
+   <td style="text-align:left;text-align: left;"> Living Area: the area of living of each unit </td>
+   <td style="text-align:left;text-align: left;"> sqft </td>
+   <td style="text-align:right;text-align: left;"> 7880 </td>
+   <td style="text-align:right;text-align: left;"> 370 </td>
+   <td style="text-align:right;text-align: left;"> 1799 </td>
+   <td style="text-align:right;text-align: left;"> 799 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> sqft_lot </td>
-   <td style="text-align:left;"> internal </td>
-   <td style="text-align:left;"> Lot Area: the area of the lot of each unit </td>
-   <td style="text-align:left;"> sqft </td>
-   <td style="text-align:right;"> 91681 </td>
-   <td style="text-align:right;"> 520 </td>
-   <td style="text-align:right;"> 5105 </td>
-   <td style="text-align:right;"> 3583 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> sqft_lot </td>
+   <td style="text-align:left;text-align: left;"> internal </td>
+   <td style="text-align:left;text-align: left;"> Lot Area: the area of the lot of each unit </td>
+   <td style="text-align:left;text-align: left;"> sqft </td>
+   <td style="text-align:right;text-align: left;"> 91681 </td>
+   <td style="text-align:right;text-align: left;"> 520 </td>
+   <td style="text-align:right;text-align: left;"> 5105 </td>
+   <td style="text-align:right;text-align: left;"> 3583 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> pop_den </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Population Density: the number of population per acre in the census tract </td>
-   <td style="text-align:left;"> person / acre </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> pop_den </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Population Density: the number of population per acre in the census tract </td>
+   <td style="text-align:left;text-align: left;"> person / acre </td>
+   <td style="text-align:right;text-align: left;"> 76 </td>
+   <td style="text-align:right;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 12 </td>
+   <td style="text-align:right;text-align: left;"> 7 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> white_share </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> White Population Share:the ratio of white people to total population in the census tract </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 94 </td>
-   <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 72 </td>
-   <td style="text-align:right;"> 19 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> white_share </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> White Population Share:the ratio of white people to total population in the census tract </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 94 </td>
+   <td style="text-align:right;text-align: left;"> 8 </td>
+   <td style="text-align:right;text-align: left;"> 72 </td>
+   <td style="text-align:right;text-align: left;"> 19 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> total_dep </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Total Dependency Ratio: the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 73 </td>
-   <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 39 </td>
-   <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> total_dep </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Total Dependency Ratio: the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 73 </td>
+   <td style="text-align:right;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 39 </td>
+   <td style="text-align:right;text-align: left;"> 12 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> elder_dep </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Elderly Dependency Ratio: the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 49 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 17 </td>
-   <td style="text-align:right;"> 7 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> elder_dep </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Elderly Dependency Ratio: the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 49 </td>
+   <td style="text-align:right;text-align: left;"> 2 </td>
+   <td style="text-align:right;text-align: left;"> 17 </td>
+   <td style="text-align:right;text-align: left;"> 7 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> bach_share </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Bachelor's Degree Rate: the percentage of with a bachelor's degree among adults age 25 and older in the census tract </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 53 </td>
-   <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 35 </td>
-   <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> bach_share </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Bachelor's Degree Rate: the percentage of with a bachelor's degree among adults age 25 and older in the census tract </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 53 </td>
+   <td style="text-align:right;text-align: left;"> 10 </td>
+   <td style="text-align:right;text-align: left;"> 35 </td>
+   <td style="text-align:right;text-align: left;"> 8 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> median_hh_income </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Median Household Income: median househhold income in the census tract </td>
-   <td style="text-align:left;"> $ </td>
-   <td style="text-align:right;"> 157292 </td>
-   <td style="text-align:right;"> 12269 </td>
-   <td style="text-align:right;"> 82292 </td>
-   <td style="text-align:right;"> 26471 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> median_hh_income </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Median Household Income: median househhold income in the census tract </td>
+   <td style="text-align:left;text-align: left;"> $ </td>
+   <td style="text-align:right;text-align: left;"> 157292 </td>
+   <td style="text-align:right;text-align: left;"> 12269 </td>
+   <td style="text-align:right;text-align: left;"> 82292 </td>
+   <td style="text-align:right;text-align: left;"> 26471 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> employ_rate </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Employment Rate: the ratio of the employed to the working age population in the census tract </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 81 </td>
-   <td style="text-align:right;"> 95 </td>
-   <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> employ_rate </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Employment Rate: the ratio of the employed to the working age population in the census tract </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 99 </td>
+   <td style="text-align:right;text-align: left;"> 81 </td>
+   <td style="text-align:right;text-align: left;"> 95 </td>
+   <td style="text-align:right;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> pover_rate </td>
-   <td style="text-align:left;"> socio-economic </td>
-   <td style="text-align:left;"> Poverty Rate: the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 43 </td>
-   <td style="text-align:right;"> 3 </td>
-   <td style="text-align:right;"> 11 </td>
-   <td style="text-align:right;"> 8 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> pover_rate </td>
+   <td style="text-align:left;text-align: left;"> socio-economic </td>
+   <td style="text-align:left;text-align: left;"> Poverty Rate: the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 43 </td>
+   <td style="text-align:right;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 11 </td>
+   <td style="text-align:right;text-align: left;"> 8 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> sub_dis </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Nearest Subway Distance: the distance to the nearest subway station </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 27441 </td>
-   <td style="text-align:right;"> 27 </td>
-   <td style="text-align:right;"> 9497 </td>
-   <td style="text-align:right;"> 7439 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> sub_dis </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Nearest Subway Distance: the distance to the nearest subway station </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 27441 </td>
+   <td style="text-align:right;text-align: left;"> 27 </td>
+   <td style="text-align:right;text-align: left;"> 9497 </td>
+   <td style="text-align:right;text-align: left;"> 7439 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> parks_area </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Parks' Area 500ft: the total area of parks located within a 500-foot radius of each unit </td>
-   <td style="text-align:left;"> acre </td>
-   <td style="text-align:right;"> 24096543 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 546305 </td>
-   <td style="text-align:right;"> 1951825 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> parks_area </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Parks' Area 500ft: the total area of parks located within a 500-foot radius of each unit </td>
+   <td style="text-align:left;text-align: left;"> acre </td>
+   <td style="text-align:right;text-align: left;"> 553 </td>
+   <td style="text-align:right;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 13 </td>
+   <td style="text-align:right;text-align: left;"> 45 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> tree_canopy </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Tree Canopy Ratio: the ratio of the area of tree canopy to the total area in the measuring space </td>
-   <td style="text-align:left;"> % </td>
-   <td style="text-align:right;"> 89 </td>
-   <td style="text-align:right;"> 5 </td>
-   <td style="text-align:right;"> 29 </td>
-   <td style="text-align:right;"> 9 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> tree_canopy </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Tree Canopy Ratio: the ratio of the area of tree canopy to the total area in the measuring space </td>
+   <td style="text-align:left;text-align: left;"> % </td>
+   <td style="text-align:right;text-align: left;"> 89 </td>
+   <td style="text-align:right;text-align: left;"> 5 </td>
+   <td style="text-align:right;text-align: left;"> 29 </td>
+   <td style="text-align:right;text-align: left;"> 9 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> med_dis1 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Nearest Medical Distance: the distance to the nearest medical facility </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 13892 </td>
-   <td style="text-align:right;"> 9 </td>
-   <td style="text-align:right;"> 4385 </td>
-   <td style="text-align:right;"> 2558 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> med_dis1 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Nearest Medical Distance: the distance to the nearest medical facility </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 13892 </td>
+   <td style="text-align:right;text-align: left;"> 9 </td>
+   <td style="text-align:right;text-align: left;"> 4385 </td>
+   <td style="text-align:right;text-align: left;"> 2558 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> med_dis2 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 2 Medicals: the average distance to the nearest 2 medical facilities </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 17742 </td>
-   <td style="text-align:right;"> 134 </td>
-   <td style="text-align:right;"> 5616 </td>
-   <td style="text-align:right;"> 2923 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> med_dis2 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 2 Medicals: the average distance to the nearest 2 medical facilities </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 17742 </td>
+   <td style="text-align:right;text-align: left;"> 134 </td>
+   <td style="text-align:right;text-align: left;"> 5616 </td>
+   <td style="text-align:right;text-align: left;"> 2923 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> med_dis3 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 3 Medicals:the average distance to the nearest 3 medical facilities </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 20699 </td>
-   <td style="text-align:right;"> 355 </td>
-   <td style="text-align:right;"> 6726 </td>
-   <td style="text-align:right;"> 3691 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> med_dis3 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 3 Medicals:the average distance to the nearest 3 medical facilities </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 20699 </td>
+   <td style="text-align:right;text-align: left;"> 355 </td>
+   <td style="text-align:right;text-align: left;"> 6726 </td>
+   <td style="text-align:right;text-align: left;"> 3691 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> shop_dis1 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Nearest shopping Distance:the distance to the nearest shopping center </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 31507 </td>
-   <td style="text-align:right;"> 99 </td>
-   <td style="text-align:right;"> 9019 </td>
-   <td style="text-align:right;"> 5459 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> shop_dis1 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Nearest shopping Distance:the distance to the nearest shopping center </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 31507 </td>
+   <td style="text-align:right;text-align: left;"> 99 </td>
+   <td style="text-align:right;text-align: left;"> 9019 </td>
+   <td style="text-align:right;text-align: left;"> 5459 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> shop_dis2 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 2 Shoppings:the average distance to the nearest 2 shopping center </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 34370 </td>
-   <td style="text-align:right;"> 1505 </td>
-   <td style="text-align:right;"> 10931 </td>
-   <td style="text-align:right;"> 5149 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> shop_dis2 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 2 Shoppings:the average distance to the nearest 2 shopping center </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 34370 </td>
+   <td style="text-align:right;text-align: left;"> 1505 </td>
+   <td style="text-align:right;text-align: left;"> 10931 </td>
+   <td style="text-align:right;text-align: left;"> 5149 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> shop_dis3 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 3 Shoppings:the average distance to the nearest 3 shopping center </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 35466 </td>
-   <td style="text-align:right;"> 1781 </td>
-   <td style="text-align:right;"> 12166 </td>
-   <td style="text-align:right;"> 5218 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> shop_dis3 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 3 Shoppings:the average distance to the nearest 3 shopping center </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 35466 </td>
+   <td style="text-align:right;text-align: left;"> 1781 </td>
+   <td style="text-align:right;text-align: left;"> 12166 </td>
+   <td style="text-align:right;text-align: left;"> 5218 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> crime_c </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> No.crime: the number of crimes within a 1/8-mile radius around each unit </td>
-   <td style="text-align:left;"> - </td>
-   <td style="text-align:right;"> 1044 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 83 </td>
-   <td style="text-align:right;"> 72 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> crime_c </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> No.crime: the number of crimes within a 1/8-mile radius around each unit </td>
+   <td style="text-align:left;text-align: left;"> - </td>
+   <td style="text-align:right;text-align: left;"> 1044 </td>
+   <td style="text-align:right;text-align: left;"> 2 </td>
+   <td style="text-align:right;text-align: left;"> 83 </td>
+   <td style="text-align:right;text-align: left;"> 72 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> crime_dis1 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Nearest Crime Distance: the distance to the nearest crime </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 569 </td>
-   <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 133 </td>
-   <td style="text-align:right;"> 67 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> crime_dis1 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Nearest Crime Distance: the distance to the nearest crime </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 569 </td>
+   <td style="text-align:right;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 133 </td>
+   <td style="text-align:right;text-align: left;"> 67 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> crime_dis2 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 2 Crimes:the average distance to the nearest 2 crime </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 583 </td>
-   <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 144 </td>
-   <td style="text-align:right;"> 69 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> crime_dis2 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 2 Crimes:the average distance to the nearest 2 crime </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 583 </td>
+   <td style="text-align:right;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 144 </td>
+   <td style="text-align:right;text-align: left;"> 69 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> crime_dis3 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 3 Crimes:the average distance to the nearest 3 crime </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 598 </td>
-   <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 153 </td>
-   <td style="text-align:right;"> 72 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> crime_dis3 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 3 Crimes:the average distance to the nearest 3 crime </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 598 </td>
+   <td style="text-align:right;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 153 </td>
+   <td style="text-align:right;text-align: left;"> 72 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> crime_dis4 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 4 Crimes:the average distance to the nearest 4 crime </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 617 </td>
-   <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 162 </td>
-   <td style="text-align:right;"> 75 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> crime_dis4 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 4 Crimes:the average distance to the nearest 4 crime </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 617 </td>
+   <td style="text-align:right;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 162 </td>
+   <td style="text-align:right;text-align: left;"> 75 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> crime_dis5 </td>
-   <td style="text-align:left;"> amenities </td>
-   <td style="text-align:left;"> Average Distance to 5 Crimes:the average distance to the nearest 5 crime </td>
-   <td style="text-align:left;"> feet </td>
-   <td style="text-align:right;"> 688 </td>
-   <td style="text-align:right;"> 4 </td>
-   <td style="text-align:right;"> 171 </td>
-   <td style="text-align:right;"> 78 </td>
-   <td style="text-align:right;"> 6734 </td>
+   <td style="text-align:left;text-align: left;"> crime_dis5 </td>
+   <td style="text-align:left;text-align: left;"> amenities </td>
+   <td style="text-align:left;text-align: left;"> Average Distance to 5 Crimes:the average distance to the nearest 5 crime </td>
+   <td style="text-align:left;text-align: left;"> feet </td>
+   <td style="text-align:right;text-align: left;"> 688 </td>
+   <td style="text-align:right;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 171 </td>
+   <td style="text-align:right;text-align: left;"> 78 </td>
+   <td style="text-align:right;text-align: left;"> 6734 </td>
   </tr>
 </tbody>
 </table>
@@ -921,13 +928,13 @@ house %>%
   summarise(count = n()) %>%
   mutate(percent = round(count/sum(count) * 100, digits = 2),
          description = c("haven't been renovated", "have been reivated"))%>%
-  kable(caption = "Renovation Status") %>%
+  kable(caption = "Renovation Status", table.attr = 'id="myTable"') %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+  column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Renovation Status</caption>
  <thead>
   <tr>
@@ -939,16 +946,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 6289 </td>
-   <td style="text-align:right;"> 93.39 </td>
-   <td style="text-align:left;"> haven't been renovated </td>
+   <td style="text-align:left;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 6289 </td>
+   <td style="text-align:right;text-align: left;"> 93.39 </td>
+   <td style="text-align:left;text-align: left;"> haven't been renovated </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:right;"> 445 </td>
-   <td style="text-align:right;"> 6.61 </td>
-   <td style="text-align:left;"> have been reivated </td>
+   <td style="text-align:left;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 445 </td>
+   <td style="text-align:right;text-align: left;"> 6.61 </td>
+   <td style="text-align:left;text-align: left;"> have been reivated </td>
   </tr>
 </tbody>
 </table>
@@ -968,11 +975,11 @@ house %>%
                          "the unit has more than 8 bedrooms"))%>%
   kable(caption = "Category of Bedroom Count") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Category of Bedroom Count</caption>
  <thead>
   <tr>
@@ -984,22 +991,22 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> few </td>
-   <td style="text-align:right;"> 4695 </td>
-   <td style="text-align:right;"> 69.72 </td>
-   <td style="text-align:left;"> the unit has 0-3 bedrooms </td>
+   <td style="text-align:left;text-align: left;"> few </td>
+   <td style="text-align:right;text-align: left;"> 4695 </td>
+   <td style="text-align:right;text-align: left;"> 69.72 </td>
+   <td style="text-align:left;text-align: left;"> the unit has 0-3 bedrooms </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> medium </td>
-   <td style="text-align:right;"> 2025 </td>
-   <td style="text-align:right;"> 30.07 </td>
-   <td style="text-align:left;"> the unit has 4-7 bedrooms </td>
+   <td style="text-align:left;text-align: left;"> medium </td>
+   <td style="text-align:right;text-align: left;"> 2025 </td>
+   <td style="text-align:right;text-align: left;"> 30.07 </td>
+   <td style="text-align:left;text-align: left;"> the unit has 4-7 bedrooms </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> many </td>
-   <td style="text-align:right;"> 14 </td>
-   <td style="text-align:right;"> 0.21 </td>
-   <td style="text-align:left;"> the unit has more than 8 bedrooms </td>
+   <td style="text-align:left;text-align: left;"> many </td>
+   <td style="text-align:right;text-align: left;"> 14 </td>
+   <td style="text-align:right;text-align: left;"> 0.21 </td>
+   <td style="text-align:left;text-align: left;"> the unit has more than 8 bedrooms </td>
   </tr>
 </tbody>
 </table>
@@ -1019,11 +1026,11 @@ house %>%
                          "the unit has more than 4 bedrooms"))%>%
   kable(caption = "Category of Bathroom Count") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Category of Bathroom Count</caption>
  <thead>
   <tr>
@@ -1035,16 +1042,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> few </td>
-   <td style="text-align:right;"> 6680 </td>
-   <td style="text-align:right;"> 99.2 </td>
-   <td style="text-align:left;"> the unit has 0-4 bathrooms </td>
+   <td style="text-align:left;text-align: left;"> few </td>
+   <td style="text-align:right;text-align: left;"> 6680 </td>
+   <td style="text-align:right;text-align: left;"> 99.2 </td>
+   <td style="text-align:left;text-align: left;"> the unit has 0-4 bathrooms </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> many </td>
-   <td style="text-align:right;"> 54 </td>
-   <td style="text-align:right;"> 0.8 </td>
-   <td style="text-align:left;"> the unit has more than 4 bedrooms </td>
+   <td style="text-align:left;text-align: left;"> many </td>
+   <td style="text-align:right;text-align: left;"> 54 </td>
+   <td style="text-align:right;text-align: left;"> 0.8 </td>
+   <td style="text-align:left;text-align: left;"> the unit has more than 4 bedrooms </td>
   </tr>
 </tbody>
 </table>
@@ -1063,11 +1070,11 @@ house %>%
                          "the unit has 1/1.5/2/3 floors"))%>%
   kable(caption = "Category by Floors") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Category by Floors</caption>
  <thead>
   <tr>
@@ -1079,16 +1086,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> irregular </td>
-   <td style="text-align:right;"> 104 </td>
-   <td style="text-align:right;"> 1.54 </td>
-   <td style="text-align:left;"> the unit has 2.5/3.5 floors </td>
+   <td style="text-align:left;text-align: left;"> irregular </td>
+   <td style="text-align:right;text-align: left;"> 104 </td>
+   <td style="text-align:right;text-align: left;"> 1.54 </td>
+   <td style="text-align:left;text-align: left;"> the unit has 2.5/3.5 floors </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> regular </td>
-   <td style="text-align:right;"> 6630 </td>
-   <td style="text-align:right;"> 98.46 </td>
-   <td style="text-align:left;"> the unit has 1/1.5/2/3 floors </td>
+   <td style="text-align:left;text-align: left;"> regular </td>
+   <td style="text-align:right;text-align: left;"> 6630 </td>
+   <td style="text-align:right;text-align: left;"> 98.46 </td>
+   <td style="text-align:left;text-align: left;"> the unit has 1/1.5/2/3 floors </td>
   </tr>
 </tbody>
 </table>
@@ -1105,11 +1112,11 @@ house %>%
                          "the unit is located at waterfront area"))%>%
   kable(caption = "Waterfront Factor") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Waterfront Factor</caption>
  <thead>
   <tr>
@@ -1121,16 +1128,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 6705 </td>
-   <td style="text-align:right;"> 99.57 </td>
-   <td style="text-align:left;"> the unit isn't located at waterfront area </td>
+   <td style="text-align:left;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 6705 </td>
+   <td style="text-align:right;text-align: left;"> 99.57 </td>
+   <td style="text-align:left;text-align: left;"> the unit isn't located at waterfront area </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:right;"> 29 </td>
-   <td style="text-align:right;"> 0.43 </td>
-   <td style="text-align:left;"> the unit is located at waterfront area </td>
+   <td style="text-align:left;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 29 </td>
+   <td style="text-align:right;text-align: left;"> 0.43 </td>
+   <td style="text-align:left;text-align: left;"> the unit is located at waterfront area </td>
   </tr>
 </tbody>
 </table>
@@ -1152,11 +1159,11 @@ house %>%
                          "the unit has a view scoring 4/4" ))%>%
   kable(caption = "View Quality") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>View Quality</caption>
  <thead>
   <tr>
@@ -1168,34 +1175,34 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 5880 </td>
-   <td style="text-align:right;"> 87.32 </td>
-   <td style="text-align:left;"> the unit has a view scoring 0/4 </td>
+   <td style="text-align:left;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 5880 </td>
+   <td style="text-align:right;text-align: left;"> 87.32 </td>
+   <td style="text-align:left;text-align: left;"> the unit has a view scoring 0/4 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:right;"> 143 </td>
-   <td style="text-align:right;"> 2.12 </td>
-   <td style="text-align:left;"> the unit has a view scoring 1/4 </td>
+   <td style="text-align:left;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 143 </td>
+   <td style="text-align:right;text-align: left;"> 2.12 </td>
+   <td style="text-align:left;text-align: left;"> the unit has a view scoring 1/4 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:right;"> 407 </td>
-   <td style="text-align:right;"> 6.04 </td>
-   <td style="text-align:left;"> the unit has a view scoring 2/4 </td>
+   <td style="text-align:left;text-align: left;"> 2 </td>
+   <td style="text-align:right;text-align: left;"> 407 </td>
+   <td style="text-align:right;text-align: left;"> 6.04 </td>
+   <td style="text-align:left;text-align: left;"> the unit has a view scoring 2/4 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 3 </td>
-   <td style="text-align:right;"> 202 </td>
-   <td style="text-align:right;"> 3.00 </td>
-   <td style="text-align:left;"> the unit has a view scoring 3/4 </td>
+   <td style="text-align:left;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 202 </td>
+   <td style="text-align:right;text-align: left;"> 3.00 </td>
+   <td style="text-align:left;text-align: left;"> the unit has a view scoring 3/4 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 4 </td>
-   <td style="text-align:right;"> 102 </td>
-   <td style="text-align:right;"> 1.51 </td>
-   <td style="text-align:left;"> the unit has a view scoring 4/4 </td>
+   <td style="text-align:left;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 102 </td>
+   <td style="text-align:right;text-align: left;"> 1.51 </td>
+   <td style="text-align:left;text-align: left;"> the unit has a view scoring 4/4 </td>
   </tr>
 </tbody>
 </table>
@@ -1217,11 +1224,11 @@ house %>%
                          "the unit's condition scores 5/5"))%>%
   kable(caption = "Condition Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Condition Level</caption>
  <thead>
   <tr>
@@ -1233,34 +1240,34 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:right;"> 12 </td>
-   <td style="text-align:right;"> 0.18 </td>
-   <td style="text-align:left;"> the unit's condition scores 1/5 </td>
+   <td style="text-align:left;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 12 </td>
+   <td style="text-align:right;text-align: left;"> 0.18 </td>
+   <td style="text-align:left;text-align: left;"> the unit's condition scores 1/5 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:right;"> 57 </td>
-   <td style="text-align:right;"> 0.85 </td>
-   <td style="text-align:left;"> the unit's condition scores 2/5 </td>
+   <td style="text-align:left;text-align: left;"> 2 </td>
+   <td style="text-align:right;text-align: left;"> 57 </td>
+   <td style="text-align:right;text-align: left;"> 0.85 </td>
+   <td style="text-align:left;text-align: left;"> the unit's condition scores 2/5 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 3 </td>
-   <td style="text-align:right;"> 4324 </td>
-   <td style="text-align:right;"> 64.21 </td>
-   <td style="text-align:left;"> the unit's condition scores 3/5 </td>
+   <td style="text-align:left;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 4324 </td>
+   <td style="text-align:right;text-align: left;"> 64.21 </td>
+   <td style="text-align:left;text-align: left;"> the unit's condition scores 3/5 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 4 </td>
-   <td style="text-align:right;"> 1566 </td>
-   <td style="text-align:right;"> 23.26 </td>
-   <td style="text-align:left;"> the unit's condition scores 4/5 </td>
+   <td style="text-align:left;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 1566 </td>
+   <td style="text-align:right;text-align: left;"> 23.26 </td>
+   <td style="text-align:left;text-align: left;"> the unit's condition scores 4/5 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 5 </td>
-   <td style="text-align:right;"> 775 </td>
-   <td style="text-align:right;"> 11.51 </td>
-   <td style="text-align:left;"> the unit's condition scores 5/5 </td>
+   <td style="text-align:left;text-align: left;"> 5 </td>
+   <td style="text-align:right;text-align: left;"> 775 </td>
+   <td style="text-align:right;text-align: left;"> 11.51 </td>
+   <td style="text-align:left;text-align: left;"> the unit's condition scores 5/5 </td>
   </tr>
 </tbody>
 </table>
@@ -1279,11 +1286,11 @@ house %>%
                          "the unit's grade is 10-13"))%>%
   kable(caption = "Grade Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Grade Level</caption>
  <thead>
   <tr>
@@ -1295,16 +1302,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> low </td>
-   <td style="text-align:right;"> 6476 </td>
-   <td style="text-align:right;"> 96.17 </td>
-   <td style="text-align:left;"> the unit's grade is 4-9 </td>
+   <td style="text-align:left;text-align: left;"> low </td>
+   <td style="text-align:right;text-align: left;"> 6476 </td>
+   <td style="text-align:right;text-align: left;"> 96.17 </td>
+   <td style="text-align:left;text-align: left;"> the unit's grade is 4-9 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> high </td>
-   <td style="text-align:right;"> 258 </td>
-   <td style="text-align:right;"> 3.83 </td>
-   <td style="text-align:left;"> the unit's grade is 10-13 </td>
+   <td style="text-align:left;text-align: left;"> high </td>
+   <td style="text-align:right;text-align: left;"> 258 </td>
+   <td style="text-align:right;text-align: left;"> 3.83 </td>
+   <td style="text-align:left;text-align: left;"> the unit's grade is 10-13 </td>
   </tr>
 </tbody>
 </table>
@@ -1323,11 +1330,11 @@ house %>%
                          "the unit is in a census tract with a bachelor's degree rate above the Seattle average"))%>%
   kable(caption = "Bachelor's Degree Rate Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Bachelor's Degree Rate Level</caption>
  <thead>
   <tr>
@@ -1339,16 +1346,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> below </td>
-   <td style="text-align:right;"> 1462 </td>
-   <td style="text-align:right;"> 21.71 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a bachelor's degree rate below the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> below </td>
+   <td style="text-align:right;text-align: left;"> 1462 </td>
+   <td style="text-align:right;text-align: left;"> 21.71 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a bachelor's degree rate below the Seattle average </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> above </td>
-   <td style="text-align:right;"> 5272 </td>
-   <td style="text-align:right;"> 78.29 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a bachelor's degree rate above the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> above </td>
+   <td style="text-align:right;text-align: left;"> 5272 </td>
+   <td style="text-align:right;text-align: left;"> 78.29 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a bachelor's degree rate above the Seattle average </td>
   </tr>
 </tbody>
 </table>
@@ -1367,11 +1374,11 @@ house %>%
                          "the unit is in a census tract with a median household income above the Seattle average"))%>%
   kable(caption = "Median Household Income Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Median Household Income Level</caption>
  <thead>
   <tr>
@@ -1383,16 +1390,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> below </td>
-   <td style="text-align:right;"> 3440 </td>
-   <td style="text-align:right;"> 51.08 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a median household income below the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> below </td>
+   <td style="text-align:right;text-align: left;"> 3440 </td>
+   <td style="text-align:right;text-align: left;"> 51.08 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a median household income below the Seattle average </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> above </td>
-   <td style="text-align:right;"> 3294 </td>
-   <td style="text-align:right;"> 48.92 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a median household income above the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> above </td>
+   <td style="text-align:right;text-align: left;"> 3294 </td>
+   <td style="text-align:right;text-align: left;"> 48.92 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a median household income above the Seattle average </td>
   </tr>
 </tbody>
 </table>
@@ -1411,11 +1418,11 @@ house %>%
                          "the unit is in a census tract with a employment rate above the Seattle average"))%>%
   kable(caption = "Employment Rate Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Employment Rate Level</caption>
  <thead>
   <tr>
@@ -1427,16 +1434,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> below </td>
-   <td style="text-align:right;"> 1517 </td>
-   <td style="text-align:right;"> 22.53 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a employment rate below the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> below </td>
+   <td style="text-align:right;text-align: left;"> 1517 </td>
+   <td style="text-align:right;text-align: left;"> 22.53 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a employment rate below the Seattle average </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> above </td>
-   <td style="text-align:right;"> 5217 </td>
-   <td style="text-align:right;"> 77.47 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a employment rate above the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> above </td>
+   <td style="text-align:right;text-align: left;"> 5217 </td>
+   <td style="text-align:right;text-align: left;"> 77.47 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a employment rate above the Seattle average </td>
   </tr>
 </tbody>
 </table>
@@ -1455,11 +1462,11 @@ house %>%
                          "the unit is in a census tract with a poverty rate above the Seattle average"))%>%
   kable(caption = "Poverty Rate Level") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Poverty Rate Level</caption>
  <thead>
   <tr>
@@ -1471,16 +1478,16 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> below </td>
-   <td style="text-align:right;"> 4366 </td>
-   <td style="text-align:right;"> 64.84 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a poverty rate below the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> below </td>
+   <td style="text-align:right;text-align: left;"> 4366 </td>
+   <td style="text-align:right;text-align: left;"> 64.84 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a poverty rate below the Seattle average </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> above </td>
-   <td style="text-align:right;"> 2368 </td>
-   <td style="text-align:right;"> 35.16 </td>
-   <td style="text-align:left;"> the unit is in a census tract with a poverty rate above the Seattle average </td>
+   <td style="text-align:left;text-align: left;"> above </td>
+   <td style="text-align:right;text-align: left;"> 2368 </td>
+   <td style="text-align:right;text-align: left;"> 35.16 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in a census tract with a poverty rate above the Seattle average </td>
   </tr>
 </tbody>
 </table>
@@ -1500,11 +1507,11 @@ house %>%
                          "the unit is beyond a 1-mile radius of a subway station"))%>%
   kable(caption = "Category by Subway Distance") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Category by Subway Distance</caption>
  <thead>
   <tr>
@@ -1516,22 +1523,22 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> within0.5mile </td>
-   <td style="text-align:right;"> 1505 </td>
-   <td style="text-align:right;"> 22.35 </td>
-   <td style="text-align:left;"> the unit is within a 0.5-mile radius of a subway station </td>
+   <td style="text-align:left;text-align: left;"> within0.5mile </td>
+   <td style="text-align:right;text-align: left;"> 1505 </td>
+   <td style="text-align:right;text-align: left;"> 22.35 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 0.5-mile radius of a subway station </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 0.5-1mile </td>
-   <td style="text-align:right;"> 1388 </td>
-   <td style="text-align:right;"> 20.61 </td>
-   <td style="text-align:left;"> the unit is within a 0.5-mile to 1-mile radius of a subway station </td>
+   <td style="text-align:left;text-align: left;"> 0.5-1mile </td>
+   <td style="text-align:right;text-align: left;"> 1388 </td>
+   <td style="text-align:right;text-align: left;"> 20.61 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 0.5-mile to 1-mile radius of a subway station </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 1+mile </td>
-   <td style="text-align:right;"> 3841 </td>
-   <td style="text-align:right;"> 57.04 </td>
-   <td style="text-align:left;"> the unit is beyond a 1-mile radius of a subway station </td>
+   <td style="text-align:left;text-align: left;"> 1+mile </td>
+   <td style="text-align:right;text-align: left;"> 3841 </td>
+   <td style="text-align:right;text-align: left;"> 57.04 </td>
+   <td style="text-align:left;text-align: left;"> the unit is beyond a 1-mile radius of a subway station </td>
   </tr>
 </tbody>
 </table>
@@ -1555,11 +1562,11 @@ house %>%
                          "the unit is in school district seven"))%>%
   kable(caption = "School District") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>School District</caption>
  <thead>
   <tr>
@@ -1571,46 +1578,46 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> DD1 </td>
-   <td style="text-align:right;"> 1172 </td>
-   <td style="text-align:right;"> 17.40 </td>
-   <td style="text-align:left;"> the unit is in school district one </td>
+   <td style="text-align:left;text-align: left;"> DD1 </td>
+   <td style="text-align:right;text-align: left;"> 1172 </td>
+   <td style="text-align:right;text-align: left;"> 17.40 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district one </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> DD2 </td>
-   <td style="text-align:right;"> 1310 </td>
-   <td style="text-align:right;"> 19.45 </td>
-   <td style="text-align:left;"> the unit is in school district two </td>
+   <td style="text-align:left;text-align: left;"> DD2 </td>
+   <td style="text-align:right;text-align: left;"> 1310 </td>
+   <td style="text-align:right;text-align: left;"> 19.45 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district two </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> DD3 </td>
-   <td style="text-align:right;"> 758 </td>
-   <td style="text-align:right;"> 11.26 </td>
-   <td style="text-align:left;"> the unit is in school district three </td>
+   <td style="text-align:left;text-align: left;"> DD3 </td>
+   <td style="text-align:right;text-align: left;"> 758 </td>
+   <td style="text-align:right;text-align: left;"> 11.26 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district three </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> DD4 </td>
-   <td style="text-align:right;"> 382 </td>
-   <td style="text-align:right;"> 5.67 </td>
-   <td style="text-align:left;"> the unit is in school district four </td>
+   <td style="text-align:left;text-align: left;"> DD4 </td>
+   <td style="text-align:right;text-align: left;"> 382 </td>
+   <td style="text-align:right;text-align: left;"> 5.67 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district four </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> DD5 </td>
-   <td style="text-align:right;"> 808 </td>
-   <td style="text-align:right;"> 12.00 </td>
-   <td style="text-align:left;"> the unit is in school district five </td>
+   <td style="text-align:left;text-align: left;"> DD5 </td>
+   <td style="text-align:right;text-align: left;"> 808 </td>
+   <td style="text-align:right;text-align: left;"> 12.00 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district five </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> DD6 </td>
-   <td style="text-align:right;"> 1369 </td>
-   <td style="text-align:right;"> 20.33 </td>
-   <td style="text-align:left;"> the unit is in school district six </td>
+   <td style="text-align:left;text-align: left;"> DD6 </td>
+   <td style="text-align:right;text-align: left;"> 1369 </td>
+   <td style="text-align:right;text-align: left;"> 20.33 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district six </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> DD7 </td>
-   <td style="text-align:right;"> 935 </td>
-   <td style="text-align:right;"> 13.88 </td>
-   <td style="text-align:left;"> the unit is in school district seven </td>
+   <td style="text-align:left;text-align: left;"> DD7 </td>
+   <td style="text-align:right;text-align: left;"> 935 </td>
+   <td style="text-align:right;text-align: left;"> 13.88 </td>
+   <td style="text-align:left;text-align: left;"> the unit is in school district seven </td>
   </tr>
 </tbody>
 </table>
@@ -1632,11 +1639,11 @@ house %>%
                          "the unit is within a 500-feet radius of four park"))%>%
   kable(caption = "Number of nearby Parks") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Number of nearby Parks</caption>
  <thead>
   <tr>
@@ -1648,34 +1655,34 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 4679 </td>
-   <td style="text-align:right;"> 69.48 </td>
-   <td style="text-align:left;"> the unit is beyond a 500-feet radius of any park </td>
+   <td style="text-align:left;text-align: left;"> 0 </td>
+   <td style="text-align:right;text-align: left;"> 4679 </td>
+   <td style="text-align:right;text-align: left;"> 69.48 </td>
+   <td style="text-align:left;text-align: left;"> the unit is beyond a 500-feet radius of any park </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 1 </td>
-   <td style="text-align:right;"> 1651 </td>
-   <td style="text-align:right;"> 24.52 </td>
-   <td style="text-align:left;"> the unit is within a 500-feet radius of one park </td>
+   <td style="text-align:left;text-align: left;"> 1 </td>
+   <td style="text-align:right;text-align: left;"> 1651 </td>
+   <td style="text-align:right;text-align: left;"> 24.52 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 500-feet radius of one park </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 2 </td>
-   <td style="text-align:right;"> 327 </td>
-   <td style="text-align:right;"> 4.86 </td>
-   <td style="text-align:left;"> the unit is within a 500-feet radius of two parks </td>
+   <td style="text-align:left;text-align: left;"> 2 </td>
+   <td style="text-align:right;text-align: left;"> 327 </td>
+   <td style="text-align:right;text-align: left;"> 4.86 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 500-feet radius of two parks </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 3 </td>
-   <td style="text-align:right;"> 67 </td>
-   <td style="text-align:right;"> 0.99 </td>
-   <td style="text-align:left;"> the unit is within a 500-feet radius of three park </td>
+   <td style="text-align:left;text-align: left;"> 3 </td>
+   <td style="text-align:right;text-align: left;"> 67 </td>
+   <td style="text-align:right;text-align: left;"> 0.99 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 500-feet radius of three park </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 4 </td>
-   <td style="text-align:right;"> 10 </td>
-   <td style="text-align:right;"> 0.15 </td>
-   <td style="text-align:left;"> the unit is within a 500-feet radius of four park </td>
+   <td style="text-align:left;text-align: left;"> 4 </td>
+   <td style="text-align:right;text-align: left;"> 10 </td>
+   <td style="text-align:right;text-align: left;"> 0.15 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 500-feet radius of four park </td>
   </tr>
 </tbody>
 </table>
@@ -1695,11 +1702,11 @@ house %>%
                          "the unit is beyond a 1-mile radius of a shopping center"))%>%
   kable(caption = "Category by Shopping Center Distance") %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
 <caption>Category by Shopping Center Distance</caption>
  <thead>
   <tr>
@@ -1711,22 +1718,22 @@ house %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> within0.5mile </td>
-   <td style="text-align:right;"> 464 </td>
-   <td style="text-align:right;"> 6.89 </td>
-   <td style="text-align:left;"> the unit is within a 0.5-mile radius of a shopping center </td>
+   <td style="text-align:left;text-align: left;"> within0.5mile </td>
+   <td style="text-align:right;text-align: left;"> 464 </td>
+   <td style="text-align:right;text-align: left;"> 6.89 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 0.5-mile radius of a shopping center </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 0.5-1mile </td>
-   <td style="text-align:right;"> 1245 </td>
-   <td style="text-align:right;"> 18.49 </td>
-   <td style="text-align:left;"> the unit is within a 0.5-mile to 1-mile radius of a shopping center </td>
+   <td style="text-align:left;text-align: left;"> 0.5-1mile </td>
+   <td style="text-align:right;text-align: left;"> 1245 </td>
+   <td style="text-align:right;text-align: left;"> 18.49 </td>
+   <td style="text-align:left;text-align: left;"> the unit is within a 0.5-mile to 1-mile radius of a shopping center </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> 1+mile </td>
-   <td style="text-align:right;"> 5025 </td>
-   <td style="text-align:right;"> 74.62 </td>
-   <td style="text-align:left;"> the unit is beyond a 1-mile radius of a shopping center </td>
+   <td style="text-align:left;text-align: left;"> 1+mile </td>
+   <td style="text-align:right;text-align: left;"> 5025 </td>
+   <td style="text-align:right;text-align: left;"> 74.62 </td>
+   <td style="text-align:left;text-align: left;"> the unit is beyond a 1-mile radius of a shopping center </td>
   </tr>
 </tbody>
 </table>
@@ -2088,11 +2095,11 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
   mutate(percent = round(count/sum(count) * 100, digits = 2))%>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+    column_spec(1:3, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> dataset </th>
@@ -2102,14 +2109,14 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> testing </td>
-   <td style="text-align:right;"> 1663 </td>
-   <td style="text-align:right;"> 24.7 </td>
+   <td style="text-align:left;text-align: left;"> testing </td>
+   <td style="text-align:right;text-align: left;"> 1663 </td>
+   <td style="text-align:right;text-align: left;"> 24.7 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> training </td>
-   <td style="text-align:right;"> 5071 </td>
-   <td style="text-align:right;"> 75.3 </td>
+   <td style="text-align:left;text-align: left;"> training </td>
+   <td style="text-align:right;text-align: left;"> 5071 </td>
+   <td style="text-align:right;text-align: left;"> 75.3 </td>
   </tr>
 </tbody>
 </table>
@@ -2413,7 +2420,9 @@ ggplot(as.data.frame(moranTest$res[c(1:999)]), aes(moranTest$res[c(1:999)])) +
        subtitle= "Observed Moran's I in orange",
        x="Moran's I",
        y="Count") +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5))
 ```
 
 ![](Midterm_files/figure-html/spatial autocorrelation-3.png)<!-- -->
@@ -2474,11 +2483,11 @@ data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv
   select(-RMSESD, -RsquaredSD, -MAESD) %>%
   kable()%>%
   kable_styling(bootstrap_options = c("striped", "hover"),
-                full_width = T,
-                position = "float_left")
+                full_width = T) %>%
+  column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="float: left; margin-right: 10px;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> model </th>
@@ -2489,28 +2498,28 @@ data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> baseline </td>
-   <td style="text-align:right;"> 156295.9 </td>
-   <td style="text-align:right;"> 0.7848814 </td>
-   <td style="text-align:right;"> 105016.78 </td>
+   <td style="text-align:left;text-align: left;"> baseline </td>
+   <td style="text-align:right;text-align: left;"> 156295.9 </td>
+   <td style="text-align:right;text-align: left;"> 0.7848814 </td>
+   <td style="text-align:right;text-align: left;"> 105016.78 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> fix_effect_large_district </td>
-   <td style="text-align:right;"> 153985.8 </td>
-   <td style="text-align:right;"> 0.7890730 </td>
-   <td style="text-align:right;"> 102215.99 </td>
+   <td style="text-align:left;text-align: left;"> fix_effect_large_district </td>
+   <td style="text-align:right;text-align: left;"> 153985.8 </td>
+   <td style="text-align:right;text-align: left;"> 0.7890730 </td>
+   <td style="text-align:right;text-align: left;"> 102215.99 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> fix_effect_small_neighborhood </td>
-   <td style="text-align:right;"> 143735.5 </td>
-   <td style="text-align:right;"> 0.8130965 </td>
-   <td style="text-align:right;"> 95447.55 </td>
+   <td style="text-align:left;text-align: left;"> fix_effect_small_neighborhood </td>
+   <td style="text-align:right;text-align: left;"> 143735.5 </td>
+   <td style="text-align:right;text-align: left;"> 0.8130965 </td>
+   <td style="text-align:right;text-align: left;"> 95447.55 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> fix_effect_census_tract </td>
-   <td style="text-align:right;"> 142551.1 </td>
-   <td style="text-align:right;"> 0.8194192 </td>
-   <td style="text-align:right;"> 94686.55 </td>
+   <td style="text-align:left;text-align: left;"> fix_effect_census_tract </td>
+   <td style="text-align:right;text-align: left;"> 142551.1 </td>
+   <td style="text-align:right;text-align: left;"> 0.8194192 </td>
+   <td style="text-align:right;text-align: left;"> 94686.55 </td>
   </tr>
 </tbody>
 </table>
@@ -2551,7 +2560,7 @@ lm.final.nhood <- lm(price ~ reno_dum + bedrooms + bath_dum + sqft_living + sqft
                  white_share + median_hh_income + sch_cat + park_cat + shop_dis1 +
                  T_NAME, data = seattle.train.lm)
 plot(lm.final.nhood)
-mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1)
+mtext("Diagnostic Plots for Linear Model with Fixed Effect", side = 3, line = -2, outer = TRUE, cex = 1.1, font = 2)
 ```
 
 ![](Midterm_files/figure-html/final model-1.png)<!-- -->
