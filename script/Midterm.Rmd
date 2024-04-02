@@ -1869,3 +1869,13 @@ Select type by "CODE": https://www.arcgis.com/sharing/rest/content/items/4fdb470
 "The overall effect on house prices of crime (measured as crime rates) is relatively small, but if its impact is measured by distance to a crime hot spot, the effect is non-negligible." https://www.researchgate.net/publication/335773241_Do_crime_hot_spots_affect_housing_prices_Do_crime_hot_spots_affect_housing_prices
 
 - source:https://data.seattle.gov/Public-Safety/SPD-Crime-Data-2008-Present/tazs-3rd5/about_data
+
+## Spatial Structure
+
+### Large Neighborhoods
+
+- source:https://data-seattlecitygis.opendata.arcgis.com/datasets/531976f80bd74c0992ba9079e4d86e2a_0/explore?location=47.614414%2C-122.336918%2C11.54
+
+### Small Neighborhoods
+
+- source:https://data-seattlecitygis.opendata.arcgis.com/datasets/b4a142f592e94d39a3bf787f3c112c1d_0/explore?location=47.614414%2C-122.336918%2C11.54
