@@ -9,7 +9,7 @@ output:
     theme: flatly
     toc_float: yes
     code_folding: hide
-    number_sections: no
+    number_sections: yes
     font: 12pt
   pdf_document:
     toc: yes
@@ -560,7 +560,7 @@ st_drop_geometry(house) %>%
 ```
 
 - Statistical summary
-```{r continuous_summary, echo=FALSE}
+```{r continuous_summary, echo=TRUE}
 # continuous variables
 continuous_summary <- house %>%
   st_drop_geometry() %>%
@@ -1123,7 +1123,7 @@ house <- house %>%
 
 # select continuous or categorical variable
 lm1 <- lm(price ~ .-key, data = house)
-lm1.sum <- summary(lm1)
+sum <- summary(lm1)
 
 ## bedroom
 lm2 <- lm(price ~ .-bed_cat-key, data = house)
@@ -1239,6 +1239,7 @@ house_lm <- house %>%
   select(-key)
 str(house_lm)
 ```
+
 
 ## Split Training and Testing Datasets
 

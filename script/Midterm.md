@@ -9,7 +9,7 @@ output:
     theme: flatly
     toc_float: yes
     code_folding: hide
-    number_sections: no
+    number_sections: yes
     font: 12pt
   pdf_document:
     toc: yes
@@ -551,7 +551,73 @@ st_drop_geometry(house) %>%
 ![](Midterm_files/figure-html/continuous_clean-1.png)<!-- -->
 
 - Statistical summary
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+
+```r
+# continuous variables
+continuous_summary <- house %>%
+  st_drop_geometry() %>%
+  select(- key)%>%
+  summarise(across(where(is.numeric),
+                   list(max = ~ max(., na.rm = TRUE),
+                        min = ~ min(., na.rm = TRUE),
+                        mean = ~ mean(., na.rm = TRUE),
+                        st.dev. = ~ sd(., na.rm = TRUE),
+                        n = ~ sum(!is.na(.x))),
+                   .names = "{.col}:{.fn}")) %>%
+  pivot_longer(cols = everything(), names_to = c("variables", "statistic"),
+               names_sep = ":", values_to = "value") %>%
+  mutate(value = round(value, digits = 0)) %>%
+  pivot_wider(names_from = statistic, values_from = value)
+
+continuous_description <- data.frame(
+  variables = continuous_summary$variables,
+  category = rep(c("dependent","internal", "socio-economic", "amenities"),
+                 times = c(1, 5, 8, 15)),
+  description = c("Price: price of each unit",
+                  "Year Used: years from built to 2015",
+                  "No.bedrooms: the number of bedrooms in each unit",
+                  "No.bathrooms: the number of bathrooms in each unit",
+                  "Living Area: the area of living of each unit",
+                  "Lot Area: the area of the lot of each unit",
+                  "Population Density: the number of population per acre in the census tract",
+                  "White Population Share:the ratio of white people to total population in the census tract",
+                  "Total Dependency Ratio: the ratio of the number of children (0-14 years old) and older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
+                  "Elderly Dependency Ratio: the ratio of older persons (65 years or over) to the working-age population (15-64 years old) in the census tract",
+                  "Bachelor's Degree Rate: the percentage of with a bachelor's degree among adults age 25 and older in the census tract",
+                  "Median Household Income: median househhold income in the census tract",
+                  "Employment Rate: the ratio of the employed to the working age population in the census tract",
+                  "Poverty Rate: the ratio of the number of people (in a given age group) whose income falls below the poverty line to total population in the census tract",
+                  "Nearest Subway Distance: the distance to the nearest subway station",
+                  "Parks' Area 500ft: the total area of parks located within a 500-foot radius of each unit",
+                  "Tree Canopy Ratio: the ratio of the area of tree canopy to the total area in the measuring space",
+                  "Nearest Medical Distance: the distance to the nearest medical facility",
+                  "Average Distance to 2 Medicals: the average distance to the nearest 2 medical facilities",
+                  "Average Distance to 3 Medicals:the average distance to the nearest 3 medical facilities",
+                  "Nearest shopping Distance:the distance to the nearest shopping center",
+                  "Average Distance to 2 Shoppings:the average distance to the nearest 2 shopping center",
+                  "Average Distance to 3 Shoppings:the average distance to the nearest 3 shopping center",
+                  "No.crime: the number of crimes within a 1/8-mile radius around each unit",
+                  "Nearest Crime Distance: the distance to the nearest crime",
+                  "Average Distance to 2 Crimes:the average distance to the nearest 2 crime",
+                  "Average Distance to 3 Crimes:the average distance to the nearest 3 crime",
+                  "Average Distance to 4 Crimes:the average distance to the nearest 4 crime",
+                  "Average Distance to 5 Crimes:the average distance to the nearest 5 crime"),
+  unit = c("$",
+           "year", "#","#","sqft","sqft",
+           "person / acre", "%","%","%","%","$","%","%",
+           "feet","acre","%","feet","feet","feet","feet","feet","feet",
+           "-", "feet","feet","feet","feet","feet"
+           ))
+
+continuous_description %>%
+  left_join(continuous_summary, by = "variables")%>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T) %>%
+    column_spec(1:9, extra_css = "text-align: left;")
+```
+
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> variables </th>
@@ -934,7 +1000,7 @@ house %>%
   column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Renovation Status</span></caption>
  <thead>
   <tr>
@@ -979,7 +1045,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Category of Bedroom Count</span></caption>
  <thead>
   <tr>
@@ -1029,7 +1095,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Category of Bathroom Count</span></caption>
  <thead>
   <tr>
@@ -1073,7 +1139,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Category by Floors</span></caption>
  <thead>
   <tr>
@@ -1115,7 +1181,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Waterfront Factor</span></caption>
  <thead>
   <tr>
@@ -1162,7 +1228,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">View Quality</span></caption>
  <thead>
   <tr>
@@ -1227,7 +1293,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Condition Level</span></caption>
  <thead>
   <tr>
@@ -1289,7 +1355,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Grade Level</span></caption>
  <thead>
   <tr>
@@ -1333,7 +1399,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Bachelor's Degree Rate Level</span></caption>
  <thead>
   <tr>
@@ -1377,7 +1443,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Median Household Income Level</span></caption>
  <thead>
   <tr>
@@ -1421,7 +1487,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Employment Rate Level</span></caption>
  <thead>
   <tr>
@@ -1465,7 +1531,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Poverty Rate Level</span></caption>
  <thead>
   <tr>
@@ -1510,7 +1576,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Category by Subway Distance</span></caption>
  <thead>
   <tr>
@@ -1565,7 +1631,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">School District</span></caption>
  <thead>
   <tr>
@@ -1642,7 +1708,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Number of nearby Parks</span></caption>
  <thead>
   <tr>
@@ -1705,7 +1771,7 @@ house %>%
     column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption><span style="font-weight: bold; color: black;">Category by Shopping Center Distance</span></caption>
  <thead>
   <tr>
@@ -2098,7 +2164,7 @@ rbind(seattle.train.lm%>%mutate(dataset = "training"),
     column_spec(1:3, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> dataset </th>
@@ -2486,7 +2552,7 @@ data.frame(rbind(seattle.cv$results,seattle.neighL.cv$results, seattle.neighS.cv
   column_spec(1:4, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> model </th>
