@@ -306,7 +306,7 @@ for(i in nn.vars){
 do.call(grid.arrange,c(nn.mapList, ncol=3, top="Nearest Neighbor Risk Factors by Fishnet"))
 ```
 
-# Moran's I-related maps
+# Moran's I Related Maps
 - description of the map
 ```{r moran, fig.width=10, fig.height=4}
 # join variables data to fishnet
@@ -469,7 +469,7 @@ reg.summary <-
 ```
 
 # Model Error
-## distribution of MAE
+## Distribution of MAE
 ```{r MAE distribution}
 error_by_reg_and_fold <- 
   reg.summary %>%
@@ -489,7 +489,7 @@ error_by_reg_and_fold %>%
     theme_bw()
 ```
 
-## error map
+## Error map
 ```{r error map}
 error_by_reg_and_fold %>%
   filter(str_detect(Regression, "k-fold")) %>%
