@@ -628,7 +628,7 @@ as.data.frame(damage_KD.1000) %>%
      geom_sf(aes(fill=value)) +
      geom_sf(data = sample_n(damage2018, 1500), size = .5) +
      scale_fill_viridis(name = "Density") +
-     labs(title = "Kernel density of 2017 thefts") +
+     labs(title = "Kernel density of 2017 damage") +
      mapTheme()
 ```
 # Retrieving 2019 crime data
@@ -704,7 +704,7 @@ rbind(damage_KDE_sf, damage_risk_sf) %>%
     ggplot(aes(Risk_Category,Rate_of_test_set_crimes)) +
       geom_bar(aes(fill=label), position="dodge", stat="identity") +
       scale_fill_viridis(discrete = TRUE) +
-      labs(title = "Risk prediction vs. Kernel density, 2019 thefts") +
+      labs(title = "Risk prediction vs. Kernel density, 2019 criminal damage") +
       plotTheme() + theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 ```
 
