@@ -544,8 +544,7 @@ error_by_reg_and_fold <-
   reg.summary %>%
     group_by(Regression, cvID) %>% 
     summarize(Mean_Error = mean(Prediction - count.damage, na.rm = T),
-              MAE = mean(abs(Prediction - count.damage), na.rm = T),
-              SD_MAE = sd(abs(Prediction - count.damage), na.rm = T)) %>%
+              MAE = abs(Mean_Error), na.rm = T) %>%
   ungroup()
 
 #remove afterwards
@@ -612,23 +611,23 @@ st_drop_geometry(error_by_reg_and_fold) %>%
 <tbody>
   <tr>
    <td style="text-align:left;"> Random k-fold CV: Just Risk Factors </td>
-   <td style="text-align:right;"> 3.28 </td>
-   <td style="text-align:right;"> 0.83 </td>
+   <td style="text-align:right;"> 0.95 </td>
+   <td style="text-align:right;"> 0.80 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Random k-fold CV: Spatial Process </td>
-   <td style="text-align:right;"> 2.99 </td>
-   <td style="text-align:right;"> 0.77 </td>
+   <td style="text-align:right;"> 0.86 </td>
+   <td style="text-align:right;"> 0.76 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Spatial LOGO-CV: Just Risk Factors </td>
-   <td style="text-align:right;"> 3.41 </td>
-   <td style="text-align:right;"> 1.96 </td>
+   <td style="text-align:right;"> 2.07 </td>
+   <td style="text-align:right;"> 1.87 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Spatial LOGO-CV: Spatial Process </td>
-   <td style="text-align:right;"> 3.07 </td>
-   <td style="text-align:right;"> 1.77 </td>
+   <td style="text-align:right;"> 1.57 </td>
+   <td style="text-align:right;"> 1.57 </td>
   </tr>
 </tbody>
 </table>

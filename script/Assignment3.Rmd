@@ -525,8 +525,7 @@ error_by_reg_and_fold <-
   reg.summary %>%
     group_by(Regression, cvID) %>% 
     summarize(Mean_Error = mean(Prediction - count.damage, na.rm = T),
-              MAE = mean(abs(Prediction - count.damage), na.rm = T),
-              SD_MAE = sd(abs(Prediction - count.damage), na.rm = T)) %>%
+              MAE = abs(Mean_Error), na.rm = T) %>%
   ungroup()
 
 #remove afterwards
@@ -589,7 +588,6 @@ tracts18 <-
 
 ```{r}
 reg.summary %>% 
-  filter(str_detect(Regression, "LOGO")) %>%
     st_centroid() %>%
     st_join(tracts18) %>%
     na.omit() %>%
@@ -608,9 +606,9 @@ damage_KD.1000 <- density.ppp(damage_ppp, 1000)
 damage_KD.1500 <- density.ppp(damage_ppp, 1500)
 damage_KD.2000 <- density.ppp(damage_ppp, 2000)
 damage_KD.df <- rbind(
-  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1000), as(neighborhoods, 'Spatial')))), Legend = "1000 Ft."),
-  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1500), as(neighborhoods, 'Spatial')))), Legend = "1500 Ft."),
-  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.2000), as(neighborhoods, 'Spatial')))), Legend = "2000 Ft.")) 
+  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1000), as(neighborhoods, 'Spatial')))), Legend = "1000 m"),
+  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1500), as(neighborhoods, 'Spatial')))), Legend = "1500 m"),
+  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.2000), as(neighborhoods, 'Spatial')))), Legend = "2000 m")) 
 
 damage_KD.df$Legend <- factor(damage_KD.df$Legend, levels = c("1000 Ft.", "1500 Ft.", "2000 Ft."))
 
