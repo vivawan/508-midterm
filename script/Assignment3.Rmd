@@ -308,7 +308,7 @@ do.call(grid.arrange,c(nn.mapList, ncol=3, top="Nearest Neighbor Risk Factors by
 
 # Moran's I-related maps
 - description of the map
-```{r moran's I fig.width=10, fig.height=4}
+```{r moran, fig.width=10, fig.height=4}
 # join variables data to fishnet
 final_net <-
   left_join(crime_net, st_drop_geometry(vars_net), by="uniqueID") 

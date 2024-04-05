@@ -1,7 +1,7 @@
 ---
 title: "Geospatial risk modeling - Predictive Policing"
 author: "Neve/Viva/Yaohan"
-date: "2024-04-04"
+date: "2024-04-05"
 output: 
   html_document:
     keep_md: yes
@@ -31,10 +31,12 @@ table.kable, table.table {
 
 Neve, Viva and Yaohan work together on the scripts, and then finish the write-up separately.
 
+- purpose of the model
+- data: 2018, chicago, crime type
+- why selection bias may be an issue: reported crime
+- we created two maps balabala
+- description of map???
 
-# Data Gathering
-
-## Chicago Neighborhoods, Police Boundaries, and Beats
 
 
 ```r
@@ -54,65 +56,28 @@ policeDistricts <-
   st_transform('ESRI:102271') %>%  # Transform coordinate reference system
   dplyr::select(District = dist_num)  # Select only the district number, renaming it to 'District'
 
-# Read and process police beats data
-policeBeats <- 
-  st_read("https://data.cityofchicago.org/api/geospatial/aerh-rz74?method=export&format=GeoJSON") %>%
-  st_transform('ESRI:102271') %>%  # Transform coordinate reference system
-  dplyr::select(District = beat_num)  # Select only the beat number, renaming it to 'District'
-
-# Combine police districts and beats data into one dataframe
-bothPoliceUnits <- rbind(
-  mutate(policeDistricts, Legend = "Police Districts"),  # Add a 'Legend' column and label for police districts
-  mutate(policeBeats, Legend = "Police Beats")  # Add a 'Legend' column and label for police beats
-)
-```
-
-## Chicago Crime Data
-
-*Pending Modification + Outcome Selection*
-
-
-```r
 # Read and process damagelaries data
 crimes2018 <- 
   read.socrata("https://data.cityofchicago.org/resource/3i3m-jwuy.json")
 
+## rank the crimes by the count of each type
 crimes2018.asdf <- crimes2018 %>% 
   group_by(primary_type, description) %>% 
   tally() %>% 
   arrange(desc(n))
 
+## choose CRIMINAL DAMAGE TO PROPERTY as dependent variable within the boundary
 damage2018 <- crimes2018 %>% 
   filter(primary_type == "CRIMINAL DAMAGE" & description == "TO PROPERTY") %>%
-  na.omit() %>%  # Remove rows with missing values
-  st_as_sf(coords = c("location.longitude", "location.latitude"), crs = 4326, agr = "constant") %>%  # Convert to sf object with specified CRS
-  st_transform('ESRI:102271') %>% # Transform coordinate reference system
-  st_intersection(chicagoBoundary) %>% # Filter data within Chicago boundary
-  distinct()  # Keep only distinct geometries
+  na.omit() %>% 
+  st_as_sf(coords = c("location.longitude", "location.latitude"), crs = 4326, agr = "constant") %>%  
+  st_transform('ESRI:102271') %>% 
+  st_intersection(chicagoBoundary) %>% 
+  distinct()
 ```
 
-### Map of Outcome in Point Form
-
-*Pending Modification*
-
-
 ```r
-ggplot() + 
-  geom_sf(data = chicagoBoundary) +  # Add Chicago boundary
-  geom_sf(data = damage2018, colour = "red", size = 0.1, show.legend = "point") +
-  labs(title = "Criminal Damage, Chicago - 2018") + 
-  theme_void()  # Use a blank theme
-```
-
-![](Assignment3_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
-
-
-### Map of Outcome joined to Fishnet
-
-*Pending Modification*
-
-
-```r
+# mapping crime data in dots and in the fishnet
 fishnet <- 
 st_make_grid(chicagoBoundary,
                cellsize = 500, 
@@ -129,22 +94,40 @@ crime_net <-
          cvID = sample(round(nrow(fishnet) / 24), 
                        size=nrow(fishnet), replace = TRUE))
 
+ggplot() + 
+  geom_sf(data = chicagoBoundary) +  # Add Chicago boundary
+  geom_sf(data = damage2018, colour = "red", size = 0.005, show.legend = "point") +
+  labs(title = "Criminal Damage, 2018 Chicago") + 
+  theme_void() +
+  theme(plot.title = element_text(size = 12))+
 ggplot() +
   geom_sf(data = crime_net, aes(fill = count.damage), color = NA) +
   scale_fill_viridis("Count of Criminal Damage") +
-  labs(title = "Count of Criminal Damage for the fishnet") +
-  theme_void()
+  labs(title = "Fishnet of Criminal Damage by Count") +
+  theme_void()+
+  theme(plot.title = element_text(size = 12))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+![](Assignment3_files/figure-html/crime map-1.png)<!-- -->
 
-# Additional Data Processing
 
-## Variable 1: Abandoned Cars
-updated till 2020
+
+# Risk Factors
+- variable
+- data source
+
+*Variable 1: Abandoned Cars* reason of the choice
+*Variable 2: Abandoned Buildings* reason of the choice
+*Variable 3: Graffiti*
+*Variable 4: Disfunctional Street Lights *
+*Variable 5: Sanitation Complaints*
+*Variable 6: Liquor Retail*
+*Variable 7: Park*
+*Variable 8: Environmental Complaints*
 
 
 ```r
+# load variable
 abandonCars <- 
   read.socrata("https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Abandoned-Vehicles/3c9v-pnva") %>%
     # Extract the year from the creation date and filter for the year 2017
@@ -158,28 +141,17 @@ abandonCars <-
     st_transform(st_crs(fishnet)) %>%
     # Add a legend label indicating abandoned cars
     mutate(Legend = "Abandoned_Cars")
-```
 
-## Variable 2: Abandoned Buildings
-updated till 2018
-
-
-```r
 abandonBuildings <- 
   read.socrata("https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Vacant-and-Abandoned-Building/7nii-7srd") %>%
-    mutate(year = substr(date_service_request_was_received,1,4)) %>%  filter(year == "2018") %>%
-    dplyr::select(Y = latitude, X = longitude) %>%
-    na.omit() %>%
-    st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
-    st_transform(st_crs(fishnet)) %>%
-    mutate(Legend = "Abandoned_Buildings")
-```
+  mutate(year = substr(date_service_request_was_received,1,4)) %>%
+  filter(year == "2018") %>%
+  dplyr::select(Y = latitude, X = longitude) %>%
+  na.omit() %>%
+  st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
+  st_transform(st_crs(fishnet)) %>%
+  mutate(Legend = "Abandoned_Buildings")
 
-## Variable 3: Graffiti
-updated till 2018
-
-
-```r
 graffiti <- 
   read.socrata("https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Graffiti-Removal-Historical/hec5-y4x5") %>%
     mutate(year = substr(creation_date,1,4)) %>% filter(year == "2018") %>%
@@ -189,14 +161,7 @@ graffiti <-
     st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
     st_transform(st_crs(fishnet)) %>%
     mutate(Legend = "Graffiti")
-```
 
-
-## Variable 4: Disfunctional Street Lights 
-updated till 2018
-
-
-```r
 streetLightsOut <- 
   read.socrata("https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Street-Lights-All-Out/zuxi-7xem") %>%
     mutate(year = substr(creation_date,1,4)) %>% filter(year == "2018") %>%
@@ -205,13 +170,7 @@ streetLightsOut <-
     st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
     st_transform(st_crs(fishnet)) %>%
     mutate(Legend = "Street_Lights_Out")
-```
 
-## Variable 5: Sanitation Complaints
-updated till 2018
-
-
-```r
 sanitation <-
   read.socrata("https://data.cityofchicago.org/Service-Requests/311-Service-Requests-Sanitation-Code-Complaints-Hi/me59-5fac") %>%
     mutate(year = substr(creation_date,1,4)) %>% filter(year == "2018") %>%
@@ -220,13 +179,7 @@ sanitation <-
     st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
     st_transform(st_crs(fishnet)) %>%
     mutate(Legend = "Sanitation")
-```
 
-## Variable 6: Liquor Retail
-updated till 2023
-
-
-```r
 liquorRetail <- 
   read.socrata("https://data.cityofchicago.org/resource/nrmj-3kcf.json") %>%  
     filter(business_activity == "Retail Sales of Packaged Liquor") %>%
@@ -235,25 +188,14 @@ liquorRetail <-
     st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
     st_transform(st_crs(fishnet)) %>%
     mutate(Legend = "Liquor_Retail")
-```
 
-## Variable 7: Park
-
-
-```r
 park <- 
   read.socrata("https://data.cityofchicago.org/resource/eix4-gf83.json") %>%
   select(X = x_coord, Y = y_coord) %>%
   st_as_sf(coords = c("X", "Y"), crs = 4326, agr = "constant") %>%
     st_transform(st_crs(fishnet)) %>%
     mutate(Legend = "Park")
-```
 
-## Variable 8: Environmental Complaints
-updated till 2024
-
-
-```r
 environ.complaint <- 
   read.socrata("https://data.cityofchicago.org/resource/fypr-ksnz.json") 
 
@@ -266,10 +208,10 @@ environ.complaint <- environ.complaint %>%
     mutate(Legend = "Environmental_Complaint")
 ```
 
-## Multiple Map of risk factors in the fishnet
-
+- make the maps of risk variable
 
 ```r
+# add variables to the fishnet 
 vars_net <- 
   rbind(abandonCars,streetLightsOut,abandonBuildings,
         liquorRetail, graffiti, sanitation, park, environ.complaint) %>% #add on
@@ -277,20 +219,18 @@ vars_net <-
   st_drop_geometry() %>%
   group_by(uniqueID, Legend) %>%
   summarize(count = n()) %>%
-    full_join(fishnet) %>%
-    spread(Legend, count, fill=0) %>%
-    st_sf() %>%
-    dplyr::select(-`<NA>`) %>%
-    na.omit() %>%
-    ungroup()
-
-fishnet.centroid <- st_centroid(fishnet)
+  full_join(fishnet) %>%
+  spread(Legend, count, fill=0) %>%
+  st_sf() %>%
+  dplyr::select(-`<NA>`) %>%
+  na.omit() %>%
+  ungroup()
 
 vars_net.long <- vars_net %>%
-  dplyr::select(- ends_with(".nn")) %>% 
   gather(Variable, value, -geometry, -uniqueID) %>%
   na.omit()
 
+# mapping risk factors
 vars_risk <- unique(vars_net.long$Variable)
 
 mapList <- list()
@@ -301,16 +241,15 @@ for(i in vars_risk)
       geom_sf(data = filter(vars_net.long, Variable == i), aes(fill=value), colour=NA) +
       scale_fill_viridis(name="") +
       labs(title=i) +
-      mapTheme() +
-      theme(plot.title = element_text(size = 10))}
+      theme_void()}
 
-do.call(grid.arrange,c(mapList, ncol=2, top="Risk Factors by Fishnet"))
+do.call(grid.arrange,c(mapList, ncol=3, top="Risk Factors by Fishnet"))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](Assignment3_files/figure-html/map risk factors-1.png)<!-- -->
 
 
-## Computing Additional Nearest Neighbor Variables 
+- make the maps of risk variable by distance to the nearest risk factor
 
 
 ```r
@@ -347,21 +286,23 @@ for(i in nn.vars){
       geom_sf(data = filter(nn.vars_net.long, Variable == i), aes(fill=value), colour=NA) +
       scale_fill_viridis(name="") +
       labs(title=i) +
-      mapTheme() +
+      theme_void()+
       theme(plot.title = element_text(size = 10))}
 
-do.call(grid.arrange,c(nn.mapList, ncol=2, top="Nearest Neighbor risk Factors by Fishnet"))
+do.call(grid.arrange,c(nn.mapList, ncol=3, top="Nearest Neighbor Risk Factors by Fishnet"))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![](Assignment3_files/figure-html/map nearest distance-1.png)<!-- -->
 
-# Moran's I-related small multiple map of outcome
-
+# Moran's I-related maps
+- description of the map
 
 ```r
+# join variables data to fishnet
 final_net <-
   left_join(crime_net, st_drop_geometry(vars_net), by="uniqueID") 
 
+# join neighborhoods and police districts to fishnet
 final_net <-
   st_centroid(final_net) %>%
     st_join(dplyr::select(neighborhoods, name)) %>%
@@ -370,29 +311,25 @@ final_net <-
       left_join(dplyr::select(final_net, geometry, uniqueID)) %>%
       st_sf() %>%
   na.omit()
-```
 
-
-```r
+# calculate Moran's I
 final_net.nb <- poly2nb(as_Spatial(final_net), queen=TRUE)
 final_net.weights <- nb2listw(final_net.nb, style="W", zero.policy=TRUE)
-```
 
-
-```r
 damage.localMorans <- 
   cbind(
     as.data.frame(localmoran(final_net$count.damage, final_net.weights, zero.policy = TRUE)),
     as.data.frame(final_net)) %>% 
     st_sf() 
 
-#modified based on week 10 lecture
+# plot Moran's I
 mp <- moran.plot(as.vector(scale(damage.localMorans$count.damage)), final_net.weights, zero.policy = TRUE)
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+![](Assignment3_files/figure-html/moran-1.png)<!-- -->
 
 ```r
+# add one variable to indicate hotspot
 damage.localMorans$hotspot <- 0
 
 damage.localMorans[(mp$x >= 0 & mp$wx >= 0) & (damage.localMorans$`Pr(z != E(Ii))` <= 0.01), "hotspot"] <- 1
@@ -414,19 +351,20 @@ for(i in damage.vars)
               aes(fill = Value), colour=NA) +
       scale_fill_viridis(name="") +
       labs(title=i) +
-      mapTheme() + 
+      theme_void() + 
       theme(legend.position = "bottom",
           plot.title = element_text(size = 10))}
 
-do.call(grid.arrange,c(damage.varList, ncol = 4, top = "Local Morans I statistics, Criminal Damage"))
+do.call(grid.arrange,c(damage.varList, ncol = 4, top = "Local Morans I statistics of Criminal Damage"))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-15-2.png)<!-- -->
+![](Assignment3_files/figure-html/moran-2.png)<!-- -->
 
-# Multiple scatter plot with correlations
+# Correlations Test
 
 
 ```r
+# add spatial factor
 final_net <- final_net %>% 
   mutate(damage.isSig = 
            ifelse(damage.localMorans$hotspot == 1, 1, 0)) %>%
@@ -436,6 +374,7 @@ final_net <- final_net %>%
                                            damage.isSig == 1))), 
                        k = 1))
 
+# calculate correlations
 correlation.long <-
   st_drop_geometry(final_net) %>%
     dplyr::select(-uniqueID, -cvID, -name, -District) %>%
@@ -452,15 +391,14 @@ ggplot(correlation.long, aes(Value, count.damage)) +
   geom_text(data = correlation.cor, aes(label = paste("r =", round(correlation, 2))),
             x = -Inf, y = Inf, vjust = 1.5, hjust = -0.1) +
   geom_smooth(method = "lm", se = FALSE, colour = "red", size = 1) +
-  facet_wrap(~Variable, ncol = 2, scales="free") +
-  labs(title = "Criminal damage count as a function of risk factors") +
-  plotTheme() +
-  theme(plot.title = element_text(size = 12),
-        strip.text = element_text(size = 8), 
-        plot.margin = margin(1, 1, 1.5, 1))
+  facet_wrap(~Variable, ncol = 4, scales="free") +
+  labs(title = "Criminal Damage Count as a Function of Risk Factors") +
+  theme_bw()+
+  theme(plot.title = element_text(size = 10),
+        strip.text = element_text(size = 10))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
+![](Assignment3_files/figure-html/correlation-1.png)<!-- -->
 
 # A Histogram of Dependent Variable
 
@@ -474,11 +412,10 @@ ggplot(final_net, aes(x = count.damage)) +
   theme_minimal()
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
+![](Assignment3_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
 
-# A small multiple map of model errors by random k-fold and spatial cross validation.
+# Cross-validated Poisson Regression
 
-## Leave One Group Out CV on spatial features
 
 
 ```r
@@ -486,11 +423,7 @@ ggplot(final_net, aes(x = count.damage)) +
 reg.vars <- c(nn.vars)
 
 reg.ss.vars <- c(nn.vars, "damage.isSig", "damage.isSig.dist")
-```
 
-
-
-```r
 ## RUN REGRESSIONS
 reg.cv <- crossValidate(
   dataset = final_net,
@@ -519,9 +452,8 @@ reg.ss.spatialCV <- crossValidate(
   dependentVariable = "count.damage",
   indVariables = reg.ss.vars) %>%
     dplyr::select(cvID = name, count.damage, Prediction, geometry)
-```
 
-```r
+# calculate error
 reg.summary <- 
   rbind(
     mutate(reg.cv, Error = Prediction - count.damage,
@@ -538,6 +470,8 @@ reg.summary <-
     st_sf() 
 ```
 
+# Model Error
+## distribution of MAE
 
 ```r
 error_by_reg_and_fold <- 
@@ -555,12 +489,12 @@ error_by_reg_and_fold %>%
     geom_vline(xintercept = 0) + scale_x_continuous(breaks = seq(0, 8, by = 1)) + 
     labs(title="Distribution of MAE", subtitle = "k-fold cross validation vs. LOGO-CV",
          x="Mean Absolute Error", y="Count") +
-    plotTheme()
+    theme_bw()
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+![](Assignment3_files/figure-html/MAE distribution-1.png)<!-- -->
 
-#Map of Errors
+## error map
 
 ```r
 error_by_reg_and_fold %>%
@@ -573,7 +507,7 @@ error_by_reg_and_fold %>%
     theme_void()
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
+![](Assignment3_files/figure-html/error map-1.png)<!-- -->
 
 ```r
 error_by_reg_and_fold %>%
@@ -586,9 +520,9 @@ error_by_reg_and_fold %>%
   theme_void()
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-21-2.png)<!-- -->
+![](Assignment3_files/figure-html/error map-2.png)<!-- -->
 
-# A table of MAE and standard deviation MAE by regression.
+## A table of MAE and standard deviation MAE by regression.
 
 
 ```r
@@ -612,11 +546,11 @@ st_drop_geometry(error_by_reg_and_fold) %>%
   <tr>
    <td style="text-align:left;"> Random k-fold CV: Just Risk Factors </td>
    <td style="text-align:right;"> 0.95 </td>
-   <td style="text-align:right;"> 0.80 </td>
+   <td style="text-align:right;"> 0.83 </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Random k-fold CV: Spatial Process </td>
-   <td style="text-align:right;"> 0.86 </td>
+   <td style="text-align:right;"> 0.81 </td>
    <td style="text-align:right;"> 0.76 </td>
   </tr>
   <tr>
@@ -632,7 +566,7 @@ st_drop_geometry(error_by_reg_and_fold) %>%
 </tbody>
 </table>
 
-# A table of raw errors by race context for a random k-fold vs. spatial cross validation regression.
+## Error by Race
 
 ```r
 tracts18 <- 
@@ -651,7 +585,6 @@ tracts18 <-
 
 ```r
 reg.summary %>% 
-  filter(str_detect(Regression, "LOGO")) %>%
     st_centroid() %>%
     st_join(tracts18) %>%
     na.omit() %>%
@@ -674,6 +607,16 @@ reg.summary %>%
  </thead>
 <tbody>
   <tr>
+   <td style="text-align:left;"> Random k-fold CV: Just Risk Factors </td>
+   <td style="text-align:right;"> -0.8912638 </td>
+   <td style="text-align:right;"> 0.9710527 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Random k-fold CV: Spatial Process </td>
+   <td style="text-align:right;"> -0.4063060 </td>
+   <td style="text-align:right;"> 0.4393822 </td>
+  </tr>
+  <tr>
    <td style="text-align:left;"> Spatial LOGO-CV: Just Risk Factors </td>
    <td style="text-align:right;"> -0.9661727 </td>
    <td style="text-align:right;"> 1.0010598 </td>
@@ -693,12 +636,13 @@ damage_ppp <- as.ppp(st_coordinates(damage2018), W = st_bbox(final_net))
 damage_KD.1000 <- density.ppp(damage_ppp, 1000)
 damage_KD.1500 <- density.ppp(damage_ppp, 1500)
 damage_KD.2000 <- density.ppp(damage_ppp, 2000)
-damage_KD.df <- rbind(
-  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1000), as(neighborhoods, 'Spatial')))), Legend = "1000 Ft."),
-  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1500), as(neighborhoods, 'Spatial')))), Legend = "1500 Ft."),
-  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.2000), as(neighborhoods, 'Spatial')))), Legend = "2000 Ft.")) 
 
-damage_KD.df$Legend <- factor(damage_KD.df$Legend, levels = c("1000 Ft.", "1500 Ft.", "2000 Ft."))
+damage_KD.df <- rbind(
+  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1000), as(neighborhoods, 'Spatial')))), Legend = "1000 m"),
+  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.1500), as(neighborhoods, 'Spatial')))), Legend = "1500 m"),
+  mutate(data.frame(rasterToPoints(mask(raster(damage_KD.2000), as(neighborhoods, 'Spatial')))), Legend = "2000 m")) 
+
+damage_KD.df$Legend <- factor(damage_KD.df$Legend, levels = c("1000 m", "1500 m", "2000 m"))
 
 ggplot(data=damage_KD.df, aes(x=x, y=y)) +
   geom_raster(aes(fill=layer)) + 
@@ -706,30 +650,22 @@ ggplot(data=damage_KD.df, aes(x=x, y=y)) +
   coord_sf(crs=st_crs(final_net)) + 
   scale_fill_viridis(name="Density") +
   labs(title = "Kernel density with 3 different search radii") +
-  mapTheme(title_size = 14)
+  theme_void()+
+  theme(legend.position = "right",
+          plot.title = element_text(size = 12))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
+![](Assignment3_files/figure-html/kernel-1.png)<!-- -->
+
+# Prediction for 2019
+- description
 
 ```r
-as.data.frame(damage_KD.1000) %>%
-  st_as_sf(coords = c("x", "y"), crs = st_crs(final_net)) %>%
-  aggregate(., final_net, mean) %>%
-   ggplot() +
-     geom_sf(aes(fill=value)) +
-     geom_sf(data = sample_n(damage2018, 1500), size = .5) +
-     scale_fill_viridis(name = "Density") +
-     labs(title = "Kernel density of 2017 thefts") +
-     mapTheme()
-```
-
-![](Assignment3_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
-# Retrieving 2019 crime data
-
-```r
+# load 2019 data
 damage19 <- 
   read.socrata("https://data.cityofchicago.org/resource/w98m-zvie.json")
 
+# select crime data
 damage19 <- damage19 %>% 
 filter(primary_type == "CRIMINAL DAMAGE" & description == "TO PROPERTY") %>% 
   na.omit() %>%  # Remove rows with missing values
@@ -737,10 +673,8 @@ filter(primary_type == "CRIMINAL DAMAGE" & description == "TO PROPERTY") %>%
   st_transform('ESRI:102271') %>%  # Transform coordinate reference system
   distinct() %>%  # Keep only distinct geometries
   .[fishnet,]
-```
 
-
-```r
+# add risk category
 damage_KDE_sf <- as.data.frame(damage_KD.1000) %>%
   st_as_sf(coords = c("x", "y"), crs = st_crs(final_net)) %>%
   aggregate(., final_net, mean) %>%
@@ -787,7 +721,7 @@ rbind(damage_KDE_sf, damage_risk_sf) %>%
     mapTheme()
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-27-1.png)<!-- -->
+![](Assignment3_files/figure-html/predict 2019-1.png)<!-- -->
 
 
 ```r
@@ -802,9 +736,9 @@ rbind(damage_KDE_sf, damage_risk_sf) %>%
     ggplot(aes(Risk_Category,Rate_of_test_set_crimes)) +
       geom_bar(aes(fill=label), position="dodge", stat="identity") +
       scale_fill_viridis(discrete = TRUE) +
-      labs(title = "Risk prediction vs. Kernel density, 2019 thefts") +
+      labs(title = "Risk prediction vs. Kernel density, 2019 criminal damage") +
       plotTheme() + theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
+![](Assignment3_files/figure-html/bar plot-1.png)<!-- -->
 
