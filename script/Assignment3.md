@@ -1,5 +1,5 @@
 ---
-title: "Geospatial risk modeling - Predictive Policing"
+title: "Geospatial Risk Modeling - Predictive Policing"
 author: "Neve/Viva/Yaohan"
 date: "2024-04-05"
 output: 
@@ -14,6 +14,7 @@ output:
     toc: yes
 ---
 
+```{=html}
 <style>
 .kable thead tr th, .table thead tr th {
   text-align: left !important;}
@@ -24,19 +25,22 @@ table.kable, table.table {
   font-size: 16px
 }
 </style>
-
+```
 
 
 # Introduction
 
 Neve, Viva and Yaohan work together on the scripts, and then finish the write-up separately.
 
-- purpose of the model
-- data: 2018, chicago, crime type
-- why selection bias may be an issue: reported crime
-- we created two maps balabala
-- description of map???
+**Analysis goal:**
 
+**Study area:**
+
+**Data description:**
+
+**Discussion:**
+
+-   Import all datasets
 
 
 ```r
@@ -76,6 +80,9 @@ damage2018 <- crimes2018 %>%
   distinct()
 ```
 
+-   Plot criminal damage locations and fishnet in Chicago
+
+
 ```r
 # mapping crime data in dots and in the fishnet
 fishnet <- 
@@ -99,31 +106,37 @@ ggplot() +
   geom_sf(data = damage2018, colour = "red", size = 0.005, show.legend = "point") +
   labs(title = "Criminal Damage, 2018 Chicago") + 
   theme_void() +
-  theme(plot.title = element_text(size = 12))+
+  theme(plot.title = element_text(size = 11, face = "bold"))+
 ggplot() +
   geom_sf(data = crime_net, aes(fill = count.damage), color = NA) +
   scale_fill_viridis("Count of Criminal Damage") +
   labs(title = "Fishnet of Criminal Damage by Count") +
   theme_void()+
-  theme(plot.title = element_text(size = 12))
+  theme(plot.title = element_text(size = 11, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8))
 ```
 
 ![](Assignment3_files/figure-html/crime map-1.png)<!-- -->
 
-
-
 # Risk Factors
-- variable
-- data source
 
-*Variable 1: Abandoned Cars* reason of the choice
-*Variable 2: Abandoned Buildings* reason of the choice
-*Variable 3: Graffiti*
-*Variable 4: Disfunctional Street Lights *
-*Variable 5: Sanitation Complaints*
-*Variable 6: Liquor Retail*
-*Variable 7: Park*
-*Variable 8: Environmental Complaints*
+-   Variable selection
+    -   **One: Abandoned Cars** (count + k=3 nearest neighborhood)\
+        description
+    -   **Two: Abandoned Buildings** (count + k=3 nearest neighborhood)\
+        description
+    -   **Three: Graffiti** (count + k=3 nearest neighborhood)\
+        description
+    -   **Four: Disfunctional Street Lights** (count + k=3 nearest neighborhood)\
+        description
+    -   **Five: Sanitation Complaints** (count + k=3 nearest neighborhood)\
+        description
+    -   **Six: Liquor Retail** (count + k=3 nearest neighborhood)\
+        description
+    -   **Seven: Park Location** (count + k=3 nearest neighborhood)\
+        description
+    -   **Eight: Environmental Complaints** (count + k=3 nearest neighborhood)
 
 
 ```r
@@ -208,7 +221,8 @@ environ.complaint <- environ.complaint %>%
     mutate(Legend = "Environmental_Complaint")
 ```
 
-- make the maps of risk variable
+-   Make the maps of risk factors count
+
 
 ```r
 # add variables to the fishnet 
@@ -241,15 +255,16 @@ for(i in vars_risk)
       geom_sf(data = filter(vars_net.long, Variable == i), aes(fill=value), colour=NA) +
       scale_fill_viridis(name="") +
       labs(title=i) +
-      theme_void()}
+      theme_void()+
+      theme(plot.title = element_text(size = 10)) +
+  theme(legend.text = element_text(size = 8))}
 
-do.call(grid.arrange,c(mapList, ncol=3, top="Risk Factors by Fishnet"))
+do.call(grid.arrange,c(mapList, ncol=2, top="Risk Factors by Fishnet"))
 ```
 
 ![](Assignment3_files/figure-html/map risk factors-1.png)<!-- -->
 
-
-- make the maps of risk variable by distance to the nearest risk factor
+-   Make the maps of distance to the nearest risk factors
 
 
 ```r
@@ -287,15 +302,18 @@ for(i in nn.vars){
       scale_fill_viridis(name="") +
       labs(title=i) +
       theme_void()+
-      theme(plot.title = element_text(size = 10))}
+      theme(plot.title = element_text(size = 10)) +
+  theme(legend.text = element_text(size = 8))}
 
-do.call(grid.arrange,c(nn.mapList, ncol=3, top="Nearest Neighbor Risk Factors by Fishnet"))
+do.call(grid.arrange,c(nn.mapList, ncol=2, top="Nearest Neighbor Risk Factors by Fishnet"))
 ```
 
 ![](Assignment3_files/figure-html/map nearest distance-1.png)<!-- -->
 
-# Moran's I-related maps
-- description of the map
+# Moran's I Related Maps
+
+-   Local Moran's I plot
+
 
 ```r
 # join variables data to fishnet
@@ -326,14 +344,19 @@ damage.localMorans <-
 mp <- moran.plot(as.vector(scale(damage.localMorans$count.damage)), final_net.weights, zero.policy = TRUE)
 ```
 
-![](Assignment3_files/figure-html/moran-1.png)<!-- -->
+![](Assignment3_files/figure-html/moran1-1.png)<!-- -->
 
 ```r
 # add one variable to indicate hotspot
 damage.localMorans$hotspot <- 0
 
 damage.localMorans[(mp$x >= 0 & mp$wx >= 0) & (damage.localMorans$`Pr(z != E(Ii))` <= 0.01), "hotspot"] <- 1
+```
 
+-   Local Moran's I Statistics
+
+
+```r
 damage.localMorans.1 <- damage.localMorans %>% 
   dplyr::select(Damage_Count = count.damage, 
                 Local_Morans_I = Ii, 
@@ -352,13 +375,14 @@ for(i in damage.vars)
       scale_fill_viridis(name="") +
       labs(title=i) +
       theme_void() + 
-      theme(legend.position = "bottom",
-          plot.title = element_text(size = 10))}
+      theme(legend.position = "bottom") +
+      theme(plot.title = element_text(size = 10)) +
+      theme(legend.text = element_text(size = 8))}
 
-do.call(grid.arrange,c(damage.varList, ncol = 4, top = "Local Morans I statistics of Criminal Damage"))
+do.call(grid.arrange,c(damage.varList, ncol = 4, top = "Local Moran's I Statistics of Criminal Damage"))
 ```
 
-![](Assignment3_files/figure-html/moran-2.png)<!-- -->
+![](Assignment3_files/figure-html/moran.2-1.png)<!-- -->
 
 # Correlations Test
 
@@ -389,16 +413,15 @@ correlation.cor <-
 ggplot(correlation.long, aes(Value, count.damage)) +
   geom_point(size = 0.1) +
   geom_text(data = correlation.cor, aes(label = paste("r =", round(correlation, 2))),
-            x = -Inf, y = Inf, vjust = 1.5, hjust = -0.1) +
-  geom_smooth(method = "lm", se = FALSE, colour = "red", size = 1) +
+            x = -Inf, y = Inf, vjust = 1.5, hjust = -0.1, size = 3) +
+  geom_smooth(method = "lm", se = FALSE, colour = "red", size = 0.5) +
   facet_wrap(~Variable, ncol = 4, scales="free") +
   labs(title = "Criminal Damage Count as a Function of Risk Factors") +
-  theme_bw()+
-  theme(plot.title = element_text(size = 10),
-        strip.text = element_text(size = 10))
+  theme_bw() +
+  theme(strip.text = element_text(size = 8))
 ```
 
-![](Assignment3_files/figure-html/correlation-1.png)<!-- -->
+![](Assignment3_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
 
 # A Histogram of Dependent Variable
 
@@ -409,13 +432,12 @@ This histogram suggests an OLS regression is not appropriate method of analysis.
 ggplot(final_net, aes(x = count.damage)) +
   geom_histogram(binwidth = 3, fill = "grey", color = "black") +
   labs(title = "Distribution of Criminal Damage Counts, Chicago", x = "Damage Count", y = "Frequency") +
-  theme_minimal()
+  theme_bw()
 ```
 
-![](Assignment3_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+![](Assignment3_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 # Cross-validated Poisson Regression
-
 
 
 ```r
@@ -471,7 +493,9 @@ reg.summary <-
 ```
 
 # Model Error
-## distribution of MAE
+
+## Distribution of MAE
+
 
 ```r
 error_by_reg_and_fold <- 
@@ -487,14 +511,15 @@ error_by_reg_and_fold %>%
     geom_histogram(bins = 30, colour="black", fill = "#FDE725FF") +
     facet_wrap(~Regression) +  
     geom_vline(xintercept = 0) + scale_x_continuous(breaks = seq(0, 8, by = 1)) + 
-    labs(title="Distribution of MAE", subtitle = "k-fold cross validation vs. LOGO-CV",
+    labs(title="Distribution of MAE", subtitle = "k-fold Cross Validation vs. LOGO-CV",
          x="Mean Absolute Error", y="Count") +
     theme_bw()
 ```
 
 ![](Assignment3_files/figure-html/MAE distribution-1.png)<!-- -->
 
-## error map
+## Error Map
+
 
 ```r
 error_by_reg_and_fold %>%
@@ -503,8 +528,9 @@ error_by_reg_and_fold %>%
     geom_sf(aes(fill = MAE)) +
     facet_wrap(~Regression) +
     scale_fill_viridis() +
-    labs(title = "Damage errors by k-fold Regression") +
-    theme_void()
+    labs(title = "Damage Errors by k-fold Regression") +
+    mapTheme() + theme(panel.border = element_rect(colour = "black", fill=NA, size=0.6),
+                       strip.text.x = element_text(size = 10))
 ```
 
 ![](Assignment3_files/figure-html/error map-1.png)<!-- -->
@@ -516,13 +542,14 @@ error_by_reg_and_fold %>%
     geom_sf(aes(fill = MAE)) +
     facet_wrap(~Regression) +
     scale_fill_viridis() +
-    labs(title = "Damage errors by LOGO-CV Regression") +
-  theme_void()
+    labs(title = "Damage Errors by LOGO-CV Regression") +
+  mapTheme() + theme(panel.border = element_rect(colour = "black", fill=NA, size=0.6),
+                       strip.text.x = element_text(size = 10))
 ```
 
 ![](Assignment3_files/figure-html/error map-2.png)<!-- -->
 
-## A table of MAE and standard deviation MAE by regression.
+## Table of MAE and SD_MAE by Regression
 
 
 ```r
@@ -531,10 +558,12 @@ st_drop_geometry(error_by_reg_and_fold) %>%
     summarize(Mean_MAE = round(mean(MAE), 2),
               SD_MAE = round(sd(MAE), 2)) %>%
   kable() %>%
-    kable_styling("striped", "hover")
+    kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T) %>%
+  column_spec(1:3, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
    <th style="text-align:left;"> Regression </th>
@@ -544,29 +573,32 @@ st_drop_geometry(error_by_reg_and_fold) %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> Random k-fold CV: Just Risk Factors </td>
-   <td style="text-align:right;"> 0.95 </td>
-   <td style="text-align:right;"> 0.83 </td>
+   <td style="text-align:left;text-align: left;"> Random k-fold CV: Just Risk Factors </td>
+   <td style="text-align:right;text-align: left;"> 0.99 </td>
+   <td style="text-align:right;text-align: left;"> 0.73 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Random k-fold CV: Spatial Process </td>
-   <td style="text-align:right;"> 0.81 </td>
-   <td style="text-align:right;"> 0.76 </td>
+   <td style="text-align:left;text-align: left;"> Random k-fold CV: Spatial Process </td>
+   <td style="text-align:right;text-align: left;"> 0.86 </td>
+   <td style="text-align:right;text-align: left;"> 0.60 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Spatial LOGO-CV: Just Risk Factors </td>
-   <td style="text-align:right;"> 2.07 </td>
-   <td style="text-align:right;"> 1.87 </td>
+   <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Just Risk Factors </td>
+   <td style="text-align:right;text-align: left;"> 2.07 </td>
+   <td style="text-align:right;text-align: left;"> 1.87 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Spatial LOGO-CV: Spatial Process </td>
-   <td style="text-align:right;"> 1.57 </td>
-   <td style="text-align:right;"> 1.57 </td>
+   <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Spatial Process </td>
+   <td style="text-align:right;text-align: left;"> 1.57 </td>
+   <td style="text-align:right;text-align: left;"> 1.57 </td>
   </tr>
 </tbody>
 </table>
 
 ## Error by Race
+
+-   Download census data
+
 
 ```r
 tracts18 <- 
@@ -582,6 +614,8 @@ tracts18 <-
   .[neighborhoods,]
 ```
 
+-   Comparison between different regressions
+
 
 ```r
 reg.summary %>% 
@@ -592,12 +626,14 @@ reg.summary %>%
       group_by(Regression, raceContext) %>%
       summarize(mean.Error = mean(Error, na.rm = T)) %>%
       spread(raceContext, mean.Error) %>%
-      kable(caption = "Mean Error by neighborhood racial context, 2018") %>%
-        kable_styling("striped", "hover") 
+  kable(caption = "<span style='font-weight: bold; color: black;'>Mean Error by Neighborhood Racial Context, 2018</span>") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = T) %>%
+  column_spec(1:3, extra_css = "text-align: left;")
 ```
 
-<table class="table table-striped" style="color: black; margin-left: auto; margin-right: auto;">
-<caption>Mean Error by neighborhood racial context, 2018</caption>
+<table class="table table-striped table-hover" style="color: black; margin-left: auto; margin-right: auto;">
+<caption><span style="font-weight: bold; color: black;">Mean Error by Neighborhood Racial Context, 2018</span></caption>
  <thead>
   <tr>
    <th style="text-align:left;"> Regression </th>
@@ -607,29 +643,30 @@ reg.summary %>%
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;"> Random k-fold CV: Just Risk Factors </td>
-   <td style="text-align:right;"> -0.8912638 </td>
-   <td style="text-align:right;"> 0.9710527 </td>
+   <td style="text-align:left;text-align: left;"> Random k-fold CV: Just Risk Factors </td>
+   <td style="text-align:right;text-align: left;"> -0.8882868 </td>
+   <td style="text-align:right;text-align: left;"> 0.9699764 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Random k-fold CV: Spatial Process </td>
-   <td style="text-align:right;"> -0.4063060 </td>
-   <td style="text-align:right;"> 0.4393822 </td>
+   <td style="text-align:left;text-align: left;"> Random k-fold CV: Spatial Process </td>
+   <td style="text-align:right;text-align: left;"> -0.4057277 </td>
+   <td style="text-align:right;text-align: left;"> 0.4388651 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Spatial LOGO-CV: Just Risk Factors </td>
-   <td style="text-align:right;"> -0.9661727 </td>
-   <td style="text-align:right;"> 1.0010598 </td>
+   <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Just Risk Factors </td>
+   <td style="text-align:right;text-align: left;"> -0.9661727 </td>
+   <td style="text-align:right;text-align: left;"> 1.0010598 </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> Spatial LOGO-CV: Spatial Process </td>
-   <td style="text-align:right;"> -0.4408509 </td>
-   <td style="text-align:right;"> 0.4422612 </td>
+   <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Spatial Process </td>
+   <td style="text-align:right;text-align: left;"> -0.4408509 </td>
+   <td style="text-align:right;text-align: left;"> 0.4422612 </td>
   </tr>
 </tbody>
 </table>
 
 # Comparing Model to Traditional Methods
+
 
 ```r
 damage_ppp <- as.ppp(st_coordinates(damage2018), W = st_bbox(final_net))
@@ -649,16 +686,17 @@ ggplot(data=damage_KD.df, aes(x=x, y=y)) +
   facet_wrap(~Legend) +
   coord_sf(crs=st_crs(final_net)) + 
   scale_fill_viridis(name="Density") +
-  labs(title = "Kernel density with 3 different search radii") +
-  theme_void()+
-  theme(legend.position = "right",
-          plot.title = element_text(size = 12))
+  labs(title = "Kernel Density with 3 Different Search Radii") +
+  mapTheme() + theme(panel.border = element_rect(colour = "black", fill=NA, size=0.6),
+                       strip.text.x = element_text(size = 10))
 ```
 
 ![](Assignment3_files/figure-html/kernel-1.png)<!-- -->
 
 # Prediction for 2019
-- description
+
+- Description
+
 
 ```r
 # load 2019 data
@@ -718,7 +756,8 @@ rbind(damage_KDE_sf, damage_risk_sf) %>%
     scale_fill_viridis(discrete = TRUE) +
     labs(title="Comparison of Kernel Density and Risk Predictions",
          subtitle="2018 criminal risk predictions; 2019 criminal damage") +
-    mapTheme()
+    mapTheme() + theme(panel.border = element_rect(colour = "black", fill=NA, size=0.6),
+                       strip.text.x = element_text(size = 10))
 ```
 
 ![](Assignment3_files/figure-html/predict 2019-1.png)<!-- -->
@@ -736,9 +775,8 @@ rbind(damage_KDE_sf, damage_risk_sf) %>%
     ggplot(aes(Risk_Category,Rate_of_test_set_crimes)) +
       geom_bar(aes(fill=label), position="dodge", stat="identity") +
       scale_fill_viridis(discrete = TRUE) +
-      labs(title = "Risk prediction vs. Kernel density, 2019 criminal damage") +
-      plotTheme() + theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+      labs(title = "Risk Prediction vs. Kernel Density, 2019 Criminal Damage") +
+      theme_bw()
 ```
 
 ![](Assignment3_files/figure-html/bar plot-1.png)<!-- -->
-
