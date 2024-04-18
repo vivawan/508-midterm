@@ -1,7 +1,7 @@
 ---
 title: "Geospatial Risk Modeling - Predictive Policing"
 author: "Neve/Viva/Yaohan"
-date: "2024-04-05"
+date: "2024-04-06"
 output: 
   html_document:
     keep_md: yes
@@ -574,13 +574,13 @@ st_drop_geometry(error_by_reg_and_fold) %>%
 <tbody>
   <tr>
    <td style="text-align:left;text-align: left;"> Random k-fold CV: Just Risk Factors </td>
-   <td style="text-align:right;text-align: left;"> 0.99 </td>
-   <td style="text-align:right;text-align: left;"> 0.73 </td>
+   <td style="text-align:right;text-align: left;"> 0.93 </td>
+   <td style="text-align:right;text-align: left;"> 0.67 </td>
   </tr>
   <tr>
    <td style="text-align:left;text-align: left;"> Random k-fold CV: Spatial Process </td>
-   <td style="text-align:right;text-align: left;"> 0.86 </td>
-   <td style="text-align:right;text-align: left;"> 0.60 </td>
+   <td style="text-align:right;text-align: left;"> 0.79 </td>
+   <td style="text-align:right;text-align: left;"> 0.59 </td>
   </tr>
   <tr>
    <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Just Risk Factors </td>
@@ -644,23 +644,23 @@ reg.summary %>%
 <tbody>
   <tr>
    <td style="text-align:left;text-align: left;"> Random k-fold CV: Just Risk Factors </td>
-   <td style="text-align:right;text-align: left;"> -0.8882868 </td>
-   <td style="text-align:right;text-align: left;"> 0.9699764 </td>
+   <td style="text-align:right;text-align: left;"> -0.8914314 </td>
+   <td style="text-align:right;text-align: left;"> 0.9723129 </td>
   </tr>
   <tr>
    <td style="text-align:left;text-align: left;"> Random k-fold CV: Spatial Process </td>
-   <td style="text-align:right;text-align: left;"> -0.4057277 </td>
-   <td style="text-align:right;text-align: left;"> 0.4388651 </td>
+   <td style="text-align:right;text-align: left;"> -0.4070593 </td>
+   <td style="text-align:right;text-align: left;"> 0.4392447 </td>
   </tr>
   <tr>
    <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Just Risk Factors </td>
-   <td style="text-align:right;text-align: left;"> -0.9661727 </td>
-   <td style="text-align:right;text-align: left;"> 1.0010598 </td>
+   <td style="text-align:right;text-align: left;"> -0.9662880 </td>
+   <td style="text-align:right;text-align: left;"> 1.0011590 </td>
   </tr>
   <tr>
    <td style="text-align:left;text-align: left;"> Spatial LOGO-CV: Spatial Process </td>
-   <td style="text-align:right;text-align: left;"> -0.4408509 </td>
-   <td style="text-align:right;text-align: left;"> 0.4422612 </td>
+   <td style="text-align:right;text-align: left;"> -0.4409691 </td>
+   <td style="text-align:right;text-align: left;"> 0.4423649 </td>
   </tr>
 </tbody>
 </table>
