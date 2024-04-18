@@ -62,20 +62,35 @@ dat$Recidivism_Within_3years
 # Plot of Variables
 **continuous**
 - Supervision_Risk_Score_First
-- 
+- DrugTests_THC_Positive
+- DrugTests_Cocaine_Positive
+- DrugTests_Meth_Positive
+- DrugTests_Other_Positive
+- Percent_Days_Employed
+
 **Categorical**
 - Gender
 - Race
 - Age_at_Release
 - Gang_Affiliated
-- Supervision_Level_First
 - Education_Level
 - Dependents
 - Prison_Offense
 - Prison_Years
+- Prior_Arrest_Episodes_Felony 
+- Prior_Arrest_Episodes_Misd
+- Prior_Conviction_Episodes_Felony
+- Prior_Conviction_Episodes_Misd
+- Condition_MH_SA
+- Condition_Cog_Ed
+- Condition_Other
+- Delinquency_Reports 
+- Program_Attendances
+- Program_UnexcusedAbsences
+- Employment_Exempt
 
 ```{r category}
-
+table(dat$Supervision_Level_First)
 
 
 
