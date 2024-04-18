@@ -48,15 +48,34 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 ```
 
-```{r}
+```{r clean data}
 dat <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
-
+glimpse(dat)
+dat$Recidivism_Within_3years
 
 ```
 
 # Discussion
+- sensitivity：high cost, ruin others life
+- specificity：let go of criminals
 
 # Plot of Variables
+```{r category}
+
+
+
+
+```
+
+```{r continuous}
+
+
+
+
+```
+
+
+
 
 # Model Develop
 
