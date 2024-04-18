@@ -60,6 +60,20 @@ dat$Recidivism_Within_3years
 - specificity：let go of criminals
 
 # Plot of Variables
+**continuous**
+- Supervision_Risk_Score_First
+- 
+**Categorical**
+- Gender
+- Race
+- Age_at_Release
+- Gang_Affiliated
+- Supervision_Level_First
+- Education_Level
+- Dependents
+- Prison_Offense
+- Prison_Years
+
 ```{r category}
 
 
