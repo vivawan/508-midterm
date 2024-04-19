@@ -39,7 +39,7 @@ p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, janitor, classInt
        patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer,
        car, FNN, GGally, MASS, ISLR2, spdep, caret, ckanr, grid, gridExtra, ggcorrplot,
        jtools, broom, tufte, rmarkdown, corrr, RSocrata, viridis, spatstat, raster, knitr,
-       classInt, jsonlite)
+       classInt, jsonlite, pROC)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -61,7 +61,7 @@ palette2 <- c("#981FAC","#FF006A")
 - Sensitivity：high cost, ruin others life
 - Specificity：let go of criminals
 
-# Plot of Initial Variables
+# Plot of Variables
 
 **Dependent Variable:**  
 - Recidivism_Within_3years
@@ -108,7 +108,6 @@ dat <- dat %>%
     Program_UnexcusedAbsences %in% c('0') ~ '0',
     Program_UnexcusedAbsences %in% c('1', '2', '3 or more') ~ '1 or more')))
 
-sum(is.na(dat$Percent_Days_Employed))
 # Plot categorical variables
 ## Percent
 dat %>%
@@ -144,7 +143,7 @@ dat %>%
         legend.text = element_text(size = 8)) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# Count
+## Count
 dat %>%
   select(Recidivism_Within_3years,
          Gender,
@@ -217,15 +216,20 @@ dat %>%
          Prior_Conviction_Episodes_Felony,
          Prior_Conviction_Episodes_Misd,
          Recidivism_Within_3years) %>%
+  filter_all(all_vars(!is.na(.))) %>%
   gather(Variable, value, -Recidivism_Within_3years) %>%
     ggplot(aes(Recidivism_Within_3years, value, fill=Recidivism_Within_3years)) + 
       geom_bar(position = "dodge", stat = "summary", fun = "mean") + 
       facet_wrap(~Variable, scales = "free") +
       scale_fill_manual(values = palette2) +
-      labs(x="Recidivism Within 3years", y="Value", 
-           title = "Feature associations with the likelihood of Recidivism Within 3years",
-           subtitle = "(continous outcomes)") +
-      theme(legend.position = "none")
+      labs(x="Recidivism", y="Value", 
+           title = "Feature associations with the likelihood of Recidivism Within Three Years",
+           subtitle = "Continuous features") +
+       theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ## Density
 dat %>%
@@ -236,31 +240,159 @@ dat %>%
          Prior_Conviction_Episodes_Felony,
          Prior_Conviction_Episodes_Misd,
          Recidivism_Within_3years) %>%
+    filter_all(all_vars(!is.na(.))) %>%
     gather(Variable, value, -Recidivism_Within_3years) %>%
     ggplot() + 
     geom_density(aes(value, color=Recidivism_Within_3years), fill = "transparent") + 
     facet_wrap(~Variable, scales = "free") +
     scale_fill_manual(values = palette2) +
-    labs(title = "Feature distributions of Recidivism Within 3years vs. NO Recidivism Within 3years",
-         subtitle = "(continous outcomes)")
+    labs(title = "Feature distributions of Recidivism Within Three Years vs. NO Recidivism Within Three Years",
+         subtitle = "Continuous features") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 # Model Develop
 
-```{r model_build}
-  select(Recidivism_Within_3years, Gender, Race, Age_at_Release, Gang_Affiliated, Education_Level, Dependents, Prison_Offense,
-         Prison_Years, Prior_Arrest_Episodes_Felony, Prior_Arrest_Episodes_Misd, Prior_Conviction_Episodes_Felony,
-         Prior_Conviction_Episodes_Misd, Condition_MH_SA, Condition_Cog_Ed, Condition_Other, Delinquency_Reports,
-         Program_Attendances, Program_UnexcusedAbsences, Employment_Exempt, Supervision_Risk_Score_First, Percent_Days_Employed)
-filter_all(all_vars(!is.na(.))) %>%
+```{r model_build, message = FALSE, warning = FALSE}
+# Initial variable selection
+## Build dataset
+dat <- dat %>%
+  select(Gender, Race, Age_at_Release, Education_Level, Dependents, Prior_Arrest_Episodes_Felony,
+         Condition_MH_SA, Condition_Cog_Ed, Condition_Other, Delinquency_Reports, Program_Attendances,
+         Program_UnexcusedAbsences, Employment_Exempt, Supervision_Risk_Score_First, Percent_Days_Employed,
+         Prison_Years, Prior_Arrest_Episodes_Misd, Prior_Conviction_Episodes_Felony, Prior_Conviction_Episodes_Misd,
+         Recidivism_Within_3years) %>%
+filter_all(all_vars(!is.na(.)))
+
+## Split dataset
+set.seed(1)
+trainIndex <- createDataPartition(dat$Recidivism_Within_3years, p = .50,
+                                  list = FALSE,
+                                  times = 1)
+dat.train <- dat[trainIndex,]
+dat.test  <- dat[-trainIndex,]
+
+## Remove insignificant variables based on sensitivity and specificity
 mod1 <- glm(Recidivism_Within_3years ~ .,
-                 data = dat,
+                 data = dat.train,
                  na.action = na.exclude,
                  family = binomial("logit"))
-
 stargazer(mod1, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Education_Level
+mod2 <- glm(Recidivism_Within_3years ~ . - Education_Level,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod2, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Condition_Cog_Ed
+mod3 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod3, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Condition_Other
+mod4 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod4, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Employment_Exempt
+mod5 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod5, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Delinquency_Reports
+mod6 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt - Delinquency_Reports,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod6, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Program_Attendances
+mod7 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt - Delinquency_Reports - Program_Attendances,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod7, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Program_UnexcusedAbsences
+mod8 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod8, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Percent_Days_Employed
+mod9 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences
+            - Supervision_Risk_Score_First - Percent_Days_Employed,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod9, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Prison_Years
+mod10 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences
+            - Supervision_Risk_Score_First - Percent_Days_Employed - Prison_Years,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod10, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Remove Prior_Arrest_Episodes_Misd
+mod11 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
+            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences
+            - Supervision_Risk_Score_First - Percent_Days_Employed - Prison_Years - Prior_Conviction_Episodes_Misd,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+stargazer(mod11, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+
+### Model performance
+testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
+                        Probs = predict(mod13, dat.test, type= "response")) %>% ### Test probabilities
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , 1, 0))) ### Set thresholds
+
+caret::confusionMatrix(testProbs$predOutcome, testProbs$Outcome, 
+                       positive = "1") ### Confusion matrix
+
+pROC::auc(testProbs$Outcome, testProbs$Probs)
+### If sensitivity goes up and specificity goes down, the variable is removed. (minimize False Negative)
 ```
 
+- Race  
+- Age_at_Release  
+- Education_Level (Reclassified)  
+- Dependents  
+- Prior_Arrest_Episodes_Felony (Reclassified)  
+- Condition_MH_SA  
+- Condition_Cog_Ed  
+- Condition_Other  
+- Delinquency_Reports (Reclassified)  
+- Program_Attendances (Reclassified)  
+- Program_UnexcusedAbsences (Reclassified)  
+- Employment_Exempt
+- Supervision_Risk_Score_First  
+- Percent_Days_Employed  
+- Prison_Years (Categorical -> Continuous)  
+- Prior_Arrest_Episodes_Misd (Categorical -> Continuous)  
+- Prior_Conviction_Episodes_Felony (Categorical -> Continuous)  
+- Prior_Conviction_Episodes_Misd (Categorical -> Continuous)
 
 # Result Interpretation
 1. Model Result 
@@ -272,7 +404,7 @@ stargazer(mod1, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
 The ROC curve, gives us another visual "goodness of fit" metric. One that is a bit more tricky. You want to have a curve that is "above" the y=x line, which is where your prediction rates for positives and negatives are "no better than a coin flip". If it's too "square" - you are probably over fit. The Area-Under-The-Curve or "AUC" calculation below will help guide your understanding of the ROC curve
 
 ```{r auc, message = FALSE, warning = FALSE}
-auc(testProbs$Outcome, testProbs$Probs)
+
 ```
 
 ```{r roc_curve, warning = FALSE, message = FALSE}
