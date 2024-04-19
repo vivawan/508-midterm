@@ -14,7 +14,6 @@ output:
     toc: yes
 ---
 
-```{=html}
 <style>
 .kable thead tr th, .table thead tr th {
   text-align: left !important;}
@@ -25,7 +24,6 @@ table.kable, table.table {
   font-size: 16px
 }
 </style>
-```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -47,116 +45,177 @@ library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::recode)
-```
 
-```{r clean data, cache=TRUE}
-dat0 <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
+dat <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
 
 palette5 <- c("#981FAC","#CB0F8B","#FF006A","#FE4C35","#FE9900")
 palette4 <- c("#981FAC","#FF006A","#FE4C35","#FE9900")
 palette2 <- c("#981FAC","#FF006A")
 
-glimpse(dat0)
-dat0$Recidivism_Within_3years
+str(dat)
+dat$Recidivism_Within_3years
 ```
 
 # Discussion
-- sensitivity：high cost, ruin others life
-- specificity：let go of criminals
 
-# Plot of Variables
-**independent**  
+- Sensitivity：high cost, ruin others life
+- Specificity：let go of criminals
+
+# Plot of Initial Variables
+
+**Dependent Variable:**  
 - Recidivism_Within_3years
 
-**Categorical**
-- Gender
-- Race
-- Age_at_Release
-- Gang_Affiliated
-- Education_Level
-- Dependents
-- Prison_Offense
-- Prison_Years
-- Prior_Arrest_Episodes_Felony 
-- Prior_Arrest_Episodes_Misd
-- Prior_Conviction_Episodes_Felony
-- Prior_Conviction_Episodes_Misd
-- Condition_MH_SA
-- Condition_Cog_Ed
-- Condition_Other
-- Delinquency_Reports 
-- Program_Attendances
-- Program_UnexcusedAbsences
+**Categorical Variables:**
+- Gender  
+- Race  
+- Age_at_Release  
+- Education_Level (Reclassified)  
+- Dependents  
+- Prior_Arrest_Episodes_Felony (Reclassified)  
+- Condition_MH_SA  
+- Condition_Cog_Ed  
+- Condition_Other  
+- Delinquency_Reports (Reclassified)  
+- Program_Attendances (Reclassified)  
+- Program_UnexcusedAbsences (Reclassified)  
 - Employment_Exempt
 
-new variable:
-- drug_dum: - DrugTests_THC_Positive + DrugTests_Cocaine_Positive + DrugTests_Meth_Positive + DrugTests_Other_Positive
+```{r categorical_plot, message = FALSE, warning = FALSE}
+# Recode dependent variable and reclassify categorical variables
+dat <- dat %>%
+  mutate(Recidivism_Within_3years = as.character(Recidivism_Within_3years)) %>%
+  mutate(Recidivism_Within_3years = as.factor(recode(Recidivism_Within_3years,
+    `FALSE` = "0",
+    `TRUE` = "1"))) %>%
+  mutate(Education_Level = factor(case_when(
+    Education_Level %in% c('At least some college') ~ 'At least some college',
+    Education_Level %in% c('Less than HS diploma', 'High School Diploma') ~ 'High School or Less'),
+    levels = c('High School or Less', 'At least some college'))) %>%
+  mutate(Prior_Arrest_Episodes_Felony = factor(case_when(
+    Prior_Arrest_Episodes_Felony %in% c('0', '1', '2') ~ '0-2',
+    Prior_Arrest_Episodes_Felony %in% c('3', '4', '5', '6', '7', '8', '9') ~ '3 to 9',
+    Prior_Arrest_Episodes_Felony %in% c('10 or more') ~ '10 or more'),
+    levels = c('0-2', '3 to 9', '10 or more'))) %>%
+  mutate(Delinquency_Reports = factor(case_when(
+    Delinquency_Reports %in% c('0') ~ '0',
+    Delinquency_Reports %in% c('1', '2', '3', '4 or more') ~ '1 or more'))) %>%
+  mutate(Program_Attendances = factor(case_when(
+    Program_Attendances %in% c('0') ~ '0',
+    Program_Attendances %in% c('1', '2', '3', '4', '5', '6', '7', '8', '9') ~ '1 to 9',
+    Program_Attendances %in% c('10 or more') ~ '10 or more'))) %>%
+  mutate(Program_UnexcusedAbsences = factor(case_when(
+    Program_UnexcusedAbsences %in% c('0') ~ '0',
+    Program_UnexcusedAbsences %in% c('1', '2', '3 or more') ~ '1 or more')))
 
-```{r category}
-dat0 <- dat0 %>%
-  mutate(drug_dum = ifelse((DrugTests_THC_Positive + DrugTests_Cocaine_Positive + DrugTests_Meth_Positive + DrugTests_Other_Positive) > 0, 1, 0))
-
-dat0 %>%
-    dplyr::select(Gender,
-                  Race,
-                  Age_at_Release,
-                  Gang_Affiliated,
-                  Education_Level,
-                  Dependents,
-                  Prison_Offense,
-                  Prison_Years,
-                  Prior_Arrest_Episodes_Felony,
-                  Prior_Arrest_Episodes_Misd,
-                  Prior_Conviction_Episodes_Felony,
-                  Prior_Conviction_Episodes_Misd,
-                  Condition_MH_SA,
-                  Condition_Cog_Ed,
-                  Condition_Other,
-                  Delinquency_Reports,
-                  Program_Attendances,
-                  Program_UnexcusedAbsences,
-                  Employment_Exempt,
-                  Recidivism_Within_3years) %>%
-    gather(Variable, value, -Recidivism_Within_3years) %>%
-    count(Variable, value, Recidivism_Within_3years) %>%
-      ggplot(., aes(value, n, fill = Recidivism_Within_3years)) +   
+# Plot categorical variables
+## Percent
+dat %>%
+  select(Recidivism_Within_3years,
+         Gender,
+         Race,
+         Age_at_Release,
+         Education_Level,
+         Dependents,
+         Prior_Arrest_Episodes_Felony,
+         Condition_MH_SA,
+         Condition_Cog_Ed,
+         Condition_Other,
+         Delinquency_Reports,
+         Program_Attendances,
+         Program_UnexcusedAbsences,
+         Employment_Exempt) %>%
+  gather(Variable, value, -Recidivism_Within_3years) %>%
+  count(Variable, value, Recidivism_Within_3years) %>%
+  group_by(Variable, value) %>%
+  mutate(percent = round(n/sum(n)*100, digits = 2)) %>%
+  ungroup() %>%
+    ggplot(., aes(value, percent, fill = Recidivism_Within_3years)) +   
         geom_bar(position = "dodge", stat="identity") +
         facet_wrap(~Variable, scales="free") +
         scale_fill_manual(values = palette2) +
-        labs(x="Click", y="Value",
-             title = "Feature associations with the likelihood of Recidivism_Within_3years",
+        labs(x="Recidivism", y="Percentage",
+             title = "Feature associations with the likelihood of Recidivism Within Three Years",
              subtitle = "Categorical features") +
+        theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-dat0.nona <- dat0 %>%
-  na.omit()
-
-table()
+# Count
+dat %>%
+  select(Recidivism_Within_3years,
+         Gender,
+         Race,
+         Age_at_Release,
+         Education_Level,
+         Dependents,
+         Prior_Arrest_Episodes_Felony,
+         Condition_MH_SA,
+         Condition_Cog_Ed,
+         Condition_Other,
+         Delinquency_Reports,
+         Program_Attendances,
+         Program_UnexcusedAbsences,
+         Employment_Exempt) %>%
+  gather(Variable, value, -Recidivism_Within_3years) %>%
+  count(Variable, value, Recidivism_Within_3years) %>%
+    ggplot(., aes(value, n, fill = Recidivism_Within_3years)) +   
+        geom_bar(position = "dodge", stat="identity") +
+        facet_wrap(~Variable, scales="free") +
+        scale_fill_manual(values = palette2) +
+        labs(x="Recidivism", y="Value",
+             title = "Feature associations with the likelihood of Recidivism Within Three Years",
+             subtitle = "Categorical features") +
+        theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-**continuous**
-- Supervision_Risk_Score_First
-- Percent_Days_Employed
+**Continuous Variables:**
+- Supervision_Risk_Score_First  
+- Percent_Days_Employed  
+- Prison_Years (Categorical -> Continuous)  
+- Prior_Arrest_Episodes_Misd (Categorical -> Continuous)  
+- Prior_Conviction_Episodes_Felony (Categorical -> Continuous)  
+- Prior_Conviction_Episodes_Misd (Categorical -> Continuous)
 
-```{r continuous_density, message = FALSE, warning = FALSE}
-dat0 %>%
-    dplyr::select(Supervision_Risk_Score_First,
-                Percent_Days_Employed,
-                Recidivism_Within_3years) %>%
-    gather(Variable, value, -Recidivism_Within_3years) %>%
-    ggplot() + 
-    geom_density(aes(value, color=Recidivism_Within_3years), fill = "transparent") + 
-    facet_wrap(~Variable, scales = "free") +
-    scale_fill_manual(values = palette2) +
-    labs(title = "Feature distributions of Recidivism Within 3years vs. NO Recidivism Within 3years",
-         subtitle = "(continous outcomes)")
-```
+```{r continuous_plot, message = FALSE, warning = FALSE}
+# 
+dat <- dat %>%
+  mutate(Percent_Days_Employed = round(Percent_Days_Employed * 100, digit = 2)) %>%
+  mutate(Prison_Years = case_when(
+    Prison_Years == "Less than 1 year" ~ "1",
+    Prison_Years == "1-2 years" ~ "2",
+    Prison_Years == "Greater than 2 to 3 years" ~ "3",
+    Prison_Years == "More than 3 years" ~ "4")) %>%
+  mutate(Prison_Years = as.numeric(Prison_Years)) %>%
+  mutate(Prior_Arrest_Episodes_Misd = case_when(
+    Prior_Arrest_Episodes_Misd == "6 or more" ~ "6",
+    TRUE ~ Prior_Arrest_Episodes_Misd)) %>%
+  mutate(Prior_Arrest_Episodes_Misd = as.numeric(Prior_Arrest_Episodes_Misd)) %>%
+  mutate(Prior_Conviction_Episodes_Felony = case_when(
+    Prior_Conviction_Episodes_Felony == "3 or more" ~ "3",
+    TRUE ~ Prior_Arrest_Episodes_Misd)) %>%
+  mutate(Prior_Arrest_Episodes_Misd = as.numeric(Prior_Arrest_Episodes_Misd)) %>%
+  mutate(Prior_Conviction_Episodes_Misd = case_when(
+    Prior_Conviction_Episodes_Misd == "4 or more" ~ "4",
+    TRUE ~ Prior_Conviction_Episodes_Misd)) %>%
+  mutate(Prior_Conviction_Episodes_Misd = as.numeric(Prior_Conviction_Episodes_Misd))
 
-```{r continuous}
-dat0 %>%
-  dplyr::select(Supervision_Risk_Score_First,
-                Percent_Days_Employed,
-                Recidivism_Within_3years) %>%
+# Plot continuous variables
+## Mean
+dat %>%
+  select(Supervision_Risk_Score_First,
+         Percent_Days_Employed,
+         Prison_Years,
+         Prior_Arrest_Episodes_Misd,
+         Prior_Conviction_Episodes_Felony,
+         Prior_Conviction_Episodes_Misd,
+         Recidivism_Within_3years) %>%
   gather(Variable, value, -Recidivism_Within_3years) %>%
     ggplot(aes(Recidivism_Within_3years, value, fill=Recidivism_Within_3years)) + 
       geom_bar(position = "dodge", stat = "summary", fun = "mean") + 
@@ -167,23 +226,32 @@ dat0 %>%
            subtitle = "(continous outcomes)") +
       theme(legend.position = "none")
 
+## Density
+dat %>%
+   select(Supervision_Risk_Score_First,
+         Percent_Days_Employed,
+         Prison_Years,
+         Prior_Arrest_Episodes_Misd,
+         Prior_Conviction_Episodes_Felony,
+         Prior_Conviction_Episodes_Misd,
+         Recidivism_Within_3years) %>%
+    gather(Variable, value, -Recidivism_Within_3years) %>%
+    ggplot() + 
+    geom_density(aes(value, color=Recidivism_Within_3years), fill = "transparent") + 
+    facet_wrap(~Variable, scales = "free") +
+    scale_fill_manual(values = palette2) +
+    labs(title = "Feature distributions of Recidivism Within 3years vs. NO Recidivism Within 3years",
+         subtitle = "(continous outcomes)")
 ```
-
-
 
 # Model Develop
 
 ```{r model_build}
-dat <- dat0 %>%
-  mutate(Recidivism_Within_3years = as.character(Recidivism_Within_3years)) %>%
-  mutate(Recidivism_Within_3years = as.factor(recode(Recidivism_Within_3years,
-    `FALSE` = "0",
-    `TRUE` = "1"))) %>%
   select(Recidivism_Within_3years, Gender, Race, Age_at_Release, Gang_Affiliated, Education_Level, Dependents, Prison_Offense,
          Prison_Years, Prior_Arrest_Episodes_Felony, Prior_Arrest_Episodes_Misd, Prior_Conviction_Episodes_Felony,
          Prior_Conviction_Episodes_Misd, Condition_MH_SA, Condition_Cog_Ed, Condition_Other, Delinquency_Reports,
          Program_Attendances, Program_UnexcusedAbsences, Employment_Exempt, Supervision_Risk_Score_First, Percent_Days_Employed)
-
+filter_all(all_vars(!is.na(.))) %>%
 mod1 <- glm(Recidivism_Within_3years ~ .,
                  data = dat,
                  na.action = na.exclude,
