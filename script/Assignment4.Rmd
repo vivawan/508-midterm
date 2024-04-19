@@ -109,8 +109,8 @@ table(dat0$Supervision_Level_First)
 # Model Develop
 
 ```{r model_build}
-dat.
-  mutate(mode_cat = as.factor(recode(MODE_AGG,
+dat <- dat0 %>%
+  mutate(Recidivism_Within_3years = as.factor(recode(Recidivism_Within_3years,
     `3` = "car",
     `2` = "bike",
     `5` = "transit"))
