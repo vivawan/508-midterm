@@ -60,13 +60,8 @@ dat$Recidivism_Within_3years
 - specificity：let go of criminals
 
 # Plot of Variables
-**continuous**
-- Supervision_Risk_Score_First
-- DrugTests_THC_Positive
-- DrugTests_Cocaine_Positive
-- DrugTests_Meth_Positive
-- DrugTests_Other_Positive
-- Percent_Days_Employed
+**independent**  
+- Recidivism_Within_3years
 
 **Categorical**
 - Gender
@@ -90,16 +85,38 @@ dat$Recidivism_Within_3years
 - Employment_Exempt
 
 ```{r category}
-table(dat$Supervision_Level_First)
+
 
 
 
 ```
+**continuous**
+- Supervision_Risk_Score_First
+- DrugTests_THC_Positive
+- DrugTests_Cocaine_Positive
+- DrugTests_Meth_Positive
+- DrugTests_Other_Positive
+- Percent_Days_Employed
 
 ```{r continuous}
-
-
-
+advertising %>%
+  dplyr::select(Supervision_Risk_Score_First,
+                DrugTests_THC_Positive, 
+                DrugTests_Cocaine_Positive,
+                Daily_Internet_Usage, 
+                DrugTests_Meth_Positive,
+                DrugTests_Other_Positive
+                Percent_Days_Employed,
+                Recidivism_Within_3years) %>%
+  gather(Variable, value, -click) %>%
+    ggplot(aes(click, value, fill=click)) + 
+      geom_bar(position = "dodge", stat = "summary", fun = "mean") + 
+      facet_wrap(~Variable, scales = "free") +
+      scale_fill_manual(values = palette2) +
+      labs(x="Click", y="Value", 
+           title = "Feature associations with the likelihood of click",
+           subtitle = "(continous outcomes)") +
+      theme(legend.position = "none")
 
 ```
 
