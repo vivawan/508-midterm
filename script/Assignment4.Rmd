@@ -132,7 +132,7 @@ dat %>%
   ungroup() %>%
     ggplot(., aes(value, percent, fill = Recidivism_Within_3years)) +   
         geom_bar(position = "dodge", stat="identity") +
-        facet_wrap(~Variable, scales="free") +
+        facet_wrap(~Variable, ncol = 4, scales="free") +
         scale_fill_manual(values = palette2) +
         labs(x="Recidivism", y="Percentage",
              title = "Feature associations with the likelihood of Recidivism Within Three Years",
@@ -163,7 +163,7 @@ dat %>%
   count(Variable, value, Recidivism_Within_3years) %>%
     ggplot(., aes(value, n, fill = Recidivism_Within_3years)) +   
         geom_bar(position = "dodge", stat="identity") +
-        facet_wrap(~Variable, scales="free") +
+        facet_wrap(~Variable, ncol = 4, scales="free") +
         scale_fill_manual(values = palette2) +
         labs(x="Recidivism", y="Value",
              title = "Feature associations with the likelihood of Recidivism Within Three Years",
@@ -184,7 +184,7 @@ dat %>%
 - Prior_Conviction_Episodes_Misd (Categorical -> Continuous)
 
 ```{r continuous_plot, message = FALSE, warning = FALSE}
-# 
+# xxxx
 dat <- dat %>%
   mutate(Percent_Days_Employed = round(Percent_Days_Employed * 100, digit = 2)) %>%
   mutate(Prison_Years = case_when(
@@ -199,12 +199,14 @@ dat <- dat %>%
   mutate(Prior_Arrest_Episodes_Misd = as.numeric(Prior_Arrest_Episodes_Misd)) %>%
   mutate(Prior_Conviction_Episodes_Felony = case_when(
     Prior_Conviction_Episodes_Felony == "3 or more" ~ "3",
-    TRUE ~ Prior_Arrest_Episodes_Misd)) %>%
-  mutate(Prior_Arrest_Episodes_Misd = as.numeric(Prior_Arrest_Episodes_Misd)) %>%
+    TRUE ~ Prior_Conviction_Episodes_Felony)) %>%
+  mutate(Prior_Conviction_Episodes_Felony = as.numeric(Prior_Conviction_Episodes_Felony)) %>%
   mutate(Prior_Conviction_Episodes_Misd = case_when(
     Prior_Conviction_Episodes_Misd == "4 or more" ~ "4",
     TRUE ~ Prior_Conviction_Episodes_Misd)) %>%
   mutate(Prior_Conviction_Episodes_Misd = as.numeric(Prior_Conviction_Episodes_Misd))
+
+str(dat)
 
 # Plot continuous variables
 ## Mean
