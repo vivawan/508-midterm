@@ -49,8 +49,13 @@ conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::recode)
 ```
 
-```{r clean data}
+```{r clean data, cache=TRUE}
 dat0 <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
+
+palette5 <- c("#981FAC","#CB0F8B","#FF006A","#FE4C35","#FE9900")
+palette4 <- c("#981FAC","#FF006A","#FE4C35","#FE9900")
+palette2 <- c("#981FAC","#FF006A")
+
 glimpse(dat0)
 dat0$Recidivism_Within_3years
 ```
@@ -84,42 +89,85 @@ dat0$Recidivism_Within_3years
 - Program_UnexcusedAbsences
 - Employment_Exempt
 
+new variable:
+- drug_dum: - DrugTests_THC_Positive + DrugTests_Cocaine_Positive + DrugTests_Meth_Positive + DrugTests_Other_Positive
+
 ```{r category}
+dat0 <- dat0 %>%
+  mutate(drug_dum = ifelse((DrugTests_THC_Positive + DrugTests_Cocaine_Positive + DrugTests_Meth_Positive + DrugTests_Other_Positive) > 0, 1, 0))
 
+dat0 %>%
+    dplyr::select(Gender,
+                  Race,
+                  Age_at_Release,
+                  Gang_Affiliated,
+                  Education_Level,
+                  Dependents,
+                  Prison_Offense,
+                  Prison_Years,
+                  Prior_Arrest_Episodes_Felony,
+                  Prior_Arrest_Episodes_Misd,
+                  Prior_Conviction_Episodes_Felony,
+                  Prior_Conviction_Episodes_Misd,
+                  Condition_MH_SA,
+                  Condition_Cog_Ed,
+                  Condition_Other,
+                  Delinquency_Reports,
+                  Program_Attendances,
+                  Program_UnexcusedAbsences,
+                  Employment_Exempt,
+                  Recidivism_Within_3years) %>%
+    gather(Variable, value, -Recidivism_Within_3years) %>%
+    count(Variable, value, Recidivism_Within_3years) %>%
+      ggplot(., aes(value, n, fill = Recidivism_Within_3years)) +   
+        geom_bar(position = "dodge", stat="identity") +
+        facet_wrap(~Variable, scales="free") +
+        scale_fill_manual(values = palette2) +
+        labs(x="Click", y="Value",
+             title = "Feature associations with the likelihood of Recidivism_Within_3years",
+             subtitle = "Categorical features") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+dat0.nona <- dat0 %>%
+  na.omit()
 
-
+table()
 ```
+
 **continuous**
 - Supervision_Risk_Score_First
-- DrugTests_THC_Positive
-- DrugTests_Cocaine_Positive
-- DrugTests_Meth_Positive
-- DrugTests_Other_Positive
 - Percent_Days_Employed
 
-```{r continuous}
-advertising %>%
-  dplyr::select(Supervision_Risk_Score_First,
-                DrugTests_THC_Positive, 
-                DrugTests_Cocaine_Positive,
-                Daily_Internet_Usage, 
-                DrugTests_Meth_Positive,
-                DrugTests_Other_Positive
+```{r continuous_density, message = FALSE, warning = FALSE}
+dat0 %>%
+    dplyr::select(Supervision_Risk_Score_First,
                 Percent_Days_Employed,
                 Recidivism_Within_3years) %>%
-  gather(Variable, value, -click) %>%
-    ggplot(aes(click, value, fill=click)) + 
+    gather(Variable, value, -Recidivism_Within_3years) %>%
+    ggplot() + 
+    geom_density(aes(value, color=Recidivism_Within_3years), fill = "transparent") + 
+    facet_wrap(~Variable, scales = "free") +
+    scale_fill_manual(values = palette2) +
+    labs(title = "Feature distributions of Recidivism Within 3years vs. NO Recidivism Within 3years",
+         subtitle = "(continous outcomes)")
+```
+
+```{r continuous}
+dat0 %>%
+  dplyr::select(Supervision_Risk_Score_First,
+                Percent_Days_Employed,
+                Recidivism_Within_3years) %>%
+  gather(Variable, value, -Recidivism_Within_3years) %>%
+    ggplot(aes(Recidivism_Within_3years, value, fill=Recidivism_Within_3years)) + 
       geom_bar(position = "dodge", stat = "summary", fun = "mean") + 
       facet_wrap(~Variable, scales = "free") +
       scale_fill_manual(values = palette2) +
-      labs(x="Click", y="Value", 
-           title = "Feature associations with the likelihood of click",
+      labs(x="Recidivism Within 3years", y="Value", 
+           title = "Feature associations with the likelihood of Recidivism Within 3years",
            subtitle = "(continous outcomes)") +
       theme(legend.position = "none")
 
 ```
-
 
 
 
