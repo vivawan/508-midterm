@@ -49,10 +49,9 @@ conflicts_prefer(dplyr::filter)
 ```
 
 ```{r clean data}
-dat <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
-glimpse(dat)
+dat0 <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
+glimpse(dat0)
 dat$Recidivism_Within_3years
-
 ```
 
 # Discussion
@@ -60,6 +59,7 @@ dat$Recidivism_Within_3years
 - specificity：let go of criminals
 
 # Plot of Variables
+
 **continuous**
 - Supervision_Risk_Score_First
 - DrugTests_THC_Positive
@@ -90,7 +90,7 @@ dat$Recidivism_Within_3years
 - Employment_Exempt
 
 ```{r category}
-table(dat$Supervision_Level_First)
+table(dat0$Supervision_Level_First)
 
 
 
@@ -107,6 +107,15 @@ table(dat$Supervision_Level_First)
 
 
 # Model Develop
+
+```{r model_build}
+dat.
+  mutate(mode_cat = as.factor(recode(MODE_AGG,
+    `3` = "car",
+    `2` = "bike",
+    `5` = "transit"))
+```
+
 
 # Result Interpretation
 1. Model Result 
