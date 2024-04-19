@@ -46,14 +46,14 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::recode)
 
+# Import dataset
 dat <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
+str(dat)
+table(dat$Recidivism_Within_3years)
 
 palette5 <- c("#981FAC","#CB0F8B","#FF006A","#FE4C35","#FE9900")
 palette4 <- c("#981FAC","#FF006A","#FE4C35","#FE9900")
 palette2 <- c("#981FAC","#FF006A")
-
-str(dat)
-dat$Recidivism_Within_3years
 ```
 
 # Discussion
