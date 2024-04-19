@@ -46,12 +46,13 @@ p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, janitor, classInt
 library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
+conflicts_prefer(dplyr::recode)
 ```
 
 ```{r clean data}
 dat0 <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
 glimpse(dat0)
-dat$Recidivism_Within_3years
+dat0$Recidivism_Within_3years
 ```
 
 # Discussion
@@ -126,10 +127,21 @@ advertising %>%
 
 ```{r model_build}
 dat <- dat0 %>%
+  mutate(Recidivism_Within_3years = as.character(Recidivism_Within_3years)) %>%
   mutate(Recidivism_Within_3years = as.factor(recode(Recidivism_Within_3years,
-    `3` = "car",
-    `2` = "bike",
-    `5` = "transit"))
+    `FALSE` = "0",
+    `TRUE` = "1"))) %>%
+  select(Recidivism_Within_3years, Gender, Race, Age_at_Release, Gang_Affiliated, Education_Level, Dependents, Prison_Offense,
+         Prison_Years, Prior_Arrest_Episodes_Felony, Prior_Arrest_Episodes_Misd, Prior_Conviction_Episodes_Felony,
+         Prior_Conviction_Episodes_Misd, Condition_MH_SA, Condition_Cog_Ed, Condition_Other, Delinquency_Reports,
+         Program_Attendances, Program_UnexcusedAbsences, Employment_Exempt, Supervision_Risk_Score_First, Percent_Days_Employed)
+
+mod1 <- glm(Recidivism_Within_3years ~ .,
+                 data = dat,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+
+stargazer(mod1, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
 ```
 
 
