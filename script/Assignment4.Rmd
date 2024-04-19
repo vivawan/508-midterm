@@ -39,7 +39,7 @@ p_load(tidyverse, sf, units, nngeo, tmap, tinytex, kableExtra, janitor, classInt
        patchwork, here, tidycensus, lwgeom, lsr, haven, descr, RColorBrewer, stargazer,
        car, FNN, GGally, MASS, ISLR2, spdep, caret, ckanr, grid, gridExtra, ggcorrplot,
        jtools, broom, tufte, rmarkdown, corrr, RSocrata, viridis, spatstat, raster, knitr,
-       classInt, jsonlite, pROC)
+       classInt, jsonlite, pROC, plotROC, lubridate)
 
 library(conflicted)
 conflicts_prefer(dplyr::select)
@@ -281,118 +281,61 @@ mod1 <- glm(Recidivism_Within_3years ~ .,
                  data = dat.train,
                  na.action = na.exclude,
                  family = binomial("logit"))
-stargazer(mod1, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
 
-### Remove Education_Level
-mod2 <- glm(Recidivism_Within_3years ~ . - Education_Level,
+testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
+                        Probs = predict(mod1, dat.test, type= "response")) %>% ### Test probabilities
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , "1", "0"))) ### Set thresholds
+100 * prop.table(table(Observed = testProbs$Outcome, Predicted = testProbs$predOutcome), margin = 1)
+
+### Remove Race
+mod2 <- glm(Recidivism_Within_3years ~ . -Race,
                  data = dat.train,
                  na.action = na.exclude,
                  family = binomial("logit"))
-stargazer(mod2, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
 
-### Remove Condition_Cog_Ed
-mod3 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod3, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Remove Condition_Other
-mod4 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod4, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Remove Employment_Exempt
-mod5 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod5, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
+testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
+                        Probs = predict(mod2, dat.test, type= "response")) %>% ### Test probabilities
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , "1", "0"))) ### Set thresholds
+100 * prop.table(table(Observed = testProbs$Outcome, Predicted = testProbs$predOutcome), margin = 1)
 
 ### Remove Delinquency_Reports
-mod6 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt - Delinquency_Reports,
+mod3 <- glm(Recidivism_Within_3years ~ . -Race -Delinquency_Reports,
                  data = dat.train,
                  na.action = na.exclude,
                  family = binomial("logit"))
-stargazer(mod6, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
 
-### Remove Program_Attendances
-mod7 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt - Delinquency_Reports - Program_Attendances,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod7, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Remove Program_UnexcusedAbsences
-mod8 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod8, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Remove Percent_Days_Employed
-mod9 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences
-            - Supervision_Risk_Score_First - Percent_Days_Employed,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod9, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Remove Prison_Years
-mod10 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences
-            - Supervision_Risk_Score_First - Percent_Days_Employed - Prison_Years,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod10, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Remove Prior_Arrest_Episodes_Misd
-mod11 <- glm(Recidivism_Within_3years ~ . - Education_Level - Condition_Cog_Ed - Condition_Other
-            - Employment_Exempt - Delinquency_Reports - Program_Attendances - Program_UnexcusedAbsences
-            - Supervision_Risk_Score_First - Percent_Days_Employed - Prison_Years - Prior_Conviction_Episodes_Misd,
-                 data = dat.train,
-                 na.action = na.exclude,
-                 family = binomial("logit"))
-stargazer(mod11, type = "text",  star.cutoffs = c(0.05, 0.01, 0.001))
-
-### Model performance
 testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
-                        Probs = predict(mod13, dat.test, type= "response")) %>% ### Test probabilities
-  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , 1, 0))) ### Set thresholds
+                        Probs = predict(mod3, dat.test, type= "response")) %>% ### Test probabilities
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , "1", "0"))) ### Set thresholds
+100 * prop.table(table(Observed = testProbs$Outcome, Predicted = testProbs$predOutcome), margin = 1)
 
+### Remove Employment_Exempt
+mod4 <- glm(Recidivism_Within_3years ~ . -Race -Delinquency_Reports -Employment_Exempt,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+
+testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
+                        Probs = predict(mod4, dat.test, type= "response")) %>% ### Test probabilities
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , "1", "0"))) ### Set thresholds
+100 * prop.table(table(Observed = testProbs$Outcome, Predicted = testProbs$predOutcome), margin = 1)
+
+### Remove Prior_Conviction_Episodes_Felony
+mod5 <- glm(Recidivism_Within_3years ~ . -Race -Delinquency_Reports -Employment_Exempt
+            -Prior_Conviction_Episodes_Felony,
+                 data = dat.train,
+                 na.action = na.exclude,
+                 family = binomial("logit"))
+
+testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
+                        Probs = predict(mod5, dat.test, type= "response")) %>% ### Test probabilities
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , "1", "0"))) ### Set thresholds
+100 * prop.table(table(Observed = testProbs$Outcome, Predicted = testProbs$predOutcome), margin = 1)
+
+### Confusion matrix
 caret::confusionMatrix(testProbs$predOutcome, testProbs$Outcome, 
-                       positive = "1") ### Confusion matrix
-
-pROC::auc(testProbs$Outcome, testProbs$Probs)
-### If sensitivity goes up and specificity goes down, the variable is removed. (minimize False Negative)
+                       positive = "1") 
 ```
-
-- Race  
-- Age_at_Release  
-- Education_Level (Reclassified)  
-- Dependents  
-- Prior_Arrest_Episodes_Felony (Reclassified)  
-- Condition_MH_SA  
-- Condition_Cog_Ed  
-- Condition_Other  
-- Delinquency_Reports (Reclassified)  
-- Program_Attendances (Reclassified)  
-- Program_UnexcusedAbsences (Reclassified)  
-- Employment_Exempt
-- Supervision_Risk_Score_First  
-- Percent_Days_Employed  
-- Prison_Years (Categorical -> Continuous)  
-- Prior_Arrest_Episodes_Misd (Categorical -> Continuous)  
-- Prior_Conviction_Episodes_Felony (Categorical -> Continuous)  
-- Prior_Conviction_Episodes_Misd (Categorical -> Continuous)
 
 # Result Interpretation
 1. Model Result 
@@ -404,7 +347,7 @@ pROC::auc(testProbs$Outcome, testProbs$Probs)
 The ROC curve, gives us another visual "goodness of fit" metric. One that is a bit more tricky. You want to have a curve that is "above" the y=x line, which is where your prediction rates for positives and negatives are "no better than a coin flip". If it's too "square" - you are probably over fit. The Area-Under-The-Curve or "AUC" calculation below will help guide your understanding of the ROC curve
 
 ```{r auc, message = FALSE, warning = FALSE}
-
+pROC::auc(testProbs$Outcome, testProbs$Probs)
 ```
 
 ```{r roc_curve, warning = FALSE, message = FALSE}
@@ -412,7 +355,12 @@ ggplot(testProbs, aes(d = as.numeric(Outcome), m = Probs)) +
   geom_roc(n.cuts = 50, labels = FALSE, colour = "#FE9900") +
   style_roc(theme = theme_grey) +
   geom_abline(slope = 1, intercept = 0, size = 1.5, color = 'grey') +
-  labs(title = "ROC Curve - clickModel")
+  labs(title = "ROC Curve - clickModel") +
+    theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 # Confusion Matrix
