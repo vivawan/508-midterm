@@ -108,6 +108,7 @@ dat <- dat %>%
     Program_UnexcusedAbsences %in% c('0') ~ '0',
     Program_UnexcusedAbsences %in% c('1', '2', '3 or more') ~ '1 or more')))
 
+sum(is.na(dat$Percent_Days_Employed))
 # Plot categorical variables
 ## Percent
 dat %>%
@@ -184,7 +185,7 @@ dat %>%
 - Prior_Conviction_Episodes_Misd (Categorical -> Continuous)
 
 ```{r continuous_plot, message = FALSE, warning = FALSE}
-# xxxx
+# Transform categorical variables into continuous variables
 dat <- dat %>%
   mutate(Percent_Days_Employed = round(Percent_Days_Employed * 100, digit = 2)) %>%
   mutate(Prison_Years = case_when(
@@ -205,8 +206,6 @@ dat <- dat %>%
     Prior_Conviction_Episodes_Misd == "4 or more" ~ "4",
     TRUE ~ Prior_Conviction_Episodes_Misd)) %>%
   mutate(Prior_Conviction_Episodes_Misd = as.numeric(Prior_Conviction_Episodes_Misd))
-
-str(dat)
 
 # Plot continuous variables
 ## Mean
