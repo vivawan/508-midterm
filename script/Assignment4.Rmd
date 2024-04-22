@@ -576,10 +576,10 @@ filter(testProbs.thresholds, Threshold == .5)  %>%
 - Average cost of a crime committed by a recidivist: $50,000
 - Average compensation for wrongful incarceration: $50,000
 
-**True negative Cost**: "An individual is predicted not to recidivate and indeed does not recidivate." - No cost
-**True positive Cost**: "An individual is predicted to recidivate and then does recidivate." - $40k 
-**False negative Cost**: "An individual is predicted not to recidivate but then does recidivate." - $100k
-**False positive Cost**: "An individual is predicted to recidivate but does not actually recidivate." - $50k
+- **True negative Cost**: "An individual is predicted not to recidivate and indeed does not recidivate." - No cost
+- **True positive Cost**: "An individual is predicted to recidivate and then does recidivate." - $40k 
+- **False negative Cost**: "An individual is predicted not to recidivate but then does recidivate." - $100k
+- **False positive Cost**: "An individual is predicted to recidivate but does not actually recidivate." - $50k
 
 ```{r cost}
 whichThreshold.cost <- whichThreshold %>%
@@ -608,7 +608,7 @@ whichThreshold.cost %>%
 threshold.cost <- whichThreshold.cost%>%
   filter(Variable == 'Cost.all')
 
-#-> lowest cost when threshold = 0.49
+#-> lowest cost when threshold = 0.50
 ```
 
 
