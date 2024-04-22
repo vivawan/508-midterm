@@ -45,6 +45,7 @@ library(conflicted)
 conflicts_prefer(dplyr::select)
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::recode)
+conflicts_prefer(pROC::auc)
 
 # Import dataset
 dat <- read_csv(here::here('data/raw/NIJ_s_Recidivism_Challenge_Full_Dataset_20240418.csv'))
@@ -53,6 +54,7 @@ table(dat$Recidivism_Within_3years)
 
 palette5 <- c("#981FAC","#CB0F8B","#FF006A","#FE4C35","#FE9900")
 palette4 <- c("#981FAC","#FF006A","#FE4C35","#FE9900")
+palette3 <- c("#981FAC","#FF006A","#FE4C35")
 palette2 <- c("#981FAC","#FF006A")
 ```
 
@@ -63,25 +65,7 @@ palette2 <- c("#981FAC","#FF006A")
 
 # Plot of Variables
 
-**Dependent Variable:**  
-- Recidivism_Within_3years
-
-**Categorical Variables:**
-- Gender  
-- Race  
-- Age_at_Release  
-- Education_Level (Reclassified)  
-- Dependents  
-- Prior_Arrest_Episodes_Felony (Reclassified)  
-- Condition_MH_SA  
-- Condition_Cog_Ed  
-- Condition_Other  
-- Delinquency_Reports (Reclassified)  
-- Program_Attendances (Reclassified)  
-- Program_UnexcusedAbsences (Reclassified)  
-- Employment_Exempt
-
-```{r categorical_plot, message = FALSE, warning = FALSE}
+```{r recode}
 # Recode dependent variable and reclassify categorical variables
 dat <- dat %>%
   mutate(Recidivism_Within_3years = as.character(Recidivism_Within_3years)) %>%
@@ -107,7 +91,27 @@ dat <- dat %>%
   mutate(Program_UnexcusedAbsences = factor(case_when(
     Program_UnexcusedAbsences %in% c('0') ~ '0',
     Program_UnexcusedAbsences %in% c('1', '2', '3 or more') ~ '1 or more')))
+```
 
+**Dependent Variable:**  
+- Recidivism_Within_3years
+
+**Categorical Variables:**
+- Gender  
+- Race  
+- Age_at_Release  
+- Education_Level (Reclassified)  
+- Dependents  
+- Prior_Arrest_Episodes_Felony (Reclassified)  
+- Condition_MH_SA  
+- Condition_Cog_Ed  
+- Condition_Other  
+- Delinquency_Reports (Reclassified)  
+- Program_Attendances (Reclassified)  
+- Program_UnexcusedAbsences (Reclassified)  
+- Employment_Exempt
+
+```{r categorical_plot, message = FALSE, warning = FALSE}
 # Plot categorical variables
 ## Percent
 dat %>%
@@ -257,7 +261,7 @@ dat %>%
 
 # Model Develop
 
-```{r model_build, message = FALSE, warning = FALSE}
+```{r model_build, results='hide'}
 # Initial variable selection
 ## Build dataset
 dat <- dat %>%
@@ -329,18 +333,19 @@ mod5 <- glm(Recidivism_Within_3years ~ . -Race -Delinquency_Reports -Employment_
 
 testProbs <- data.frame(Outcome = as.factor(dat.test$Recidivism_Within_3years),
                         Probs = predict(mod5, dat.test, type= "response")) %>% ### Test probabilities
-  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , "1", "0"))) ### Set thresholds
+  mutate(predOutcome  = as.factor(ifelse(Probs > 0.5 , 1, 0))) ### Set thresholds
 100 * prop.table(table(Observed = testProbs$Outcome, Predicted = testProbs$predOutcome), margin = 1)
-
-### Confusion matrix
-caret::confusionMatrix(testProbs$predOutcome, testProbs$Outcome, 
-                       positive = "1") 
 ```
 
 # Result Interpretation
+
+```{r final model}
+stargazer(mod5, type = 'text', star.cutoffs = c(0.05, 0.01, 0.001))
+```
 1. Model Result 
 
 2. Most Risky Person
+
 
 # ROC Curve
 
@@ -350,9 +355,74 @@ The ROC curve, gives us another visual "goodness of fit" metric. One that is a b
 pROC::auc(testProbs$Outcome, testProbs$Probs)
 ```
 
-```{r roc_curve, warning = FALSE, message = FALSE}
+```{r function}
+# function from the book
+iterateThresholds <- function(data, observedClass, predictedProbs, group) {
+  observedClass <- enquo(observedClass)
+  predictedProbs <- enquo(predictedProbs)
+  group <- enquo(group)
+  x = .01
+  all_prediction <- data.frame()
+  
+  if (missing(group)) {
+  
+    while (x <= 1) {
+    this_prediction <- data.frame()
+    
+    this_prediction <-
+      data %>%
+      mutate(predclass = ifelse(!!predictedProbs > x, 1,0)) %>%
+      count(predclass, !!observedClass) %>%
+      summarize(Count_TN = sum(n[predclass==0 & !!observedClass==0]),
+                Count_TP = sum(n[predclass==1 & !!observedClass==1]),
+                Count_FN = sum(n[predclass==0 & !!observedClass==1]),
+                Count_FP = sum(n[predclass==1 & !!observedClass==0]),
+                Rate_TP = Count_TP / (Count_TP + Count_FN),
+                Rate_FP = Count_FP / (Count_FP + Count_TN),
+                Rate_FN = Count_FN / (Count_FN + Count_TP),
+                Rate_TN = Count_TN / (Count_TN + Count_FP),
+                Accuracy = (Count_TP + Count_TN) / 
+                           (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
+      mutate(Threshold = round(x,2))
+    
+    all_prediction <- rbind(all_prediction,this_prediction)
+    x <- x + .01
+  }
+  return(all_prediction)
+  }
+  else if (!missing(group)) { 
+   while (x <= 1) {
+    this_prediction <- data.frame()
+    
+    this_prediction <-
+      data %>%
+      mutate(predclass = ifelse(!!predictedProbs > x, 1,0)) %>%
+      group_by(!!group) %>%
+      count(predclass, !!observedClass) %>%
+      summarize(Count_TN = sum(n[predclass==0 & !!observedClass==0]),
+                Count_TP = sum(n[predclass==1 & !!observedClass==1]),
+                Count_FN = sum(n[predclass==0 & !!observedClass==1]),
+                Count_FP = sum(n[predclass==1 & !!observedClass==0]),
+                Rate_TP = Count_TP / (Count_TP + Count_FN),
+                Rate_FP = Count_FP / (Count_FP + Count_TN),
+                Rate_FN = Count_FN / (Count_FN + Count_TP),
+                Rate_TN = Count_TN / (Count_TN + Count_FP),
+                Accuracy = (Count_TP + Count_TN) / 
+                           (Count_TP + Count_TN + Count_FN + Count_FP)) %>%
+      mutate(Threshold = round(x, 2))
+    
+    all_prediction <- rbind(all_prediction, this_prediction)
+    x <- x + .01
+  }
+  return(all_prediction)
+  }
+}
+```
+
+
+```{r roc_curve, warning = FALSE, message = FALSE, cache = FALSE}
 ggplot(testProbs, aes(d = as.numeric(Outcome), m = Probs)) +
-  geom_roc(n.cuts = 50, labels = FALSE, colour = "#FE9900") +
+  geom_roc(n.cuts = 50, labels = T, labelsize = 3,labelround = 2,colour = "#FE9900") +
   style_roc(theme = theme_grey) +
   geom_abline(slope = 1, intercept = 0, size = 1.5, color = 'grey') +
   labs(title = "ROC Curve - clickModel") +
@@ -361,6 +431,29 @@ ggplot(testProbs, aes(d = as.numeric(Outcome), m = Probs)) +
   theme(legend.title = element_text(size = 9),
         legend.text = element_text(size = 8)) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# choose the threshold: sensitivity + specificity increase
+whichThreshold <- 
+  iterateThresholds(data=testProbs, observedClass = Outcome, predictedProbs = Probs)
+
+whichThreshold.nocost <- whichThreshold %>%
+  dplyr::select(Rate_TP, Rate_TN, Threshold)%>%
+  rename(Sensitivity = Rate_TP, Specificity = Rate_TN)
+
+whichThreshold.nocost %>%
+  gather(Variable, Rate, -Threshold) %>%
+  ggplot(.,aes(Threshold, Rate, colour = Variable)) +
+  geom_point() +
+  scale_colour_manual(values = palette2) +    
+  labs(title = "Specificity and Sensitivity by threshold",
+       y = "Rate") +
+  guides(colour=guide_legend(title = "Rate"))+
+        theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+# -> result: threshold 0.59, Rate_TP ≈ Rate_TN ≈ Accuracy ≈ 0.68
 ```
 
 # Confusion Matrix
@@ -369,28 +462,120 @@ Each threshold (e.g. a probability above which a prediction is a "click" and bel
 
 A "confusion matrix" for the threshold of 50% shows us the rate at which we got True Positives (aka Sensitivity), False Positives, True Negatives (aka Specificity) and False Negatives for that threshold.
 
-```{r thresholds}
+```{r confusion_matrix}
 testProbs <- 
   testProbs %>%
-  mutate(predOutcome  = as.factor(ifelse(testProbs$Probs > 0.5 , 1, 0)))
-```
+  mutate(predOutcome  = as.factor(ifelse(testProbs$Probs > 0.59 , 1, 0)))
 
-```{r confusion_matrix}
 caret::confusionMatrix(testProbs$predOutcome, testProbs$Outcome, 
                        positive = "1")
 ```
+1. cell meaning
 
-# Sensitivity and Specificity
+2. accuracy
 
-# Prediction
+3. sensitivity and specificity
 
-## Error
 
-## Summary by Race
+# Error and Equity Discussion
 
-## Equity Discussion
+```{r race}
+testProbs2 <- 
+  data.frame(class = as.numeric(as.character(dat.test$Recidivism_Within_3years)),
+             probs = predict(mod5, dat.test, type = "response"),
+             Race = dat.test$Race,
+             Gender = dat.test$Gender)%>%
+  mutate(Race.Gender = paste(Race, Gender, sep = "-"))
+
+# plot error by race
+testProbs.thresholds <- 
+  iterateThresholds(data=testProbs2, observedClass = class, 
+                    predictedProbs = probs, group = Race)
+
+filter(testProbs.thresholds, Threshold == .59)  %>%
+  dplyr::select(Accuracy, Race, starts_with("Rate")) %>%
+  gather(Variable, Value, -Race) %>%
+  ggplot(aes(Variable, Value, fill = Race)) +
+  geom_bar(aes(fill = Race), position = "dodge", stat = "identity",colour = "white") +
+  geom_text(aes(label = sprintf("%.2f", Value)),                      # Add labels
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 3) +
+  scale_fill_manual(values = palette2) +
+  labs(title="Confusion matrix rates by race",
+       subtitle = "50% threshold", x = "Outcome",y = "Rate") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r race and gender}
+# plot error by race and gender
+testProbs.thresholds <- 
+  iterateThresholds(data=testProbs2, observedClass = class, 
+                    predictedProbs = probs, group = Race.Gender)
+
+filter(testProbs.thresholds, Threshold == .59)  %>%
+  dplyr::select(Accuracy, Race.Gender, starts_with("Rate")) %>%
+  gather(Variable, Value, -Race.Gender) %>%
+  ggplot(aes(Variable, Value, fill = Race.Gender)) +
+  geom_bar(aes(fill = Race.Gender), position = "dodge", stat = "identity",colour = "white") +
+  geom_text(aes(label = sprintf("%.2f", Value)),
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 3) +
+  scale_fill_manual(values = palette4) +
+  labs(title="Confusion matrix rates by race and gender",
+       subtitle = "50% threshold", x = "Outcome",y = "Rate") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 
 # Cost-Benifit Analysis
+
+- Average cost of keeping someone in prison for a year: $40,000  
+- Average cost of arrest and trial for a recidivist: $10,000   
+- Average cost of a crime committed by a recidivist: $50,000
+- Average compensation for wrongful incarceration: $50,000
+
+**True negative Cost**: "An individual is predicted not to recidivate and indeed does not recidivate." - No cost
+**True positive Cost**: "An individual is predicted to recidivate and then does recidivate." - $40k 
+**False negative Cost**: "An individual is predicted not to recidivate but then does recidivate." - $100k
+**False positive Cost**: "An individual is predicted to recidivate but does not actually recidivate." - $50k
+
+```{r cost}
+whichThreshold.cost <- whichThreshold %>%
+  dplyr::select(starts_with("Count"), Threshold) %>%
+  mutate(Cost.TN = Count_TN*0,
+         Cost.TP = Count_TP*40,
+         Cost.FN = Count_FN*100,
+         Cost.FP = Count_FP*50,
+         Cost.all = Cost.TN + Cost.TP + Cost.FN + Cost.FP)%>%
+  select(starts_with("Cost"), Threshold)%>%
+  gather(Variable, Cost, -Threshold)
+
+whichThreshold.cost %>%
+  ggplot(.,aes(Threshold, Cost, colour = Variable)) +
+  geom_point() +
+  scale_colour_manual(values = palette5) +    
+  labs(title = "Cost by confusion matrix type and threshold",
+       y = "Cost") +
+  guides(colour=guide_legend(title = "Confusion Matrix"))+
+        theme_bw() +
+  theme(plot.title = element_text(size = 12, face = "bold")) +
+  theme(legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+threshold.cost <- whichThreshold.cost%>%
+  filter(Variable == 'Cost.all')
+
+#-> lowest cost when threshold = 0.49
+```
+
 
 # Conclusion
 
