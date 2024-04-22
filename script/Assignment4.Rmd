@@ -112,7 +112,7 @@ dat <- dat %>%
 - Program_UnexcusedAbsences (Reclassified)  
 - Employment_Exempt
 
-```{r categorical_plot, message = FALSE, warning = FALSE}
+```{r categorical_plot, message = FALSE, warning = FALSE, fig.height=10}
 # Plot categorical variables
 ## Percent
 dat %>%
@@ -188,7 +188,7 @@ dat %>%
 - Prior_Conviction_Episodes_Felony (Categorical -> Continuous)  
 - Prior_Conviction_Episodes_Misd (Categorical -> Continuous)
 
-```{r continuous_plot, message = FALSE, warning = FALSE}
+```{r continuous_plot, message = FALSE, warning = FALSE, fig.height=5}
 # Transform categorical variables into continuous variables
 dat <- dat %>%
   mutate(Percent_Days_Employed = round(Percent_Days_Employed * 100, digit = 2)) %>%
