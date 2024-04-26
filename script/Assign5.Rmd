@@ -22,7 +22,11 @@ library(knitr)
 library(kableExtra)
 library(RSocrata)
 library(jsonlite)
+library(FNN)
+library(ggplot2)
+source("https://raw.githubusercontent.com/urbanSpatial/Public-Policy-Analytics-Landing/master/functions.r")
 
+palette6 <- c("#eff3ff","#bdd7e7","#6baed6","#3182bd","#08519c","#08306b")
 palette5 <- c("#eff3ff","#bdd7e7","#6baed6","#3182bd","#08519c")
 palette4 <- c("#D2FBD4","#92BCAB","#527D82","#123F5A")
 palette2 <- c("#6baed6","#08519c")
@@ -69,6 +73,10 @@ mapTheme <- theme(plot.title =element_text(size=12),
 
 ### Bike Trips Data
 
+We used July 2022 Indego Data, Philadelphia
+
+Used `as.POSIXct` to convert start and end time record into proper formatting `%m/%d/%Y %H:%M`
+
 ```{r read data} 
 dat <- read.csv("indego-trips-2022-q3/indego-trips-2022-q3.csv")
 
@@ -77,6 +85,10 @@ dat <- dat %>%
          end_time = as.POSIXct(end_time, format = "%m/%d/%Y %H:%M"))
   
 ```
+
+Let’s use some date parsing to bin” the data by 15 and 60 minute intervals by rounding.
+
+Notice we use the time format ymd_hms to denote year, month, day and hour, minute and seccond. We extract the week of the observation (ranging from 1-52 throughout the year) and the dotw for day of the week.
 
 ```{r parsing data}
 #parsing data
@@ -111,6 +123,8 @@ weather.Panel <- weather.Panel %>%
 
 glimpse(weather.Panel)
 ```
+Visualized weather data in Philadelphia of July 2022
+
 ```{r plot_weather, fig.height=8, catche = TRUE}
 grid.arrange(
   ggplot(weather.Panel, aes(interval60,Precipitation)) + geom_line() + 
@@ -156,50 +170,81 @@ PHLTracts <- PHLCensus %>%
   as.data.frame() %>%
   distinct(GEOID, .keep_all = TRUE) %>%
   select(GEOID, geometry) %>% 
-  st_sf()
+  st_sf() %>% 
+  st_transform(crs = "EPSG:2272")
 ```
+We add the spatial information to our rideshare data as origin and destination data, first joining the origin station, then the destination station to our census data. We don’t use the destination data in this exercise.
+
+*Census data only helps us with later testing, but not model building.* - unit of analysis is bike station.
 
 ```{r}
-dat_census <- st_join(dat2 %>% 
-          filter(is.na(start_lat) == FALSE &
-                 is.na(start_lon) == FALSE &
-                 is.na(end_lat) == FALSE &
-                 is.na(end_lon) == FALSE) %>%
-          st_as_sf(., coords = c("start_lon", "start_lat"), crs = 4326),
-        PHLTracts %>%
-          st_transform(crs=4326),
-        join=st_intersects,
-              left = TRUE) %>%
+dat_census <- dat2 %>%
+  filter(!is.na(start_lat) & !is.na(start_lon) 
+         & !is.na(end_lat) & !is.na(end_lon)) %>%
+  st_as_sf(coords = c("start_lon", "start_lat"), crs = 4326) %>%
+  st_transform(crs = "EPSG:2272") %>%
+  st_join(PHLTracts %>% st_transform(crs = "EPSG:2272"), join = st_intersects, left = TRUE) %>%
   rename(Origin.Tract = GEOID) %>%
   mutate(start_lon = unlist(map(geometry, 1)),
-         start_lat = unlist(map(geometry, 2)))%>%
-  as.data.frame() %>%
-  select(-geometry)%>%
-  st_as_sf(., coords = c("end_lon", "end_lat"), crs = 4326) %>%
-  st_join(., PHLTracts %>%
-            st_transform(crs=4326),
-          join=st_intersects,
-          left = TRUE) %>%
-  rename(Destination.Tract = GEOID)  %>%
-  mutate(to_longitude = unlist(map(geometry, 1)),
-         to_latitude = unlist(map(geometry, 2)))%>%
-  as.data.frame() %>%
-  select(-geometry)
+         start_lat = unlist(map(geometry, 2))) %>%
+  select(-geometry) %>%
+  st_as_sf(coords = c("end_lon", "end_lat"), crs = 4326) %>%
+  st_transform(crs = "EPSG:2272") %>%
+  st_join(PHLTracts %>% st_transform(crs = "EPSG:2272"), join = st_intersects, left = TRUE) %>%
+  rename(Destination.Tract = GEOID) %>%
+  mutate(end_lon = unlist(map(geometry, 1)),
+         end_lat = unlist(map(geometry, 2)))#%>%
+  #as.data.frame() %>%
+  #select(-geometry)
 ```
 
 ### Amenities Data
 
+Retrieved additional amenities data from OpenDataPhilly per assignment request.
+
+links:
+
+- https://opendataphilly.org/datasets/bike-network/
+
+- https://opendataphilly.org/datasets/schools/
+
+- SEPTA Highspeed Station Shapefile: https://gis-septa.hub.arcgis.com/datasets/af52d74b872045d0abb4a6bbbb249453_0/explore?location=40.009318%2C-75.215731%2C11.68
+
 ```{r reading amenities data}
 BikeNetwork <- st_read("Amenities/Bike_Network/Bike_Network.shp") %>% 
-  st_transform(crs = 4326)
+  st_transform(crs = "EPSG:2272")
 
 Schools <- st_read("Amenities/Schools/Schools.shp")%>% 
-  st_transform(crs = 4326)
+  st_transform(crs = "EPSG:2272")
 
 HighSpeed <- st_read("Amenities/Highspeed_Stations/Highspeed_Stations.shp")%>% 
-  st_transform(crs = 4326)
+  st_transform(crs = "EPSG:2272")
 ```
+transformed bike network into points. Measured nearest neighbor distance from *station* to each type of amenities.
+
+```{r calculate nearest neighbor}
+BikeNetwork.pt <- st_coordinates(BikeNetwork) %>%
+  as.data.frame() %>% 
+  st_as_sf(., coords = c("X", "Y"), crs = "EPSG:2272")
+
+dat_census <-
+  dat_census %>% 
+  mutate(
+    bikenetwork_nn1 = nn_function(st_coordinates(dat_census), 
+                              st_coordinates(BikeNetwork.pt), k = 1),
+    highspeed_nn1 = nn_function(st_coordinates(dat_census), 
+                              st_coordinates(HighSpeed), k = 1),
+    schools_nn1 = nn_function(st_coordinates(dat_census), 
+                              st_coordinates(Schools), k = 1))
+
+dat_census <- dat_census %>% 
+  as.data.frame() %>%
+  select(-geometry)
+```
+
 ## Data Exploration
+
+See title of each plot for plotting outcome.
 
 ```{r}
 ggplot(dat_census %>%
@@ -279,14 +324,34 @@ ggplot()+
   labs(title="Bike share trips per hr by station. Philadelphia, July, 2022")+
   mapTheme
 ```
+Added one more section to test for correlation between amenity locations and start trips made at each station (monthly total).
 
-### Exploration with ref to amenities?
+Schools variable does not show any correlation, hence eliminated from later model.
 
-I assume the intention of asking us to engineer and test amenities is to find they are perfectly correlated with stations (start_station), thus in the final model we keep station only.
+```{r}
+dat_nn <- dat_census %>%
+  group_by(start_station) %>%
+  summarize(month_tot = n(),
+            bikenetwork_nn1 = mean(bikenetwork_nn1),
+            highspeed_nn1 = mean(highspeed_nn1),
+            schools_nn1 = mean(schools_nn1)) 
 
-See text book **8.2.6 What about distance features?**
+correlation_matrix <- cor(dat_nn)
+
+ggcorrplot(
+  correlation_matrix,
+  p.mat = cor_pmat(dat_nn),  
+  colors = c("blue", "white", "darkred"), 
+  type = "lower",  
+  insig = "blank"  
+) +
+labs(title = "Correlation Test Amenities Variables")+
+theme(axis.text.x = element_text(size = 10))
+```
 
 ## Create Space-Time Panel
+
+First we have to make sure each unique station and hour/day combo exists in our data set. This is done in order to *create a “panel” (e.g. a time-series) data set where each time period in the study is represented by a row - whether an observation took place then or not*. So if a station didn’t have any trips originating from it at a given hour, we still need a zero in that spot in the panel.
 
 ```{r space-time panel}
 study.panel <- 
@@ -294,21 +359,23 @@ study.panel <-
               start_station = unique(dat_census$start_station)) %>%
   left_join(., dat_census %>%
               select(start_station, Origin.Tract, 
-                     start_lon, start_lat )%>%
+                     start_lon, start_lat, bikenetwork_nn1, highspeed_nn1, schools_nn1)%>%
               distinct() %>%
               group_by(start_station) %>%
               slice(1))
 
 ```
+We create the full panel by *summarizing counts by station for each time interval*, keep census info and lat/lon information along for joining later to other data. We remove data for station IDs that are FALSE.
 
-We create the full panel by summarizing counts by station for each time interval, keep census info and lat/lon information along for joining later to other data. We remove data for station IDs that are FALSE.
+Note amenities features are also added.
 
 ```{r full panel}
 ride.panel <- 
   dat_census %>%
   mutate(Trip_Counter = 1) %>%
   right_join(study.panel) %>% 
-  group_by(interval60, start_station, Origin.Tract, start_lon, start_lat) %>%
+  group_by(interval60, start_station, Origin.Tract, start_lon, start_lat, 
+           bikenetwork_nn1, highspeed_nn1, schools_nn1) %>% #amenities feature added here
   summarize(Trip_Count = sum(Trip_Counter, na.rm=T)) %>%
   left_join(weather.Panel) %>%
   ungroup() %>%
@@ -328,6 +395,7 @@ ride.panel <-
 Creating time lag variables will add additional nuance about the demand during a given time period - hours before and during that day.
 
 We can also try to control for the effects of holidays that disrupt the expected demand during a given weekend or weekday. (We have a holiday on May 28 - Memorial Day. For that three day weekend we could use some dummy variables indicating temporal proximity to the holiday.)
+
 **NEVE NOTE**: Replaced May 28 Memorial Day with July 4th Independence Day.
 
 Keep in mind, that unique fixed effects must be in your training set when you run your models.
@@ -357,16 +425,16 @@ ride.panel$holidayLag[is.na(ride.panel$holidayLag)] <- "0"
 
 ## Developing Models
 
-**Note**: station fixed effect is kept in lieu of other amenities feature, since it would have accounted for those locational impacts - will add exploratory tests
-
 Splitted data based on whether the trip occurred after or before week 29, to keep temporal cohesiveness.
+
+Since holiday effect have to be accounted for by the training data (ride.Train), all data *before* week 29 is splitted into the training set.
 
 ```{r}
 ride.Train <- filter(ride.panel, week < 29)
 ride.Test <- filter(ride.panel, week >= 29)
 ```
 
-Testing out different models
+Testing out different models. reg1-reg5 follow class demo. reg6 incorporates added amenities feature per assignment request. 
 
 ```{r}
 reg1 <- 
@@ -388,6 +456,21 @@ reg5 <-
   lm(Trip_Count ~  start_station + hour(interval60) + dotw + Temperature + Precipitation +
                    lagHour + lag2Hours +lag3Hours +lag12Hours + lag1day + holidayLag + holiday, 
      data=ride.Train)
+
+reg6 <- 
+  lm(Trip_Count ~  start_station + hour(interval60) + dotw + Temperature + Precipitation +
+                   lagHour + lag2Hours +lag3Hours +lag12Hours + lag1day + holidayLag + holiday +
+                   bikenetwork_nn1 + highspeed_nn1, #did not include schools since there's no correlation
+     data=ride.Train)
+```
+
+### Effect of amenities?
+
+Turns out amenities are good predictors.
+
+```{r final model}
+summary(reg6)
+vif(reg6)
 ```
 
 ## Predict for Test Data
@@ -414,7 +497,8 @@ week_predictions <-
            BSpace_FE = map(.x = data, fit = reg2, .f = model_pred),
            CTime_Space_FE = map(.x = data, fit = reg3, .f = model_pred),
            DTime_Space_FE_timeLags = map(.x = data, fit = reg4, .f = model_pred),
-           ETime_Space_FE_timeLags_holidayLags = map(.x = data, fit = reg5, .f = model_pred)) %>% 
+           ETime_Space_FE_timeLags_holidayLags = map(.x = data, fit = reg5, .f = model_pred),
+           FTime_Space_FE_timeLags_holidayLags_amenities = map(.x = data, fit = reg6, .f = model_pred)) %>% 
     gather(Regression, Prediction, -data, -week) %>%
     mutate(Observed = map(data, pull, Trip_Count),
            Absolute_Error = map2(Observed, Prediction,  ~ abs(.x - .y)),
@@ -426,7 +510,7 @@ week_predictions
 
 ## Examining Model Performance
 
-The best models - the lag models, are accurate to less than an average of one ride per hour, at a glance, that’s pretty alright for overall accuracy.
+The best models - the lag models, are accurate to less than an average of one ride per hour, at a glance, that’s pretty alright for overall accuracy. - In our project, the best model is reg6, which accounts for lags as well as amenities.
 
 **Which models perform best - and how would you describe their fit?**
 
@@ -439,7 +523,7 @@ week_predictions %>%
   gather(Variable, MAE, -Regression, -week) %>%
   ggplot(aes(week, MAE)) + 
     geom_bar(aes(fill = Regression), position = "dodge", stat="identity") +
-    scale_fill_manual(values = palette5) +
+    scale_fill_manual(values = palette6) +
     labs(title = "Mean Absolute Errors by model specification and week") +
   plotTheme
 
@@ -461,8 +545,6 @@ week_predictions %>%
 
 ```
 
-Moving forward, let’s stick with reg5, which seems to have the best goodness of fit generally.
-
 We can look at our mean absolute errors by station - there seems to be a spatial pattern to our error (what is it?), but we need to go a bit further to get at the temporal element of the error.
 
 ```{r}
@@ -473,23 +555,24 @@ week_predictions %>%
            start_lon = map(data, pull, start_lon)) %>%
     select(interval60, start_station, start_lon, start_lat, Observed, Prediction, Regression) %>%
     unnest() %>%
-  filter(Regression == "ETime_Space_FE_timeLags_holidayLags") %>%
+  filter(Regression == "FTime_Space_FE_timeLags_holidayLags_amenities") %>%
   group_by(start_station, start_lon, start_lat) %>%
   summarize(MAE = mean(abs(Observed-Prediction), na.rm = TRUE))%>%
 ggplot(.)+
-  geom_sf(data = PHLCensus, color = "grey", fill = "transparent")+
+  geom_sf(data = PHLTracts, color = "grey", fill = "white")+
   geom_point(aes(x = start_lon, y = start_lat, color = MAE), 
              fill = "transparent", alpha = 0.4)+
   scale_colour_viridis(direction = -1,
   discrete = FALSE, option = "D")+
   ylim(min(dat_census$start_lat), max(dat_census$start_lat))+
   xlim(min(dat_census$start_lon), max(dat_census$start_lon))+
-  labs(title="Mean Abs Error, Test Set, Model 5")
+  labs(title="Mean Abs Error, Test Set, Best Model") #model 7
 ```
 
 
 ## Space-Time Error Evaluation - Pending Annotation
 
+If we plot observed vs. predicted for different times of day during the week and weekend, some patterns begin to emerge. We are certainly underpredicting in general, but *what do we begin to see about some of the outcomes that our model cannot explain?*
 
 ```{r}
 week_predictions %>% 
@@ -502,7 +585,7 @@ week_predictions %>%
            start_lat, Observed, Prediction, Regression,
            dotw) %>%
     unnest() %>%
-  filter(Regression == "ETime_Space_FE_timeLags_holidayLags")%>%
+  filter(Regression == "FTime_Space_FE_timeLags_holidayLags_amenities")%>%
   mutate(weekend = ifelse(dotw %in% c("Sun", "Sat"), "Weekend", "Weekday"),
          time_of_day = case_when(hour(interval60) < 7 | hour(interval60) > 18 ~ "Overnight",
                                  hour(interval60) >= 7 & hour(interval60) < 10 ~ "AM Rush",
@@ -519,6 +602,8 @@ week_predictions %>%
   plotTheme
 ```
 
+Is there a spatial pattern to these big errors? Let’s look at our errors on a map by weekend/weekday and time of day. **What is the implication for rebalancing with these errors - does it matter if they are higher volume locations?**
+
 ```{r}
 week_predictions %>% 
     mutate(interval60 = map(data, pull, interval60),
@@ -530,7 +615,7 @@ week_predictions %>%
            start_lat, Observed, Prediction, Regression,
            dotw) %>%
     unnest() %>%
-  filter(Regression == "ETime_Space_FE_timeLags_holidayLags")%>%
+  filter(Regression == "FTime_Space_FE_timeLags_holidayLags_amenities")%>%
   mutate(weekend = ifelse(dotw %in% c("Sun", "Sat"), "Weekend", "Weekday"),
          time_of_day = case_when(hour(interval60) < 7 | hour(interval60) > 18 ~ "Overnight",
                                  hour(interval60) >= 7 & hour(interval60) < 10 ~ "AM Rush",
@@ -539,7 +624,7 @@ week_predictions %>%
   group_by(start_station, weekend, time_of_day, start_lon, start_lat) %>%
   summarize(MAE = mean(abs(Observed-Prediction), na.rm = TRUE))%>%
   ggplot(.)+
-  geom_sf(data = PHLCensus, color = "grey", fill = "transparent")+
+  geom_sf(data = PHLTracts, fill = "black")+
   geom_point(aes(x = start_lon, y = start_lat, color = MAE), 
              fill = "transparent", size = 0.5, alpha = 0.4)+
   scale_colour_viridis(direction = -1,
@@ -547,8 +632,11 @@ week_predictions %>%
   ylim(min(dat_census$start_lat), max(dat_census$start_lat))+
   xlim(min(dat_census$start_lon), max(dat_census$start_lon))+
   facet_grid(weekend~time_of_day)+
-  labs(title="Mean Absolute Errors, Test Set")
+  labs(title="Mean Absolute Errors, Test Set")+
+  mapTheme
 ```
+
+(How the model error change with reference to census tracts' socio-economic conditions?) - this is where previously added census info come into place.
 
 ```{r}
 week_predictions %>% 
@@ -564,7 +652,7 @@ week_predictions %>%
            start_lat, Observed, Prediction, Regression,
            dotw, Percent_Taking_Public_Trans, Med_Inc, Percent_White) %>%
     unnest() %>%
-  filter(Regression == "ETime_Space_FE_timeLags_holidayLags")%>%
+  filter(Regression == "FTime_Space_FE_timeLags_holidayLags_amenities")%>%
   mutate(weekend = ifelse(dotw %in% c("Sun", "Sat"), "Weekend", "Weekday"),
          time_of_day = case_when(hour(interval60) < 7 | hour(interval60) > 18 ~ "Overnight",
                                  hour(interval60) >= 7 & hour(interval60) < 10 ~ "AM Rush",
@@ -575,7 +663,6 @@ week_predictions %>%
   summarize(MAE = mean(abs(Observed-Prediction), na.rm = TRUE))%>%
   gather(-start_station, -MAE, key = "variable", value = "value")%>%
   ggplot(.)+
-  #geom_sf(data = PHLCensus, color = "grey", fill = "transparent")+
   geom_point(aes(x = value, y = MAE), alpha = 0.4)+
   geom_smooth(aes(x = value, y = MAE), method = "lm", se= FALSE)+
   facet_wrap(~variable, scales = "free")+
@@ -585,5 +672,7 @@ week_predictions %>%
 ```
 
 ## Prediction Interpretation
+
+Assignment requirement: Conclude with how useful your algorithm is for the bike re-balancing plan.
 
 ---
